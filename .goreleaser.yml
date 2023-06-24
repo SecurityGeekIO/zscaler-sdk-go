@@ -5,7 +5,7 @@ builds:
     skip: true
 release:
   github:
-    owner: zscaler
+    owner: willguibr
     name: zscaler-sdk-go
 
   draft: true
