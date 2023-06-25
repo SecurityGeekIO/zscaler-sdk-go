@@ -29,7 +29,7 @@ type CBIBannerController struct {
 
 func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, bannerID)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, bannerID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -39,7 +39,7 @@ func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Respon
 }
 
 func (service *Service) GetByName(bannerName string) (*CBIBannerController, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannerEndpoint
+	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CBIBannerController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -52,17 +52,17 @@ func (service *Service) GetByName(bannerName string) (*CBIBannerController, *htt
 	return nil, resp, fmt.Errorf("no cloud browser isolation banner named '%s' was found", bannerName)
 }
 
-func (service *Service) Create(server CBIBannerController) (*CBIBannerController, *http.Response, error) {
+func (service *Service) Create(cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, nil, server, &v)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, nil, cbiBanner, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(id string, cbiBanner CBIBannerController) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, id)
+func (service *Service) Update(cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiBanner, nil)
 	if err != nil {
 		return nil, err
@@ -70,8 +70,8 @@ func (service *Service) Update(id string, cbiBanner CBIBannerController) (*http.
 	return resp, err
 }
 
-func (service *Service) Delete(id string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, id)
+func (service *Service) Delete(cbiBannerID string) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]CBIBannerController, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannerEndpoint
+	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CBIBannerController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

@@ -16,16 +16,38 @@ const (
 type IsolationProfile struct {
 	ID               string            `json:"id,omitempty"`
 	Name             string            `json:"name,omitempty"`
-	Enabled          bool              `json:"enabled"`
-	IsDefault        bool              `json:"isDefault"`
+	Description      string            `json:"description,omitempty"`
+	IsDefault        bool              `json:"isDefault,omitempty"`
 	HREF             string            `json:"href,omitempty"`
 	SecurityControls *SecurityControls `json:"securityControls,omitempty"`
+	UserExperience   *UserExperience   `json:"userExperience,omitempty"`
 	Regions          []Regions         `json:"regions,omitempty"`
+	Certificates     []Certificates    `json:"certificates,omitempty"`
+	BannerID         string            `json:"bannerId,omitempty"`
+	RegionIDs        []string          `json:"regionIds,omitempty"`
+	CertificateIDs   []string          `json:"certificateIds,omitempty"`
 }
 
 type Regions struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+type Certificates struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type RegionIDs struct {
+	ID string `json:"id,omitempty"`
+}
+
+type BannerID struct {
+	ID string `json:"id,omitempty"`
+}
+
+type CertificateID struct {
+	ID string `json:"id,omitempty"`
 }
 
 type SecurityControls struct {
@@ -35,6 +57,11 @@ type SecurityControls struct {
 	LocalRender        bool   `json:"localRender,omitempty"`
 	AllowPrinting      bool   `json:"allowPrinting,omitempty"`
 	RestrictKeystrokes bool   `json:"restrictKeystrokes,omitempty"`
+}
+
+type UserExperience struct {
+	SessionPersistence bool `json:"sessionPersistence,omitempty"`
+	BrowserInBrowser   bool `json:"browserInBrowser,omitempty"`
 }
 
 func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
