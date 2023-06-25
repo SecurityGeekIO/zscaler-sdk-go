@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	cbiConfig         = "/cbiconfig/cbi/api/customers/"
-	cbiBannerEndpoint = "/banners"
+	cbiConfig          = "/cbiconfig/cbi/api/customers/"
+	cbiBannerEndpoint  = "/banner"
+	cbiBannersEndpoint = "/banners"
 )
 
 type CBIBannerController struct {
@@ -22,6 +23,8 @@ type CBIBannerController struct {
 	NotificationText  string `json:"notificationText,omitempty"`
 	Logo              string `json:"logo,omitempty"`
 	Banner            bool   `json:"banner,omitempty"`
+	IsDefault         bool   `json:"isDefault,omitempty"`
+	Persist           bool   `json:"persist,omitempty"`
 }
 
 func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Response, error) {

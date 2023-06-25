@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	cbiConfig                 = "/cbiconfig/cbi/api/customers/"
-	cbiRegionsEndpoint string = "/regions"
+	cbiConfig          = "/cbiconfig/cbi/api/customers/"
+	cbiRegionsEndpoint = "/regions"
 )
 
 type CBIRegions struct {
