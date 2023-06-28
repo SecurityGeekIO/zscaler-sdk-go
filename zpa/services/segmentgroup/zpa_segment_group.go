@@ -25,6 +25,8 @@ type SegmentGroup struct {
 	Name                string        `json:"name"`
 	PolicyMigrated      bool          `json:"policyMigrated"`
 	TcpKeepAliveEnabled string        `json:"tcpKeepAliveEnabled,omitempty"`
+	MicroTenantID       string        `json:"microtenantId,omitempty"`
+	MicroTenantName     string        `json:"microtenantName,omitempty"`
 }
 
 type Application struct {
