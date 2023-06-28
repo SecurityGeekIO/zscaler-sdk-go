@@ -35,6 +35,7 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+
       - name: Set Credentials
         env:
           ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
@@ -48,10 +49,6 @@ jobs:
           ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
           ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
         run: |
-          go test -v ./zpa
-          go test -v ./zia
-          go test -v ./zdx
-          go test -v ./zcc
-          go test -v -cover ./tests -v -parallel 30  -timeout 120m
-          go test -v -cover ./tests/integration/zpa -v -parallel 30  -timeout 120m
-          go test -v -cover ./tests/integration/zia -v -parallel 30  -timeout 120m
+          go test -v -cover ./tests/integration/zpa -v -parallel 30 -timeout 120m
+          go test -v -cover ./tests/unit/zpa -v -parallel 30 -timeout 120m
+          go test -v -cover ./tests/integration/zia -v -parallel 30 -timeout 120m
