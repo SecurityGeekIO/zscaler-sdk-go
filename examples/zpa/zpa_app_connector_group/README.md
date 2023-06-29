@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/willguibr/zscaler-sdk-go/zpa"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
 )
 
 func main() {

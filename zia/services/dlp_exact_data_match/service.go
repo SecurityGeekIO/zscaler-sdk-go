@@ -1,7 +1,7 @@
 package dlp_exact_data_match
 
 import (
-	"github.com/willguibr/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
 )
 
 type Service struct {

@@ -1,4 +1,4 @@
-module github.com/willguibr/zscaler-sdk-go
+module github.com/SecurityGeekIO/zscaler-sdk-go
 
 go 1.19
 

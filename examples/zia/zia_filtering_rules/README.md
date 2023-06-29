@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/willguibr/zscaler-sdk-go/zia"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
 )
 
 func main() {

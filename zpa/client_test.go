@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/willguibr/zscaler-sdk-go/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
 )
 
 type dummyStruct struct {

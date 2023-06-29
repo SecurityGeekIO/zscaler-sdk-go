@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/willguibr/zscaler-sdk-go/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zdx"
 )
 
 type Service struct {
