@@ -5,8 +5,8 @@ import (
  "log"
  "os"
 
- "github.com/willguibr/zscaler-sdk-go/zdx"
- "github.com/willguibr/zscaler-sdk-go/zdx/services/reports/users"
+ "github.com/SecurityGeekIO/zscaler-sdk-go/zdx"
+ "github.com/SecurityGeekIO/zscaler-sdk-go/zdx/services/reports/users"
 )
 
 func main() {

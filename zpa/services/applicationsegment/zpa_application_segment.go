@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/applicationsegmentpra"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/browseraccess"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/applicationsegmentpra"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/browseraccess"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 )
 
 const (

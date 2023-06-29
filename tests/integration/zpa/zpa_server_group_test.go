@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/appconnectorgroup"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/appservercontroller"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/servergroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appservercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/servergroup"
 )
 
 func TestServerGroup(t *testing.T) {

@@ -1,8 +1,8 @@
-[![release](https://github.com/willguibr/zscaler-sdk-go/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/willguibr/zscaler-sdk-go/actions/workflows/release.yml)
-[![Test](https://github.com/willguibr/zscaler-sdk-go/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/willguibr/zscaler-sdk-go/actions/workflows/test.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/willguibr/zscaler-sdk-go/blob/master/.go-version)
-[![Go Report Card](https://goreportcard.com/badge/github.com/willguibr/zscaler-sdk-go)](https://goreportcard.com/report/github.com/willguibr/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/willguibr/zscaler-sdk-go/blob/master/LICENSE)
+[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
+[![Test](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/.go-version)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
 # Zscaler GO SDK
@@ -40,7 +40,7 @@ environment variables.
 
 To download all packages in the repo with their dependencies, simply run
 
-`go get github.com/willguibr/zscaler-sdk-go`
+`go get github.com/SecurityGeekIO/zscaler-sdk-go`
 
 ## Getting Started
 
@@ -54,8 +54,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/willguibr/zscaler-sdk-go/zpa"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
 )
 
 func main() {
@@ -126,7 +126,7 @@ MIT License
 
 =======
 
-Copyright (c) 2022 [Zscaler](https://github.com/willguibr)
+Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
