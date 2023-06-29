@@ -1,6 +1,6 @@
 package publicapi
 
-import "github.com/willguibr/zscaler-sdk-go/zpa/services/common"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 
 const (
 	getDevicesEndpoint        = "/public/v1/getDevices"

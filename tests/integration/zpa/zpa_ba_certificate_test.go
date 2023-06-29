@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/bacertificate"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/bacertificate"
 )
 
 func TestBACertificates(t *testing.T) {

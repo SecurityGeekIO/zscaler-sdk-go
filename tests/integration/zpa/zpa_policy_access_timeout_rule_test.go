@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/policysetcontroller"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
 func TestAccessTimeoutPolicy(t *testing.T) {

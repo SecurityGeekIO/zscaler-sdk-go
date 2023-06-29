@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/dlp_icap_servers"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/dlp_icap_servers"
 )
 
 func TestDLPICAPServer_data(t *testing.T) {

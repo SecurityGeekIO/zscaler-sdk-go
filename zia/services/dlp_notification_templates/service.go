@@ -1,7 +1,7 @@
 package dlp_notification_templates
 
 import (
-	"github.com/willguibr/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
 )
 
 type Service struct {

@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/trustednetwork"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks(t *testing.T) {

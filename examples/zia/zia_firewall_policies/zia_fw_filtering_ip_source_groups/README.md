@@ -4,8 +4,8 @@ package main
 import (
 	"log"
 
-	"github.com/willguibr/zscaler-sdk-go/zia"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/firewallpolicies/ipsourcegroups"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipsourcegroups"
 )
 
 func main() {

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zpa/services/serviceedgegroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/serviceedgegroup"
 )
 
 func TestServiceEdgeGroup_Get(t *testing.T) {
