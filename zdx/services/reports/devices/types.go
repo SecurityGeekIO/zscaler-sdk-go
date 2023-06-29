@@ -1,6 +1,6 @@
 package devices
 
-import "github.com/willguibr/zscaler-sdk-go/zdx/services/common"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/zdx/services/common"
 
 type GetDevicesFilters struct {
 	common.GetFromToFilters
