@@ -1,7 +1,7 @@
 package ipdestinationgroups
 
 import (
-	"github.com/willguibr/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
 )
 
 type Service struct {

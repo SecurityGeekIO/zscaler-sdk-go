@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/willguibr/zscaler-sdk-go/tests"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/locationmanagement"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/locationmanagement"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
 )
 
 func TestLocationManagement(t *testing.T) {

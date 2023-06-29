@@ -4,8 +4,8 @@ package main
 import (
 	"log"
 
-	"github.com/willguibr/zscaler-sdk-go/zia"
-	"github.com/willguibr/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
 )
 
 func main() {

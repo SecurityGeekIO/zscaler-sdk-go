@@ -16,7 +16,7 @@ Fork the code
 -------------
 
 In your browser, navigate to:
-[https://github.com/willguibr/zscaler-sdk-go](https://github.com/willguibr/zscaler-sdk-go)
+[https://github.com/SecurityGeekIO/zscaler-sdk-go](https://github.com/SecurityGeekIO/zscaler-sdk-go)
 
 Fork the repository by clicking on the 'Fork' button on the top right hand
 side.  The fork will happen and you will be taken to your own fork of the
@@ -30,7 +30,7 @@ the Zscaler Golang SDK:
 ``` bash
 $ git clone https://github.com/YOUR_ACCOUNT/zscaler-sdk-go.git
 $ cd zscaler-sdk-go
-$ git remote add upstream https://github.com/willguibr/zscaler-sdk-go.git
+$ git remote add upstream https://github.com/SecurityGeekIO/zscaler-sdk-go.git
 $ git checkout master
 $ git fetch upstream
 $ git rebase upstream/master
