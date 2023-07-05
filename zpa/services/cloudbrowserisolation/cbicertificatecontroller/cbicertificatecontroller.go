@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -33,8 +31,7 @@ func (service *Service) Get(certificateID string) (*CBICertificate, *http.Respon
 }
 
 func (service *Service) GetByName(certificateName string) (*CBICertificate, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificatesEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBICertificate](service.Client, relativeURL, "")
+	list, resp, err := service.GetAll()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +72,11 @@ func (service *Service) Delete(certificateID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]CBICertificate, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificatesEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBICertificate](service.Client, relativeURL, "")
+	var list []CBICertificate
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	if err != nil {
+		return nil, resp, err
+	}
 	if err != nil {
 		return nil, nil, err
 	}

@@ -55,6 +55,12 @@ github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/testify v1.8.4
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
+# github.com/zscaler/zscaler-sdk-go v1.6.1
+## explicit; go 1.19
+github.com/zscaler/zscaler-sdk-go/logger
+github.com/zscaler/zscaler-sdk-go/zia
+github.com/zscaler/zscaler-sdk-go/zia/services/common
+github.com/zscaler/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules
 # golang.org/x/crypto v0.7.0
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 )
 
 const (
@@ -39,8 +37,7 @@ func (service *Service) Get(bannerID string) (*CBIBannerController, *http.Respon
 }
 
 func (service *Service) GetByName(bannerName string) (*CBIBannerController, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBIBannerController](service.Client, relativeURL, "")
+	list, resp, err := service.GetAll()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -81,7 +78,8 @@ func (service *Service) Delete(cbiBannerID string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]CBIBannerController, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
-	list, resp, err := common.GetAllPagesGeneric[CBIBannerController](service.Client, relativeURL, "")
+	var list []CBIBannerController
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}
