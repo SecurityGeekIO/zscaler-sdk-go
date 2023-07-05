@@ -12,26 +12,29 @@ const (
 )
 
 type IsolationProfile struct {
-	ID               string           `json:"id,omitempty"`
-	Name             string           `json:"name,omitempty"`
-	Description      string           `json:"description,omitempty"`
-	Enabled          bool             `json:"enabled"`
-	CreationTime     string           `json:"creationTime,omitempty"`
-	ModifiedBy       string           `json:"modifiedBy,omitempty"`
-	ModifiedTime     string           `json:"modifiedTime,omitempty"`
-	CBITenantID      string           `json:"cbiTenantId,omitempty"`
-	CBIProfileID     string           `json:"cbiProfileId,omitempty"`
-	CBIURL           string           `json:"cbiUrl"`
-	SecurityControls SecurityControls `json:"securityControls,omitempty"`
-	IsDefault        bool             `json:"isDefault,omitempty"`
-	Regions          []Region         `json:"regions,omitempty"`
-	Href             string           `json:"href,omitempty"`
-	UserExperience   *UserExperience  `json:"userExperience,omitempty"`
-	Certificates     []Certificate    `json:"certificates,omitempty"`
-	Banner           *Banner          `json:"banner,omitempty"`
+	ID               string            `json:"id,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	Description      string            `json:"description,omitempty"`
+	Enabled          bool              `json:"enabled,omitempty"`
+	CreationTime     string            `json:"creationTime,omitempty"`
+	ModifiedBy       string            `json:"modifiedBy,omitempty"`
+	ModifiedTime     string            `json:"modifiedTime,omitempty"`
+	CBITenantID      string            `json:"cbiTenantId,omitempty"`
+	CBIProfileID     string            `json:"cbiProfileId,omitempty"`
+	CBIURL           string            `json:"cbiUrl,omitempty"`
+	BannerID         string            `json:"bannerId,omitempty"`
+	SecurityControls *SecurityControls `json:"securityControls,omitempty"`
+	IsDefault        bool              `json:"isDefault,omitempty"`
+	Regions          []Regions         `json:"regions,omitempty"`
+	RegionIDs        []string          `json:"regionIds,omitempty"`
+	Href             string            `json:"href,omitempty"`
+	UserExperience   *UserExperience   `json:"userExperience,omitempty"`
+	Certificates     []Certificates    `json:"certificates,omitempty"`
+	CertificateIDs   []string          `json:"certificateIds,omitempty"`
+	Banner           *Banner           `json:"banner,omitempty"`
 }
 
-type Certificate struct {
+type Certificates struct {
 	ID        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`
 	IsDefault bool   `json:"isDefault,omitempty"`
@@ -60,7 +63,7 @@ type SecurityControls struct {
 	CopyPaste          string    `json:"copyPaste,omitempty"`
 	LocalRender        bool      `json:"localRender,omitempty"`
 }
-type Region struct {
+type Regions struct {
 	Name string `json:"name,omitempty"`
 	ID   string `json:"id,omitempty"`
 }
