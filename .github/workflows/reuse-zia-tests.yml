@@ -6,10 +6,14 @@ on:
         type: string
         required: true
     secrets:
-      ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
-      ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
-      ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
-      ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+      ZIA_USERNAME:
+        required: true
+      ZIA_PASSWORD:
+        required: true
+      ZIA_API_KEY:
+        required: true
+      ZIA_CLOUD:
+        required: true
 
 jobs:
   go-test:
