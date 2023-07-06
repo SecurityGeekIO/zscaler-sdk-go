@@ -20,15 +20,9 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        go-version: [1.19]
-        os: [ubuntu-latest, macos-latest]
-    uses: ./.github/actions/go-test
-    environment: ZPA_QA_TENANT01
+    uses: ./.github/workflow/reuse-go-test.yml
     inputs:
-      goVersion: ${{ matrix.go-version }}
+      environment: ZPA_QA_TENANT01
 
     # steps:
     #   - uses: actions/setup-go@v4
