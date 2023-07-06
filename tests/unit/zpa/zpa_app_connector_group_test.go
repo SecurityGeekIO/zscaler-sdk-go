@@ -51,8 +51,24 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	}
 	// Create a sample group
 	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
+		ID:                       "123",
+		Name:                     "Group 1",
+		Description:              "Group 1",
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "New Release",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 
 	// Make the POST request
@@ -129,8 +145,24 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 		Client: client,
 	}
 	group := appconnectorgroup.AppConnectorGroup{
-		ID:   "123",
-		Name: "Group 1",
+		ID:                       "123",
+		Name:                     "Group 1",
+		Description:              "Group 1",
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "New Release",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 
 	// Make the Update request
