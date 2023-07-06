@@ -25,7 +25,7 @@ jobs:
       matrix:
         go-version: [1.19]
         os: [ubuntu-latest, macos-latest]
-    uses: ./.github/workflows/action.yaml
+    uses: ./.github/actions/go-test
     environment: ZPA_QA_TENANT01
     inputs:
       goVersion: ${{ matrix.go-version }}
