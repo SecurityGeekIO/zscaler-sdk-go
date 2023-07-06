@@ -3,11 +3,11 @@ package integration
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/enrollmentcert"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/provisioningkey"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestProvisiongKey(t *testing.T) {
@@ -23,10 +23,23 @@ func TestProvisiongKey(t *testing.T) {
 	// create application connector group for testing
 	appConnectorGroupService := appconnectorgroup.New(client)
 	appGroup := appconnectorgroup.AppConnectorGroup{
-		Name:      appConnGroupName,
-		Latitude:  "37.3861",
-		Longitude: "-122.0839",
-		Location:  "Mountain View, CA",
+		Name:                     appConnGroupName,
+		Description:              appConnGroupName,
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "New Release",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
 	if err != nil {
