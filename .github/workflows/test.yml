@@ -20,12 +20,12 @@ on:
 
 jobs:
   test:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go-version: [1.19]
         os: [ubuntu-latest, macos-latest]
-    uses: ./github/actions/go-test
-    runs-on: ${{ matrix.os }}
+    uses: ./.github/actions/go-test
     environment: ZPA_QA_TENANT01
     inputs:
       goVersion: ${{ matrix.go-version }}
