@@ -29,6 +29,17 @@ jobs:
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
 
+  zpa-prod-tenant01:
+    uses: ./.github/workflows/reuse-zpa-tests.yml
+    with:
+      environment: ZPA_PROD_TENANT01
+    secrets:
+      ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
+      ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
+      ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
+      ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
+    needs: zpa-qa-tenant01
+
   zpa-qa-tenant02:
     uses: ./.github/workflows/reuse-zpa-tests.yml
     with:
@@ -48,6 +59,11 @@ jobs:
       ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
       ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
       ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
+
+  zdx-tenant01:
+    uses: ./.github/workflows/reuse-zdx-tests.yml
+    with:
+      environment: ZDX_TENANT01
 
     # steps:
     #   - uses: actions/setup-go@v4
