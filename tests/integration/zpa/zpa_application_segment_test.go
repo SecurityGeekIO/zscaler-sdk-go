@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/applicationsegment"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestApplicationSegment(t *testing.T) {
@@ -45,8 +45,15 @@ func TestApplicationSegment(t *testing.T) {
 	appSegment := applicationsegment.ApplicationSegmentResource{
 		Name:             name,
 		Description:      "New application segment",
+		Enabled:          true,
 		SegmentGroupID:   createdAppGroup.ID,
 		SegmentGroupName: createdAppGroup.Name,
+		IsCnameEnabled:   true,
+		BypassType:       "NEVER",
+		IcmpAccessType:   "PING_TRACEROUTING",
+		HealthReporting:  "ON_ACCESS",
+		HealthCheckType:  "DEFAULT",
+		TCPKeepAlive:     "1",
 		DomainNames:      []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
