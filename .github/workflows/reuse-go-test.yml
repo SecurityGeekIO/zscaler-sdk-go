@@ -3,6 +3,7 @@ on:
     inputs:
       environment:
         description: The GitHub environment to use
+        type: string
         required: true
     secrets:
       ZIA_USERNAME:
