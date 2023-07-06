@@ -19,37 +19,25 @@ on:
     - cron: '0 13 * * *'
 
 jobs:
-  qa-tenant01:
+  zpa-qa-tenant01:
     uses: ./.github/workflows/reuse-go-test.yml
     with:
       environment: ZPA_QA_TENANT01
     secrets:
-      ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
-      ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
-      ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
-      ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
       ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
       ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
-      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
 
-  qa-tenant02:
+  zpa-qa-tenant02:
     uses: ./.github/workflows/reuse-go-test.yml
     with:
       environment: ZPA_QA_TENANT02
     secrets:
-      ZIA_USERNAME: ${{ secrets.ZIA_USERNAME }}
-      ZIA_PASSWORD: ${{ secrets.ZIA_PASSWORD }}
-      ZIA_API_KEY: ${{ secrets.ZIA_API_KEY }}
-      ZIA_CLOUD: ${{ secrets.ZIA_CLOUD }}
       ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
       ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
       ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
       ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-      ZDX_API_KEY_ID: ${{ secrets.ZDX_API_KEY_ID }}
-      ZDX_API_SECRET: ${{ secrets.ZDX_API_SECRET }}
   
 
     # steps:
