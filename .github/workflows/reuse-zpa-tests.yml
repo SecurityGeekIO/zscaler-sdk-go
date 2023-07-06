@@ -18,7 +18,6 @@ on:
 jobs:
   zpa-test:
     environment: ${{ inputs.environment }}
-    concurrency: ${{ inputs.environment }}
     strategy:
       matrix:
         go-version: [1.19]
