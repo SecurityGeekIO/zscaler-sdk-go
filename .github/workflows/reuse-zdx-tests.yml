@@ -5,6 +5,11 @@ on:
         description: The GitHub environment to use
         type: string
         required: true
+    secrets:
+      ZDX_API_KEY_ID:
+        required: true
+      ZDX_API_SECRET:
+        required: true
 
 jobs:
   zdx-test:

@@ -5,6 +5,15 @@ on:
         description: The GitHub environment to use
         type: string
         required: true
+    secrets:
+      ZPA_CLIENT_ID:
+        required: true
+      ZPA_CLIENT_SECRET:
+        required: true
+      ZPA_CUSTOMER_ID:
+        required: true
+      ZPA_CLOUD:
+        required: true
 
 jobs:
   zpa-test:

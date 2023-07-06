@@ -5,6 +5,15 @@ on:
         description: The GitHub environment to use
         type: string
         required: true
+    secrets:
+      ZIA_USERNAME:
+        required: true
+      ZIA_PASSWORD:
+        required: true
+      ZIA_API_KEY:
+        required: true
+      ZIA_CLOUD:
+        required: true
 
 jobs:
   zia-test:
