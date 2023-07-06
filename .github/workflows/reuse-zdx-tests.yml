@@ -7,7 +7,7 @@ on:
         required: true
 
 jobs:
-  zpa-test:
+  zdx-test:
     environment: ${{ inputs.environment }}
     strategy:
       matrix:
