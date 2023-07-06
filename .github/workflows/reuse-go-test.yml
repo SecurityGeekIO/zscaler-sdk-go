@@ -1,9 +1,9 @@
 on:
   workflow_call:
-    inputs:
-      environment:
-        description: The GitHub environment to use
-        required: true
+    # inputs:
+    #   environment:
+    #     description: The GitHub environment to use
+    #     required: true
     secrets:
       ZIA_USERNAME:
         required: true
