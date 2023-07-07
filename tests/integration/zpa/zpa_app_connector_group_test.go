@@ -31,6 +31,7 @@ func TestAppConnectorGroup(t *testing.T) {
 		UpgradeTimeInSecs:        "66600",
 		OverrideVersionProfile:   true,
 		VersionProfileName:       "New Release",
+		VersionProfileID:         "2",
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
 		WAFDisabled:              true,
