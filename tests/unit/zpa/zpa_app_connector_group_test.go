@@ -22,7 +22,6 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 
 	// Make the GET request
 	group, _, err := service.Get("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -62,7 +61,8 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 		UpgradeDay:               "SUNDAY",
 		UpgradeTimeInSecs:        "66600",
 		OverrideVersionProfile:   true,
-		VersionProfileName:       "New Release",
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
 		WAFDisabled:              true,
@@ -73,7 +73,6 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 
 	// Make the POST request
 	createdGroup, _, err := service.Create(group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -118,7 +117,6 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 
 	// Make the GetByName request
 	group, _, err := service.GetByName("Group1")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -168,7 +166,6 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 
 	// Make the Update request
 	_, err := service.Update("123", &group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -188,7 +185,6 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 
 	// Make the Delete request
 	_, err := service.Delete("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -214,7 +210,6 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 
 	// Make the GetAll request
 	groups, _, err := service.GetAll()
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
