@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/applicationsegment"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestApplicationSegment(t *testing.T) {
@@ -45,8 +45,15 @@ func TestApplicationSegment(t *testing.T) {
 	appSegment := applicationsegment.ApplicationSegmentResource{
 		Name:             name,
 		Description:      "New application segment",
+		Enabled:          true,
 		SegmentGroupID:   createdAppGroup.ID,
 		SegmentGroupName: createdAppGroup.Name,
+		IsCnameEnabled:   true,
+		BypassType:       "NEVER",
+		IcmpAccessType:   "PING_TRACEROUTING",
+		HealthReporting:  "ON_ACCESS",
+		HealthCheckType:  "DEFAULT",
+		TCPKeepAlive:     "1",
 		DomainNames:      []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
@@ -57,7 +64,6 @@ func TestApplicationSegment(t *testing.T) {
 	}
 	// Test resource creation
 	createdResource, _, err := service.Create(appSegment)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -150,5 +156,4 @@ func TestApplicationSegment(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

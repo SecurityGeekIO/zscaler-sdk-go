@@ -4,16 +4,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestAccessIsolationPolicy(t *testing.T) {
-	policyType := "ISOLATION_POLICY"
-	isolationProfileID := "BD_SA_Profile1"
+func TestPolicyAccessRule(t *testing.T) {
+	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -39,33 +38,35 @@ func TestAccessIsolationPolicy(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
+	postureService := postureprofile.New(client)
+	postureList, _, err := postureService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting posture profiles: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
+	}
 	service := policysetcontroller.New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
-		t.Errorf("Error getting access isolation policy set: %v", err)
-		return
-	}
-	profile := isolationprofile.New(client)
-	profileID, _, err := profile.GetByName(isolationProfileID)
-	if err != nil {
-		t.Errorf("Error getting isolation profile id set: %v", err)
+		t.Errorf("Error getting access policy set: %v", err)
 		return
 	}
 	accessPolicyRule := policysetcontroller.PolicyRule{
-		Name:                  name,
-		Description:           "New application segment",
-		RuleOrder:             "1",
-		PolicySetID:           accessPolicySet.ID,
-		ZpnIsolationProfileID: profileID.ID,
-		Action:                "ISOLATE",
+		Name:        name,
+		Description: "New application segment",
+		PolicySetID: accessPolicySet.ID,
+		Action:      "ALLOW",
+		RuleOrder:   "1",
 		Conditions: []policysetcontroller.Conditions{
 			{
 				Operator: "OR",
 				Operands: []policysetcontroller.Operands{
 					{
-						ObjectType: "CLIENT_TYPE",
-						LHS:        "id",
-						RHS:        "zpn_client_type_exporter",
+						ObjectType: "POSTURE",
+						LHS:        postureList[0].PostureudID,
+						RHS:        "false",
 					},
 					{
 						ObjectType: "SAML",
@@ -159,5 +160,4 @@ func TestAccessIsolationPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
