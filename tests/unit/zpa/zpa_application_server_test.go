@@ -22,7 +22,6 @@ func TestApplicationServer_Get(t *testing.T) {
 
 	// Make the GET request
 	appServer, _, err := service.Get("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -59,7 +58,6 @@ func TestApplicationServer_Create(t *testing.T) {
 
 	// Make the POST request
 	createdAppServer, _, err := service.Create(appServer)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -104,7 +102,6 @@ func TestApplicationServer_GetByName(t *testing.T) {
 
 	// Make the GetByName request
 	appServer, _, err := service.GetByName("Server1")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -139,7 +136,6 @@ func TestApplicationServer_Update(t *testing.T) {
 
 	// Make the Update request
 	_, err := service.Update("123", appServer)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -159,7 +155,6 @@ func TestApplicationServer_Delete(t *testing.T) {
 
 	// Make the Delete request
 	_, err := service.Delete("123")
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -185,7 +180,6 @@ func TestApplicationServer_GetAll(t *testing.T) {
 
 	// Make the GetAll request
 	appServers, _, err := service.GetAll()
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

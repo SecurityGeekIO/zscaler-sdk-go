@@ -90,7 +90,6 @@ func TestServerGroup(t *testing.T) {
 
 	// Test resource creation
 	createdResource, _, err := service.Create(&appGroup)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -172,5 +171,4 @@ func TestServerGroup(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
