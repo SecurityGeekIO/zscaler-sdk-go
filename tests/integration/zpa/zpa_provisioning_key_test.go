@@ -33,13 +33,8 @@ func TestProvisiongKey(t *testing.T) {
 		UpgradeDay:               "SUNDAY",
 		UpgradeTimeInSecs:        "66600",
 		OverrideVersionProfile:   true,
-<<<<<<< HEAD
 		VersionProfileName:       "Default",
 		VersionProfileID:         "0",
-=======
-		VersionProfileName:       "New Release",
-		VersionProfileID:         "2",
->>>>>>> master
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
 		WAFDisabled:              true,
