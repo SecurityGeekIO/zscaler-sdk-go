@@ -33,10 +33,11 @@ func TestProvisiongKey(t *testing.T) {
 		UpgradeDay:               "SUNDAY",
 		UpgradeTimeInSecs:        "66600",
 		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
+		VersionProfileName:       "New Release",
+		VersionProfileID:         "2",
 		DNSQueryType:             "IPV4_IPV6",
 		PRAEnabled:               false,
+		WAFDisabled:              true,
 		TCPQuickAckApp:           true,
 		TCPQuickAckAssistant:     true,
 		TCPQuickAckReadAssistant: true,
@@ -73,6 +74,7 @@ func TestProvisiongKey(t *testing.T) {
 	}
 	// Test resource creation
 	createdResource, _, err := service.Create(associationType, &resource)
+
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -153,4 +155,5 @@ func TestProvisiongKey(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+
 }

@@ -3,13 +3,13 @@ package integration
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipsourcegroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestFirewallFilteringRule(t *testing.T) {

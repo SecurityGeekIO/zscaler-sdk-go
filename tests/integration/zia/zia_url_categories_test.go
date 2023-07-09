@@ -3,12 +3,12 @@ package integration
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/locationmanagement"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/urlcategories"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestURLCategories(t *testing.T) {
