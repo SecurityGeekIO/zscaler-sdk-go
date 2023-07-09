@@ -3,11 +3,11 @@ package integration
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestAccessTimeoutPolicy(t *testing.T) {
