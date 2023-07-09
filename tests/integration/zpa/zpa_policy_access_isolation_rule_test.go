@@ -6,6 +6,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/isolationprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
