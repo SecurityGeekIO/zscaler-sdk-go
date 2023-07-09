@@ -1,69 +1,34 @@
 package integration
 
 import (
-	"strconv"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/applicationsegment"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/microtenants"
 )
 
-func TestApplicationSegment(t *testing.T) {
+func TestMicrotenants(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
-	updatedPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application segment group for testing
-	appGroupService := segmentgroup.New(client)
-	appGroup := segmentgroup.SegmentGroup{
-		Name:        segmentGroupName,
-		Description: segmentGroupName,
-	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
-	if err != nil {
-		t.Errorf("Error creating application segment group: %v", err)
-		return
-	}
-	defer func() {
-		_, err := appGroupService.Delete(createdAppGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application segment group: %v", err)
-		}
-	}()
+	service := microtenants.New(client)
 
-	service := applicationsegment.New(client)
-
-	appSegment := applicationsegment.ApplicationSegmentResource{
-		Name:             name,
-		Description:      "New application segment",
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.example.com"},
-		TCPAppPortRange: []common.NetworkPorts{
-			{
-				From: rPort,
-				To:   rPort,
-			},
-		},
+	microTenant := microtenants.MicroTenant{
+		Name:                    name,
+		Description:             name,
+		Enabled:                 true,
+		CriteriaAttribute:       "AuthDomain",
+		CriteriaAttributeValues: []string{"bd-hashicorp.com", "216199618143191040.zpa-customer.com"},
 	}
+
 	// Test resource creation
-	createdResource, _, err := service.Create(appSegment)
+	createdResource, _, err := service.Create(microTenant)
+
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -74,9 +39,6 @@ func TestApplicationSegment(t *testing.T) {
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
-	if len(createdResource.TCPPortRanges) != 2 || createdResource.TCPPortRanges[0] != rPort || createdResource.TCPPortRanges[1] != rPort {
-		t.Errorf("Expected created resource port '%s-%s', but got '%s'", rPort, rPort, createdResource.TCPPortRanges)
 	}
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
@@ -91,13 +53,7 @@ func TestApplicationSegment(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	retrievedResource.TCPAppPortRange = []common.NetworkPorts{
-		{
-			From: updatedPort,
-			To:   updatedPort,
-		},
-	}
-	_, err = service.Update(createdResource.ID, *retrievedResource)
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
@@ -111,9 +67,7 @@ func TestApplicationSegment(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
-	if len(updatedResource.TCPPortRanges) != 2 || updatedResource.TCPPortRanges[0] != updatedPort || updatedResource.TCPPortRanges[1] != updatedPort {
-		t.Errorf("Expected created resource port '%s-%s', but got '%s'", updatedPort, updatedPort, updatedResource.TCPPortRanges)
-	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
@@ -156,4 +110,5 @@ func TestApplicationSegment(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+
 }
