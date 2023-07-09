@@ -4,13 +4,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appservercontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/servergroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestServerGroup(t *testing.T) {
+func TestPolicyAccessRule(t *testing.T) {
+	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -18,79 +20,66 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create app connector group for testing
-	appConnGroupService := appconnectorgroup.New(client)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
-		Name:                     name,
-		Description:              name,
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
-	})
-	// Check if the request was successful
+	idpService := idpcontroller.New(client)
+	idpList, _, err := idpService.GetAll()
 	if err != nil {
-		t.Errorf("Error creating app connector group for testing server group: %v", err)
+		t.Errorf("Error getting idps: %v", err)
+		return
 	}
-	defer func() {
-		_, err := appConnGroupService.Delete(appConnGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting app connector group: %v", err)
-		}
-	}()
-
-	// create app server for testing
-	appServerService := appservercontroller.New(client)
-	appServer, _, err := appServerService.Create(appservercontroller.ApplicationServer{
-		Name:        name,
-		Description: name,
-		Address:     "192.168.1.1",
-	})
-	// Check if the request was successful
+	if len(idpList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+	samlService := samlattribute.New(client)
+	samlsList, _, err := samlService.GetAll()
 	if err != nil {
-		t.Errorf("Error creating app server for testing server group: %v", err)
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
 	}
-	defer func() {
-		_, err := appServerService.Delete(appServer.ID)
-		if err != nil {
-			t.Errorf("Error deleting app server: %v", err)
-		}
-	}()
-
-	// creat
-
-	service := servergroup.New(client)
-
-	appGroup := servergroup.ServerGroup{
+	if len(samlsList) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
+	}
+	postureService := postureprofile.New(client)
+	postureList, _, err := postureService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting posture profiles: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
+	}
+	service := policysetcontroller.New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	if err != nil {
+		t.Errorf("Error getting access policy set: %v", err)
+		return
+	}
+	accessPolicyRule := policysetcontroller.PolicyRule{
 		Name:        name,
-		Description: name,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		Description: "New application segment",
+		PolicySetID: accessPolicySet.ID,
+		Action:      "ALLOW",
+		RuleOrder:   "1",
+		Conditions: []policysetcontroller.Conditions{
 			{
-				ID: appConnGroup.ID,
-			},
-		},
-		Servers: []servergroup.ApplicationServer{
-			{
-				ID: appServer.ID,
+				Operator: "OR",
+				Operands: []policysetcontroller.Operands{
+					{
+						ObjectType: "POSTURE",
+						LHS:        postureList[0].PostureudID,
+						RHS:        "false",
+					},
+					{
+						ObjectType: "SAML",
+						LHS:        samlsList[0].ID,
+						RHS:        "user1@acme.com",
+						IdpID:      idpList[0].ID,
+					},
+				},
 			},
 		},
 	}
-
 	// Test resource creation
-	createdResource, _, err := service.Create(&appGroup)
-
+	createdResource, _, err := service.Create(&accessPolicyRule)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -103,7 +92,7 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -115,11 +104,11 @@ func TestServerGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -129,9 +118,8 @@ func TestServerGroup(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
-
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -142,7 +130,7 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := service.GetAllByType(policyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -161,16 +149,15 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = service.Delete(accessPolicySet.ID, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
+	_, _, err = service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
