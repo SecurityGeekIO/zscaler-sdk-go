@@ -4,7 +4,11 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipdestinationgroups"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipsourcegroups"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -16,13 +20,82 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := filteringrules.New(client)
-
-	rule := filteringrules.FirewallFilteringRules{
+	// create ip source group for testing
+	sourceIPGroupService := ipsourcegroups.New(client)
+	sourceIPGroup, err := sourceIPGroupService.Create(&ipsourcegroups.IPSourceGroups{
 		Name:        name,
 		Description: name,
-		Order:       1,
-		Action:      "ALLOW",
+		IPAddresses: []string{"192.168.1.1", "192.168.1.2", "192.168.1.3"},
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating source ip group for testing server group: %v", err)
+	}
+	defer func() {
+		_, err := sourceIPGroupService.Delete(sourceIPGroup.ID)
+		if err != nil {
+			t.Errorf("Error deleting source ip group: %v", err)
+		}
+	}()
+
+	// create ip destination group for testing
+	dstIPGroupService := ipdestinationgroups.New(client)
+	dstIPGroup, err := dstIPGroupService.Create(&ipdestinationgroups.IPDestinationGroups{
+		Name:        name,
+		Description: name,
+		Type:        "DSTN_FQDN",
+		Addresses:   []string{"test1.acme.com", "test2.acme.com", "test3.acme.com"},
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating ip destination group for testing server group: %v", err)
+	}
+	defer func() {
+		_, err := dstIPGroupService.Delete(dstIPGroup.ID)
+		if err != nil {
+			t.Errorf("Error deleting ip destination group: %v", err)
+		}
+	}()
+
+	// create rule label for testing
+	ruleLabelService := rule_labels.New(client)
+	ruleLabel, _, err := ruleLabelService.Create(&rule_labels.RuleLabels{
+		Name:        name,
+		Description: name,
+	})
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error creating rule label for testing server group: %v", err)
+	}
+	defer func() {
+		_, err := ruleLabelService.Delete(ruleLabel.ID)
+		if err != nil {
+			t.Errorf("Error deleting rule label: %v", err)
+		}
+	}()
+	service := filteringrules.New(client)
+	rule := filteringrules.FirewallFilteringRules{
+		Name:           name,
+		Description:    name,
+		Order:          1,
+		Action:         "ALLOW",
+		DestCountries:  []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
+		NwApplications: []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
+		SrcIpGroups: []common.IDNameExtensions{
+			{
+				ID: sourceIPGroup.ID,
+			},
+		},
+		DestIpGroups: []common.IDNameExtensions{
+			{
+				ID: dstIPGroup.ID,
+			},
+		},
+		Labels: []common.IDNameExtensions{
+			{
+				ID: ruleLabel.ID,
+			},
+		},
 	}
 
 	// Test resource creation
