@@ -3,9 +3,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestAppConnectorGroup(t *testing.T) {
@@ -20,15 +20,27 @@ func TestAppConnectorGroup(t *testing.T) {
 	service := appconnectorgroup.New(client)
 
 	group := appconnectorgroup.AppConnectorGroup{
-		Name:      name,
-		Latitude:  "37.3861",
-		Longitude: "-122.0839",
-		Location:  "Mountain View, CA",
+		Name:                     name,
+		Description:              name,
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
 	}
 
 	// Test resource creation
 	createdResource, _, err := service.Create(group)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -110,5 +122,4 @@ func TestAppConnectorGroup(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

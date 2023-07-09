@@ -3,9 +3,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestSegmentGroup(t *testing.T) {

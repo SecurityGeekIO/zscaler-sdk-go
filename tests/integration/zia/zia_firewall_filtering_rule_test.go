@@ -3,9 +3,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestFirewallFilteringRule(t *testing.T) {

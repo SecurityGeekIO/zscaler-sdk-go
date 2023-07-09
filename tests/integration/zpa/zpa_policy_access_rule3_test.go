@@ -3,15 +3,15 @@ package integration
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestAccessPolicy(t *testing.T) {
+func TestPolicyAccessRule3(t *testing.T) {
 	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -58,6 +58,7 @@ func TestAccessPolicy(t *testing.T) {
 		Description: "New application segment",
 		PolicySetID: accessPolicySet.ID,
 		Action:      "ALLOW",
+		RuleOrder:   "3",
 		Conditions: []policysetcontroller.Conditions{
 			{
 				Operator: "OR",
@@ -159,5 +160,4 @@ func TestAccessPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
