@@ -8,7 +8,7 @@ import (
 )
 
 func TestTrafficForwardingStaticIPs(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
+	ipAddress, _ := acctest.RandIpAddress("104.239.237.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
