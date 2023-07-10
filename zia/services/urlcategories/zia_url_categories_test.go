@@ -8,44 +8,13 @@ import (
 )
 
 func TestURLCategories(t *testing.T) {
-	// ipAddress, _ := acctest.RandIpAddress("104.240.1.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	// locationName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	// locationmanagementService := locationmanagement.New(client)
-
-	// Test resource creation
-	// location, err := locationmanagementService.Create(&locationmanagement.Locations{
-	// 	Name:              locationName,
-	// 	Description:       locationName,
-	// 	Country:           "UNITED_STATES",
-	// 	TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
-	// 	AuthRequired:      true,
-	// 	IdleTimeInMinutes: 720,
-	// 	DisplayTimeUnit:   "HOUR",
-	// 	SurrogateIP:       true,
-	// 	XFFForwardEnabled: true,
-	// 	OFWEnabled:        true,
-	// 	IPSControl:        true,
-	// 	IPAddresses:       []string{ipAddress},
-	// })
-
-	// // Check if the request was successful
-	// if err != nil {
-	// 	t.Errorf("Error making POST request: %v", err)
-	// }
-	// defer func() {
-	// 	_, err := locationmanagementService.Delete(location.ID)
-	// 	if err != nil {
-	// 		t.Errorf("deleting static ip failed: %v", err)
-	// 	}
-	// }()
 
 	service := New(client)
 
@@ -57,17 +26,6 @@ func TestURLCategories(t *testing.T) {
 		CustomCategory:    true,
 		DBCategorizedUrls: []string{".creditkarma.com", ".youku.com"},
 		Type:              "URL_CATEGORY",
-		// Scopes: []Scopes{
-		// 	{
-		// 		Type: "LOCATION",
-		// 		ScopeEntities: []common.IDNameExtensions{
-		// 			{
-		// 				ID: location.ID,
-		// 			},
-		// 		},
-		// 		ScopeGroupMemberEntities: []common.IDNameExtensions{},
-		// 	},
-		// },
 		Urls: []string{
 			".coupons.com",
 		},
