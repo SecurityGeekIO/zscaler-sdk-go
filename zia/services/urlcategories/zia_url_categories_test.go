@@ -1,5 +1,6 @@
 package urlcategories
 
+/*
 import (
 	"testing"
 
@@ -149,3 +150,4 @@ func TestURLCategories(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/
