@@ -10,7 +10,7 @@ import (
 )
 
 func TestURLCategories(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("104.239.239.0/24")
+	ipAddress, _ := acctest.RandIpAddress("104.240.1.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	locationName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
