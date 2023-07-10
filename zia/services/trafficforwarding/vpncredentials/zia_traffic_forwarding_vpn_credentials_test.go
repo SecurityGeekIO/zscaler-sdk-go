@@ -9,7 +9,7 @@ import (
 )
 
 func TestTrafficForwardingVPNCreds(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("1.1.1.1/24")
+	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
