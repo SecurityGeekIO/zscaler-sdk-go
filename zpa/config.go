@@ -122,7 +122,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	} else if strings.EqualFold(cloud, "GOV") {
 		rawUrl = govBaseURL
 	} else if strings.EqualFold(cloud, "GOVUS") {
-		rawUrl = govBaseURL
+		rawUrl = govUsBaseURL
 	} else if strings.EqualFold(cloud, "PREVIEW") {
 		rawUrl = previewBaseUrl
 	} else if strings.EqualFold(cloud, "DEV") {
