@@ -30,6 +30,7 @@ type AppConnectorGroup struct {
 	Name                          string           `json:"name,omitempty"`
 	OverrideVersionProfile        bool             `json:"overrideVersionProfile"`
 	PRAEnabled                    bool             `json:"praEnabled"`
+	WAFDisabled                   bool             `json:"wafDisabled"`
 	UpgradeDay                    string           `json:"upgradeDay,omitempty"`
 	UpgradeTimeInSecs             string           `json:"upgradeTimeInSecs,omitempty"`
 	VersionProfileID              string           `json:"versionProfileId,omitempty"`
@@ -40,6 +41,8 @@ type AppConnectorGroup struct {
 	UseInDrMode                   bool             `json:"useInDrMode"`
 	TCPQuickAckReadAssistant      bool             `json:"tcpQuickAckReadAssistant"`
 	LSSAppConnectorGroup          bool             `json:"lssAppConnectorGroup"`
+	MicroTenantID                 string           `json:"microtenantId,omitempty"`
+	MicroTenantName               string           `json:"microtenantName,omitempty"`
 	AppServerGroup                []AppServerGroup `json:"serverGroups,omitempty"`
 	Connectors                    []Connector      `json:"connectors,omitempty"`
 }
