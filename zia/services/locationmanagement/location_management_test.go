@@ -1,47 +1,16 @@
-package integration
+package locationmanagement
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/locationmanagement/locationgroups"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestLocationGroups_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
-	}
-	// static ip for vpn credentials testing
-
-	service := locationgroups.New(client)
-
-	// Test resources retrieval
-	resources, err := service.GetAll()
-	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
-	}
-	if len(resources) == 0 {
-		return
-	}
-	name := resources[0].Name
-	resourceByName, err := service.GetLocationGroupByName(name)
-	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
-	}
-	// Test resource retrieval after deletion
-	_, err = service.GetLocationGroup(resourceByName.ID)
-	if err != nil {
-		t.Errorf("expected resource to exist: %v", err)
-	}
-}
-
-/*
-func TestLocationGroups(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("1.1.1.1/24")
+func TestLocationManagement(t *testing.T) {
+	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	locationName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
@@ -66,12 +35,11 @@ func TestLocationGroups(t *testing.T) {
 		}
 	}()
 
-	locationmanagementService := locationmanagement.New(client)
+	service := New(client)
 
-	// Test resource creation
-	location, err := locationmanagementService.Create(&locationmanagement.Locations{
-		Name:              locationName,
-		Description:       locationName,
+	location := Locations{
+		Name:              name,
+		Description:       name,
 		Country:           "UNITED_STATES",
 		TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
 		AuthRequired:      true,
@@ -82,33 +50,10 @@ func TestLocationGroups(t *testing.T) {
 		OFWEnabled:        true,
 		IPSControl:        true,
 		IPAddresses:       []string{ipAddress},
-	})
-
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
-	}
-	defer func() {
-		_, err := locationmanagementService.Delete(location.ID)
-		if err != nil {
-			t.Errorf("deleting static ip failed: %v", err)
-		}
-	}()
-
-	service := locationgroups.New(client)
-
-	locationGroup := locationgroups.LocationGroup{
-		Name:      name,
-		GroupType: "Static",
-		Locations: []common.IDNameExtensions{
-			{
-				ID: location.ID,
-			},
-		},
 	}
 
 	// Test resource creation
-	createdResource, err := service.CreateLocationGroup(&locationGroup)
+	createdResource, err := service.Create(&location)
 
 	// Check if the request was successful
 	if err != nil {
@@ -122,7 +67,7 @@ func TestLocationGroups(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, err := service.GetLocationGroup(createdResource.ID)
+	retrievedResource, err := service.GetLocation(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -134,11 +79,11 @@ func TestLocationGroups(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, _, err = service.UpdateLocationGroup(createdResource.ID, retrievedResource)
+	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, err := service.GetLocationGroup(createdResource.ID)
+	updatedResource, err := service.GetLocation(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -149,6 +94,17 @@ func TestLocationGroups(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 
+	// Test resource retrieval by name
+	retrievedResource, err = service.GetLocationByName(updateName)
+	if err != nil {
+		t.Errorf("Error retrieving resource by name: %v", err)
+	}
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	}
+	if retrievedResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	}
 	// Test resources retrieval
 	resources, err := service.GetAll()
 	if err != nil {
@@ -169,16 +125,15 @@ func TestLocationGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.DeleteLocationGroup(createdResource.ID)
+	_, err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, err = service.GetLocationGroup(createdResource.ID)
+	_, err = service.GetLocation(createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
-*/

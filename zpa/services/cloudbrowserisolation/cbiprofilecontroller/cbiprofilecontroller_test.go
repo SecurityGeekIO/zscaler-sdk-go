@@ -1,69 +1,79 @@
-package applicationsegment
+package cbiprofilecontroller
 
+/*
 import (
-	"strconv"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbibannercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbiregions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestApplicationSegment(t *testing.T) {
+func TestCBIProfileController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
-	updatedPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// create application segment group for testing
-	appGroupService := segmentgroup.New(client)
-	appGroup := segmentgroup.SegmentGroup{
-		Name:        segmentGroupName,
-		Description: segmentGroupName,
-	}
-	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	bannerIDService := cbibannercontroller.New(client)
+	bannersList, _, err := bannerIDService.GetAll()
 	if err != nil {
-		t.Errorf("Error creating application segment group: %v", err)
+		t.Errorf("Error getting banners: %v", err)
 		return
 	}
-	defer func() {
-		_, err := appGroupService.Delete(createdAppGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application segment group: %v", err)
-		}
-	}()
+	if len(bannersList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+
+	regionIDService := cbiregions.New(client)
+	regionsList, _, err := regionIDService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting regions: %v", err)
+		return
+	}
+	if len(regionsList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
+
+	certificateIDService := cbicertificatecontroller.New(client)
+	certificatesList, _, err := certificateIDService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting certificates: %v", err)
+		return
+	}
+	if len(certificatesList) == 0 {
+		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+	}
 
 	service := New(client)
 
-	appSegment := ApplicationSegmentResource{
-		Name:                  name,
-		Description:           "New application segment",
-		Enabled:               true,
-		SegmentGroupID:        createdAppGroup.ID,
-		SegmentGroupName:      createdAppGroup.Name,
-		IsCnameEnabled:        true,
-		BypassType:            "NEVER",
-		IcmpAccessType:        "PING_TRACEROUTING",
-		HealthReporting:       "ON_ACCESS",
-		HealthCheckType:       "DEFAULT",
-		TCPKeepAlive:          "1",
-		InspectTrafficWithZia: false,
-		DomainNames:           []string{"test.example.com"},
-		TCPAppPortRange: []common.NetworkPorts{
-			{
-				From: rPort,
-				To:   rPort,
-			},
+	cbiProfile := IsolationProfile{
+		Name:           name,
+		Description:    name,
+		BannerID:       bannersList[0].ID,
+		RegionIDs:      []string{regionsList[0].ID},
+		CertificateIDs: []string{certificatesList[0].ID},
+		UserExperience: &UserExperience{
+			SessionPersistence: true,
+			BrowserInBrowser:   true,
+		},
+		SecurityControls: &SecurityControls{
+			CopyPaste:          "all",
+			UploadDownload:     "all",
+			DocumentViewer:     true,
+			LocalRender:        true,
+			AllowPrinting:      true,
+			RestrictKeystrokes: false,
 		},
 	}
+
 	// Test resource creation
-	createdResource, _, err := service.Create(appSegment)
+	createdResource, _, err := service.Create(&cbiProfile)
+
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -74,9 +84,6 @@ func TestApplicationSegment(t *testing.T) {
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-	}
-	if len(createdResource.TCPPortRanges) != 2 || createdResource.TCPPortRanges[0] != rPort || createdResource.TCPPortRanges[1] != rPort {
-		t.Errorf("Expected created resource port '%s-%s', but got '%s'", rPort, rPort, createdResource.TCPPortRanges)
 	}
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
@@ -91,13 +98,7 @@ func TestApplicationSegment(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	retrievedResource.TCPAppPortRange = []common.NetworkPorts{
-		{
-			From: updatedPort,
-			To:   updatedPort,
-		},
-	}
-	_, err = service.Update(createdResource.ID, *retrievedResource)
+	_, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
@@ -111,9 +112,7 @@ func TestApplicationSegment(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
-	if len(updatedResource.TCPPortRanges) != 2 || updatedResource.TCPPortRanges[0] != updatedPort || updatedResource.TCPPortRanges[1] != updatedPort {
-		t.Errorf("Expected created resource port '%s-%s', but got '%s'", updatedPort, updatedPort, updatedResource.TCPPortRanges)
-	}
+
 	// Test resource retrieval by name
 	retrievedResource, _, err = service.GetByName(updateName)
 	if err != nil {
@@ -156,4 +155,6 @@ func TestApplicationSegment(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
+
 }
+*/

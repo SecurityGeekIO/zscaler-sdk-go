@@ -1,15 +1,14 @@
-package integration
+package filteringrules
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/filteringrules"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipdestinationgroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipsourcegroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestFirewallFilteringRule(t *testing.T) {
@@ -73,11 +72,12 @@ func TestFirewallFilteringRule(t *testing.T) {
 			t.Errorf("Error deleting rule label: %v", err)
 		}
 	}()
-	service := filteringrules.New(client)
-	rule := filteringrules.FirewallFilteringRules{
+	service := New(client)
+	rule := FirewallFilteringRules{
 		Name:           name,
 		Description:    name,
-		Order:          1,
+		Order:          6,
+		Rank:           7,
 		Action:         "ALLOW",
 		DestCountries:  []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
 		NwApplications: []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},

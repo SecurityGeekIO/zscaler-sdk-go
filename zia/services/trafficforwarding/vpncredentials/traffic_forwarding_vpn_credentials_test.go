@@ -1,32 +1,51 @@
-package integration
+package vpncredentials
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/ipdestinationgroups"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestFWFileringIPDestGroups(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestTrafficForwardingVPNCreds(t *testing.T) {
+	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
+	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := ipdestinationgroups.New(client)
+	// static ip for vpn credentials testing
+	staticipsService := staticips.New(client)
+	// Test resource creation
+	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
+		IpAddress: ipAddress,
+		Comment:   comment,
+	})
+	if err != nil {
+		t.Errorf("creating static ip failed: %v", err)
+		return
+	}
+	defer func() {
+		_, err := staticipsService.Delete(staticIP.ID)
+		if err != nil {
+			t.Errorf("deleting static ip failed: %v", err)
+		}
+	}()
 
-	group := ipdestinationgroups.IPDestinationGroups{
-		Name:        name,
-		Description: name,
-		Type:        "DSTN_IP",
-		Addresses:   []string{"3.217.228.0-3.217.231.255"},
+	service := New(client)
+
+	cred := VPNCredentials{
+		Type:         "IP",
+		IPAddress:    ipAddress,
+		Comments:     comment,
+		PreSharedKey: "newPassword123!",
 	}
 
 	// Test resource creation
-	createdResource, err := service.Create(&group)
+	createdResource, _, err := service.Create(&cred)
 
 	// Check if the request was successful
 	if err != nil {
@@ -36,8 +55,8 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+	if createdResource.Comments != comment {
+		t.Errorf("Expected created resource comment '%s', but got '%s'", comment, createdResource.Comments)
 	}
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
@@ -47,11 +66,11 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+	if retrievedResource.Comments != comment {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", comment, createdResource.Comments)
 	}
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Comments = updateComment
 	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
@@ -63,20 +82,20 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Comments != updateComment {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comments)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = service.GetVPNByType("IP")
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedResource.Comments != updateComment {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, retrievedResource.Comments)
 	}
 	// Test resources retrieval
 	resources, err := service.GetAll()
@@ -98,7 +117,7 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return

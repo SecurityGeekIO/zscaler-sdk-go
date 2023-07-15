@@ -1,13 +1,12 @@
-package integration
+package dlp_web_rules
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/dlp_web_rules"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestDLPWebRule(t *testing.T) {
@@ -35,8 +34,8 @@ func TestDLPWebRule(t *testing.T) {
 			t.Errorf("Error deleting rule label: %v", err)
 		}
 	}()
-	service := dlp_web_rules.New(client)
-	rule := dlp_web_rules.WebDLPRules{
+	service := New(client)
+	rule := WebDLPRules{
 		Name:                     name,
 		Description:              name,
 		Order:                    1,

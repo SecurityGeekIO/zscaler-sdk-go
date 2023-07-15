@@ -5,3 +5,4 @@ go-test
 /go-test
 .vscode/
 vendor
+vendor/

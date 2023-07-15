@@ -1,10 +1,9 @@
-package integration
+package usermanagement
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/usermanagement"
 )
 
 func TestAccGroupManagement(t *testing.T) {
@@ -14,7 +13,7 @@ func TestAccGroupManagement(t *testing.T) {
 		return
 	}
 
-	service := usermanagement.New(client)
+	service := New(client)
 
 	groups, err := service.GetAll()
 	if err != nil {

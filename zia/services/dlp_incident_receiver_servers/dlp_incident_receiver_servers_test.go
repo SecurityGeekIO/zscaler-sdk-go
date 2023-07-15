@@ -1,10 +1,9 @@
-package integration
+package dlp_incident_receiver_servers
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/dlp_incident_receiver_servers"
 )
 
 func TestDLPIncidentReceiver_data(t *testing.T) {
@@ -14,7 +13,7 @@ func TestDLPIncidentReceiver_data(t *testing.T) {
 		return
 	}
 
-	service := dlp_incident_receiver_servers.New(client)
+	service := New(client)
 
 	servers, err := service.GetAll()
 	if err != nil {

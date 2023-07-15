@@ -1,10 +1,9 @@
-package integration
+package adminuserrolemgmt
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/adminuserrolemgmt"
 )
 
 func TestAdminRoles_data(t *testing.T) {
@@ -14,7 +13,7 @@ func TestAdminRoles_data(t *testing.T) {
 		return
 	}
 
-	service := adminuserrolemgmt.New(client)
+	service := New(client)
 
 	roles, err := service.GetAllAdminRoles()
 	if err != nil {

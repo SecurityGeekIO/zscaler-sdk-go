@@ -129,7 +129,11 @@ MIT License
 <<<<<<< HEAD
 Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
 =======
+<<<<<<< HEAD
+Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
+=======
 Copyright (c) 2022 [SecurityGeekIO](https://github.com/SecurityGeekIO)
+>>>>>>> master
 >>>>>>> master
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

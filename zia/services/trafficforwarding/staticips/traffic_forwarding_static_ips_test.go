@@ -1,27 +1,26 @@
-package integration
+package staticips
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestRuleLabels(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+func TestTrafficForwardingStaticIPs(t *testing.T) {
+	ipAddress, _ := acctest.RandIpAddress("104.239.237.0/24")
+	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := rule_labels.New(client)
+	service := New(client)
 
-	ip := rule_labels.RuleLabels{
-		Name:        name,
-		Description: description,
+	ip := StaticIP{
+		IpAddress: ipAddress,
+		Comment:   comment,
 	}
 
 	// Test resource creation
@@ -35,8 +34,8 @@ func TestRuleLabels(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created rule label '%s', but got '%s'", name, createdResource.Name)
+	if createdResource.IpAddress != ipAddress {
+		t.Errorf("Expected created static IP '%s', but got '%s'", ipAddress, createdResource.IpAddress)
 	}
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
@@ -46,11 +45,11 @@ func TestRuleLabels(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved rule label '%s', but got '%s'", name, retrievedResource.Name)
+	if retrievedResource.IpAddress != ipAddress {
+		t.Errorf("Expected retrieved static IP '%s', but got '%s'", ipAddress, retrievedResource.IpAddress)
 	}
 	// Test resource update
-	retrievedResource.Description = updateDescription
+	retrievedResource.Comment = updateComment
 	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
@@ -62,20 +61,20 @@ func TestRuleLabels(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateDescription, updatedResource.Description)
+	if updatedResource.Comment != updateComment {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comment)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetRuleLabelByName(name)
+	retrievedResource, err = service.GetByIPAddress(ipAddress)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Description != updateDescription {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
+	if retrievedResource.Comment != updateComment {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, createdResource.Comment)
 	}
 	// Test resources retrieval
 	resources, err := service.GetAll()

@@ -1,10 +1,9 @@
-package integration
+package dlp_engines
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/dlp_engines"
 )
 
 func TestDLPEngines_data(t *testing.T) {
@@ -14,7 +13,7 @@ func TestDLPEngines_data(t *testing.T) {
 		return
 	}
 
-	service := dlp_engines.New(client)
+	service := New(client)
 
 	engines, err := service.GetAll()
 	if err != nil {

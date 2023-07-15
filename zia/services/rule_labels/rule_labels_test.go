@@ -1,60 +1,30 @@
-package integration
+package rule_labels
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/urlfilteringpolicies"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestURLFilteringRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestRuleLabels(t *testing.T) {
+	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
+	service := New(client)
 
-	// create rule label for testing
-	ruleLabelService := rule_labels.New(client)
-	ruleLabel, _, err := ruleLabelService.Create(&rule_labels.RuleLabels{
+	ip := RuleLabels{
 		Name:        name,
-		Description: name,
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating rule label for testing server group: %v", err)
-	}
-	defer func() {
-		_, err := ruleLabelService.Delete(ruleLabel.ID)
-		if err != nil {
-			t.Errorf("Error deleting rule label: %v", err)
-		}
-	}()
-	service := urlfilteringpolicies.New(client)
-	rule := urlfilteringpolicies.URLFilteringRule{
-		Name:           name,
-		Description:    name,
-		Order:          1,
-		Rank:           7,
-		State:          "ENABLED",
-		Action:         "BLOCK",
-		URLCategories:  []string{"ANY"},
-		Protocols:      []string{"ANY_RULE"},
-		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
-		Labels: []common.IDNameExtensions{
-			{
-				ID: ruleLabel.ID,
-			},
-		},
+		Description: description,
 	}
 
 	// Test resource creation
-	createdResource, err := service.Create(&rule)
+	createdResource, _, err := service.Create(&ip)
 
 	// Check if the request was successful
 	if err != nil {
@@ -65,7 +35,7 @@ func TestURLFilteringRule(t *testing.T) {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created rule label '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
@@ -76,10 +46,10 @@ func TestURLFilteringRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved rule label '%s', but got '%s'", name, retrievedResource.Name)
 	}
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Description = updateDescription
 	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
@@ -91,20 +61,20 @@ func TestURLFilteringRule(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Description != updateDescription {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateDescription, updatedResource.Description)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = service.GetRuleLabelByName(name)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedResource.Description != updateDescription {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
 	resources, err := service.GetAll()

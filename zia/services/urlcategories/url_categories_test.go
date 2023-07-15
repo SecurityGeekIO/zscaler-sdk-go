@@ -1,76 +1,24 @@
-package integration
+package urlcategories
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/locationmanagement"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/urlcategories"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestURLCategories(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("1.1.1.1/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	locationName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// static ip for vpn credentials testing
-	staticipsService := staticips.New(client)
-	// Test resource creation
-	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
-		IpAddress: ipAddress,
-		Comment:   "testing static ip for location management",
-	})
-	if err != nil {
-		t.Errorf("creating static ip failed: %v", err)
-		return
-	}
-	defer func() {
-		_, err := staticipsService.Delete(staticIP.ID)
-		if err != nil {
-			t.Errorf("deleting static ip failed: %v", err)
-		}
-	}()
 
-	locationmanagementService := locationmanagement.New(client)
+	service := New(client)
 
-	// Test resource creation
-	location, err := locationmanagementService.Create(&locationmanagement.Locations{
-		Name:              locationName,
-		Description:       locationName,
-		Country:           "UNITED_STATES",
-		TZ:                "UNITED_STATES_AMERICA_LOS_ANGELES",
-		AuthRequired:      true,
-		IdleTimeInMinutes: 720,
-		DisplayTimeUnit:   "HOUR",
-		SurrogateIP:       true,
-		XFFForwardEnabled: true,
-		OFWEnabled:        true,
-		IPSControl:        true,
-		IPAddresses:       []string{ipAddress},
-	})
-
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
-	}
-	defer func() {
-		_, err := locationmanagementService.Delete(location.ID)
-		if err != nil {
-			t.Errorf("deleting static ip failed: %v", err)
-		}
-	}()
-
-	service := urlcategories.New(client)
-
-	urlCategories := urlcategories.URLCategory{
+	urlCategories := URLCategory{
 		SuperCategory:     "USER_DEFINED",
 		ConfiguredName:    name,
 		Description:       name,
@@ -78,17 +26,6 @@ func TestURLCategories(t *testing.T) {
 		CustomCategory:    true,
 		DBCategorizedUrls: []string{".creditkarma.com", ".youku.com"},
 		Type:              "URL_CATEGORY",
-		Scopes: []urlcategories.Scopes{
-			{
-				Type: "LOCATION",
-				ScopeEntities: []common.IDNameExtensions{
-					{
-						ID: location.ID,
-					},
-				},
-				ScopeGroupMemberEntities: []common.IDNameExtensions{},
-			},
-		},
 		Urls: []string{
 			".coupons.com",
 		},

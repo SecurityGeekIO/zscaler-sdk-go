@@ -1,52 +1,59 @@
-package integration
+package urlfilteringpolicies
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/vpncredentials"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestTrafficForwardingVPNCreds(t *testing.T) {
-	ipAddress, _ := acctest.RandIpAddress("1.1.1.1/24")
-	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestURLFilteringRule(t *testing.T) {
+	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// static ip for vpn credentials testing
-	staticipsService := staticips.New(client)
-	// Test resource creation
-	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
-		IpAddress: ipAddress,
-		Comment:   comment,
+
+	// create rule label for testing
+	ruleLabelService := rule_labels.New(client)
+	ruleLabel, _, err := ruleLabelService.Create(&rule_labels.RuleLabels{
+		Name:        name,
+		Description: name,
 	})
+	// Check if the request was successful
 	if err != nil {
-		t.Errorf("creating static ip failed: %v", err)
-		return
+		t.Errorf("Error creating rule label for testing server group: %v", err)
 	}
 	defer func() {
-		_, err := staticipsService.Delete(staticIP.ID)
+		_, err := ruleLabelService.Delete(ruleLabel.ID)
 		if err != nil {
-			t.Errorf("deleting static ip failed: %v", err)
+			t.Errorf("Error deleting rule label: %v", err)
 		}
 	}()
-
-	service := vpncredentials.New(client)
-
-	cred := vpncredentials.VPNCredentials{
-		Type:         "IP",
-		IPAddress:    ipAddress,
-		Comments:     comment,
-		PreSharedKey: "newPassword123!",
+	service := New(client)
+	rule := URLFilteringRule{
+		Name:           name,
+		Description:    name,
+		Order:          1,
+		Rank:           7,
+		State:          "ENABLED",
+		Action:         "BLOCK",
+		URLCategories:  []string{"ANY"},
+		Protocols:      []string{"ANY_RULE"},
+		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
+		Labels: []common.IDNameExtensions{
+			{
+				ID: ruleLabel.ID,
+			},
+		},
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(&cred)
+	createdResource, err := service.Create(&rule)
 
 	// Check if the request was successful
 	if err != nil {
@@ -56,8 +63,8 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Comments != comment {
-		t.Errorf("Expected created resource comment '%s', but got '%s'", comment, createdResource.Comments)
+	if createdResource.Name != name {
+		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
@@ -67,11 +74,11 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Comments != comment {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", comment, createdResource.Comments)
+	if retrievedResource.Name != name {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource update
-	retrievedResource.Comments = updateComment
+	retrievedResource.Name = updateName
 	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
@@ -83,20 +90,20 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Comments != updateComment {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comments)
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetVPNByType("IP")
+	retrievedResource, err = service.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Comments != updateComment {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, retrievedResource.Comments)
+	if retrievedResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
 	resources, err := service.GetAll()
@@ -118,7 +125,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	err = service.Delete(createdResource.ID)
+	_, err = service.Delete(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
