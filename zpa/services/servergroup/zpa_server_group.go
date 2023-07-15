@@ -170,8 +170,12 @@ func (service *Service) Delete(groupId string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
+	return service.GetWithFilters(common.Filter{})
+}
+
+func (service *Service) GetWithFilters(filters common.Filter) ([]ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ServerGroup](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}

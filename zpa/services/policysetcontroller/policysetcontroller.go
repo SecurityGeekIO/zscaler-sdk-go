@@ -163,8 +163,7 @@ func (service *Service) Delete(policySetID, ruleId string) (*http.Response, erro
 }
 
 func (service *Service) GetByNameAndType(policyType, ruleName string) (*PolicyRule, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
-	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, ruleName)
+	list, resp, err := service.GetWithFiltersByType(policyType, common.Filter{Search: ruleName})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -210,8 +209,12 @@ func (service *Service) RulesCount() (int, *http.Response, error) {
 }
 
 func (service *Service) GetAllByType(policyType string) ([]PolicyRule, *http.Response, error) {
+	return service.GetWithFiltersByType(policyType, common.Filter{})
+}
+
+func (service *Service) GetWithFiltersByType(policyType string, filters common.Filter) ([]PolicyRule, *http.Response, error) {
 	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
-	list, resp, err := common.GetAllPagesGeneric[PolicyRule](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PolicyRule](service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}

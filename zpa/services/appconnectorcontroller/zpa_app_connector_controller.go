@@ -78,13 +78,17 @@ func (service *Service) GetByName(appConnectorName string) (*AppConnector, *http
 	return nil, resp, fmt.Errorf("no app connector named '%s' was found", appConnectorName)
 }
 
-func (service *Service) GetAll() ([]AppConnector, error) {
+func (service *Service) GetAll() ([]AppConnector, *http.Response, error) {
+	return service.GetWithFilters(common.Filter{})
+}
+
+func (service *Service) GetWithFilters(filters common.Filter) ([]AppConnector, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorEndpoint
-	list, _, err := common.GetAllPagesGeneric[AppConnector](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnector](service.Client, relativeURL, filters)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return list, nil
+	return list, resp, nil
 }
 
 type BulkDeleteRequest struct {

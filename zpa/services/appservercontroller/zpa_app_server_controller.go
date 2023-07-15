@@ -80,8 +80,12 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 }
 
 func (service *Service) GetAll() ([]ApplicationServer, *http.Response, error) {
+	return service.GetWithFilters(common.Filter{})
+}
+
+func (service *Service) GetWithFilters(filters common.Filter) ([]ApplicationServer, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
-	list, resp, err := common.GetAllPagesGeneric[ApplicationServer](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, filters)
 	if err != nil {
 		return nil, nil, err
 	}

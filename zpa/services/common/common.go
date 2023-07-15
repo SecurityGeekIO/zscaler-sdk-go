@@ -16,10 +16,18 @@ const (
 )
 
 type Pagination struct {
-	PageSize int    `json:"pagesize,omitempty" url:"pagesize,omitempty"`
-	Page     int    `json:"page,omitempty" url:"page,omitempty"`
-	Search   string `json:"-" url:"-"`
-	Search2  string `json:"search,omitempty" url:"search,omitempty"`
+	PageSize        int     `json:"pagesize,omitempty" url:"pagesize,omitempty"`
+	Page            int     `json:"page,omitempty" url:"page,omitempty"`
+	Search          string  `json:"-" url:"-"`
+	Search2         string  `json:"search,omitempty" url:"search,omitempty"`
+	MicroTenantID   *string `url:"microtenantId,omitempty"`
+	MicroTenantName *string `url:"-,omitempty"`
+}
+
+type Filter struct {
+	Search          string  `url:"search,omitempty"`
+	MicroTenantID   *string `url:"microtenantId,omitempty"`
+	MicroTenantName *string `url:"-,omitempty"`
 }
 
 type DeleteApplicationQueryParams struct {
@@ -65,12 +73,17 @@ func InList(list []string, item string) bool {
 	return false
 }
 
-func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string, buildFilters func(pageSize, page int, searchQuery string) interface{}) (int, []T, *http.Response, error) {
+func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	var v struct {
 		TotalPages interface{} `json:"totalPages"`
 		List       []T         `json:"list"`
 	}
-	resp, err := client.NewRequestDo("GET", relativeURL, buildFilters(pageSize, page, searchQuery), nil, &v)
+	resp, err := client.NewRequestDo("GET", relativeURL, Pagination{
+		Search2:       filters.Search,
+		MicroTenantID: filters.MicroTenantID,
+		PageSize:      pageSize,
+		Page:          page,
+	}, nil, &v)
 	if err != nil {
 		return 0, nil, resp, err
 	}
@@ -81,29 +94,26 @@ func getAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 	return totalPages, v.List, resp, nil
 }
 
-func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, searchQuery string) (int, []T, *http.Response, error) {
+func getAllPagesGeneric[T any](client *zpa.Client, relativeURL string, page, pageSize int, filters Filter) (int, []T, *http.Response, error) {
 	return getAllPagesGenericWithCustomFilters[T](
 		client,
 		relativeURL,
 		page,
 		pageSize,
-		searchQuery,
-		func(pageSize, page int, searchQuery string) interface{} {
-			return Pagination{PageSize: pageSize, Page: page, Search2: searchQuery}
-		},
+		filters,
 	)
 }
 
 // GetAllPagesGeneric fetches all resources instead of just one single page
 func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery string) ([]T, *http.Response, error) {
 	searchQuery = url.QueryEscape(searchQuery)
-	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, searchQuery)
+	totalPages, result, resp, err := getAllPagesGeneric[T](client, relativeURL, 1, DefaultPageSize, Filter{Search: searchQuery})
 	if err != nil {
 		return nil, resp, err
 	}
 	var l []T
 	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, searchQuery)
+		totalPages, l, resp, err = getAllPagesGeneric[T](client, relativeURL, page, DefaultPageSize, Filter{Search: searchQuery})
 		if err != nil {
 			return nil, resp, err
 		}
@@ -113,16 +123,45 @@ func GetAllPagesGeneric[T any](client *zpa.Client, relativeURL, searchQuery stri
 	return result, resp, nil
 }
 
+type microTenantSample struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+func getMicroTenantByName(client *zpa.Client, microTenantName string) (*microTenantSample, *http.Response, error) {
+	relativeURL := "/mgmtconfig/v1/admin/customers/" + client.Config.CustomerID + "/microtenants"
+	list, resp, err := GetAllPagesGeneric[microTenantSample](client, relativeURL, microTenantName)
+	if err != nil {
+		return nil, resp, err
+	}
+	for _, app := range list {
+		if strings.EqualFold(app.Name, microTenantName) {
+			return &app, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no microtenant named '%s' was found", microTenantName)
+}
+
 // GetAllPagesGenericWithCustomFilters fetches all resources instead of just one single page
-func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL, searchQuery string, buildFilters func(pageSize, page int, searchQuery string) interface{}) ([]T, *http.Response, error) {
-	searchQuery = url.QueryEscape(searchQuery)
-	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, searchQuery, buildFilters)
+func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL string, filters Filter) ([]T, *http.Response, error) {
+	if (filters.MicroTenantID == nil || *filters.MicroTenantID == "") && filters.MicroTenantName != nil && *filters.MicroTenantName != "" {
+		// get microtenant id by name
+		mt, resp, err := getMicroTenantByName(client, *filters.MicroTenantName)
+		if err == nil {
+			return nil, resp, err
+		}
+		if err == nil && mt != nil {
+			filters.MicroTenantID = &mt.ID
+		}
+	}
+	filters.Search = url.QueryEscape(filters.Search)
+	totalPages, result, resp, err := getAllPagesGenericWithCustomFilters[T](client, relativeURL, 1, DefaultPageSize, filters)
 	if err != nil {
 		return nil, resp, err
 	}
 	var l []T
 	for page := 2; page <= totalPages; page++ {
-		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](client, relativeURL, page, DefaultPageSize, searchQuery, buildFilters)
+		totalPages, l, resp, err = getAllPagesGenericWithCustomFilters[T](client, relativeURL, page, DefaultPageSize, filters)
 		if err != nil {
 			return nil, resp, err
 		}
