@@ -1,10 +1,9 @@
-package integration
+package bacertificate
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/bacertificate"
 )
 
 func TestBACertificates(t *testing.T) {
@@ -14,7 +13,7 @@ func TestBACertificates(t *testing.T) {
 		return
 	}
 
-	service := bacertificate.New(client)
+	service := New(client)
 
 	certificates, _, err := service.GetAll()
 	if err != nil {

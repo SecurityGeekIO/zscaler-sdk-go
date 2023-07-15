@@ -1,10 +1,9 @@
-package integration
+package customerversionprofile
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/customerversionprofile"
 )
 
 func TestCustomerVersionProfile(t *testing.T) {
@@ -14,7 +13,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 		return
 	}
 
-	service := customerversionprofile.New(client)
+	service := New(client)
 
 	profiles, _, err := service.GetAll()
 	if err != nil {

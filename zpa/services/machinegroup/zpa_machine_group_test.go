@@ -1,10 +1,9 @@
-package integration
+package machinegroup
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/machinegroup"
 )
 
 func TestMachineGroup(t *testing.T) {
@@ -14,7 +13,7 @@ func TestMachineGroup(t *testing.T) {
 		return
 	}
 
-	service := machinegroup.New(client)
+	service := New(client)
 
 	groups, _, err := service.GetAll()
 	if err != nil {

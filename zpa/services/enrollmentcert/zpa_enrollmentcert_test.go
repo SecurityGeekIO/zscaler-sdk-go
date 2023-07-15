@@ -1,10 +1,9 @@
-package integration
+package enrollmentcert
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/enrollmentcert"
 )
 
 func TestEnrollmentCert(t *testing.T) {
@@ -14,7 +13,7 @@ func TestEnrollmentCert(t *testing.T) {
 		return
 	}
 
-	service := enrollmentcert.New(client)
+	service := New(client)
 
 	certificates, _, err := service.GetAll()
 	if err != nil {

@@ -1,17 +1,16 @@
-package integration
+package policysetcontroller
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestPolicyAccessRule3(t *testing.T) {
+func TestPolicyAccessRule(t *testing.T) {
 	policyType := "ACCESS_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -47,22 +46,22 @@ func TestPolicyAccessRule3(t *testing.T) {
 	if len(postureList) == 0 {
 		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
 	}
-	service := policysetcontroller.New(client)
+	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
 	}
-	accessPolicyRule := policysetcontroller.PolicyRule{
+	accessPolicyRule := PolicyRule{
 		Name:        name,
 		Description: "New application segment",
 		PolicySetID: accessPolicySet.ID,
 		Action:      "ALLOW",
-		RuleOrder:   "3",
-		Conditions: []policysetcontroller.Conditions{
+		RuleOrder:   "1",
+		Conditions: []Conditions{
 			{
 				Operator: "OR",
-				Operands: []policysetcontroller.Operands{
+				Operands: []Operands{
 					{
 						ObjectType: "POSTURE",
 						LHS:        postureList[0].PostureudID,

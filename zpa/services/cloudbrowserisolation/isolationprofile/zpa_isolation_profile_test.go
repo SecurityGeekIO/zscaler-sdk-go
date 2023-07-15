@@ -1,10 +1,9 @@
-package integration
+package isolationprofile
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
 )
 
 func TestIsolationProfile(t *testing.T) {
@@ -14,7 +13,7 @@ func TestIsolationProfile(t *testing.T) {
 		return
 	}
 
-	service := isolationprofile.New(client)
+	service := New(client)
 
 	profiles, _, err := service.GetAll()
 	if err != nil {

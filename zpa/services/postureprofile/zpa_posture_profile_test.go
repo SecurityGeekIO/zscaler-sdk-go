@@ -1,10 +1,9 @@
-package integration
+package postureprofile
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
 )
 
 func TestPostureProfiles(t *testing.T) {
@@ -14,7 +13,7 @@ func TestPostureProfiles(t *testing.T) {
 		return
 	}
 
-	service := postureprofile.New(client)
+	service := New(client)
 
 	profiles, _, err := service.GetAll()
 	if err != nil {

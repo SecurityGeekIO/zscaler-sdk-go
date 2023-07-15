@@ -1,10 +1,9 @@
-package integration
+package samlattribute
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
 func TestSAMLAttribute(t *testing.T) {
@@ -14,7 +13,7 @@ func TestSAMLAttribute(t *testing.T) {
 		return
 	}
 
-	service := samlattribute.New(client)
+	service := New(client)
 
 	attributes, _, err := service.GetAll()
 	if err != nil {

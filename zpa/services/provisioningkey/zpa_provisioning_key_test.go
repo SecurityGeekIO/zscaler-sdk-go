@@ -1,79 +1,79 @@
-package integration
+package provisioningkey
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/machinegroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/policysetcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/enrollmentcert"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestAccessForwardingPolicy(t *testing.T) {
-	policyType := "CLIENT_FORWARDING_POLICY"
+func TestProvisiongKey(t *testing.T) {
+	associationType := "CONNECTOR_GRP"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	// create application connector group for testing
+	appConnectorGroupService := appconnectorgroup.New(client)
+	appGroup := appconnectorgroup.AppConnectorGroup{
+		Name:                     appConnGroupName,
+		Description:              appConnGroupName,
+		Enabled:                  true,
+		CityCountry:              "San Jose, US",
+		Latitude:                 "37.3382082",
+		Longitude:                "-121.8863286",
+		Location:                 "San Jose, CA, USA",
+		UpgradeDay:               "SUNDAY",
+		UpgradeTimeInSecs:        "66600",
+		OverrideVersionProfile:   true,
+		VersionProfileName:       "Default",
+		VersionProfileID:         "0",
+		DNSQueryType:             "IPV4_IPV6",
+		PRAEnabled:               false,
+		WAFDisabled:              true,
+		TCPQuickAckApp:           true,
+		TCPQuickAckAssistant:     true,
+		TCPQuickAckReadAssistant: true,
+	}
+	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
 	if err != nil {
-		t.Errorf("Error getting idps: %v", err)
+		t.Errorf("Error creating application connector group: %v", err)
 		return
 	}
-	if len(idpList) == 0 {
-		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
-	}
-	samlService := samlattribute.New(client)
-	samlsList, _, err := samlService.GetAll()
+	defer func() {
+		_, err := appConnectorGroupService.Delete(createdAppConnGroup.ID)
+		if err != nil {
+			t.Errorf("Error deleting application connector group: %v", err)
+		}
+	}()
+	// get enrollment cert for testing
+	enrollmentCertService := enrollmentcert.New(client)
+	enrollmentCert, _, err := enrollmentCertService.GetByName("Connector")
 	if err != nil {
-		t.Errorf("Error getting saml attributes: %v", err)
+		t.Errorf("Error getting enrollment cert: %v", err)
 		return
 	}
-	if len(samlsList) == 0 {
-		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
-	}
-	machineGroupService := machinegroup.New(client)
-	machineGroupList, _, err := machineGroupService.GetAll()
-	if err != nil {
-		t.Errorf("Error getting posture profiles: %v", err)
-		return
-	}
-	if len(machineGroupList) == 0 {
-		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
-	}
-	service := policysetcontroller.New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
-	if err != nil {
-		t.Errorf("Error getting access forwarding policy set: %v", err)
-		return
-	}
-	accessPolicyRule := policysetcontroller.PolicyRule{
-		Name:        name,
-		Description: "New application segment",
-		PolicySetID: accessPolicySet.ID,
-		Action:      "INTERCEPT",
-		Conditions: []policysetcontroller.Conditions{
-			{
-				Operator: "OR",
-				Operands: []policysetcontroller.Operands{
-					{
-						ObjectType: "SAML",
-						LHS:        samlsList[0].ID,
-						RHS:        "user1@acme.com",
-						IdpID:      idpList[0].ID,
-					},
-				},
-			},
-		},
+
+	service := New(client)
+
+	resource := ProvisioningKey{
+		AssociationType:       associationType,
+		Name:                  name,
+		AppConnectorGroupID:   createdAppConnGroup.ID,
+		AppConnectorGroupName: createdAppConnGroup.Name,
+		EnrollmentCertID:      enrollmentCert.ID,
+		ZcomponentID:          createdAppConnGroup.ID,
+		MaxUsage:              "10",
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(&accessPolicyRule)
+	createdResource, _, err := service.Create(associationType, &resource)
+
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -86,7 +86,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	retrievedResource, _, err := service.Get(associationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -98,11 +98,11 @@ func TestAccessForwardingPolicy(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(accessPolicySet.ID, createdResource.ID, retrievedResource)
+	_, err = service.Update(associationType, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	updatedResource, _, err := service.Get(associationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
+	retrievedResource, _, err = service.GetByName(associationType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(policyType)
+	resources, err := service.GetAll()
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -143,14 +143,14 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(accessPolicySet.ID, createdResource.ID)
+	_, err = service.Delete(associationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
+	_, _, err = service.Get(associationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}

@@ -1,10 +1,9 @@
-package integration
+package idpcontroller
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
 )
 
 func TestIdPController(t *testing.T) {
@@ -14,7 +13,7 @@ func TestIdPController(t *testing.T) {
 		return
 	}
 
-	service := idpcontroller.New(client)
+	service := New(client)
 
 	providers, _, err := service.GetAll()
 	if err != nil {

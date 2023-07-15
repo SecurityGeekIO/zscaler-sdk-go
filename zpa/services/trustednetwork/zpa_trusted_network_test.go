@@ -1,10 +1,9 @@
-package integration
+package trustednetwork
 
 import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks(t *testing.T) {
@@ -14,7 +13,7 @@ func TestTrustedNetworks(t *testing.T) {
 		return
 	}
 
-	service := trustednetwork.New(client)
+	service := New(client)
 
 	nets, _, err := service.GetAll()
 	if err != nil {
