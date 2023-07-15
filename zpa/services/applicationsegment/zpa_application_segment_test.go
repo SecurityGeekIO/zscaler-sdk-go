@@ -42,18 +42,19 @@ func TestApplicationSegment(t *testing.T) {
 	service := New(client)
 
 	appSegment := ApplicationSegmentResource{
-		Name:             name,
-		Description:      "New application segment",
-		Enabled:          true,
-		SegmentGroupID:   createdAppGroup.ID,
-		SegmentGroupName: createdAppGroup.Name,
-		IsCnameEnabled:   true,
-		BypassType:       "NEVER",
-		IcmpAccessType:   "PING_TRACEROUTING",
-		HealthReporting:  "ON_ACCESS",
-		HealthCheckType:  "DEFAULT",
-		TCPKeepAlive:     "1",
-		DomainNames:      []string{"test.example.com"},
+		Name:                  name,
+		Description:           "New application segment",
+		Enabled:               true,
+		SegmentGroupID:        createdAppGroup.ID,
+		SegmentGroupName:      createdAppGroup.Name,
+		IsCnameEnabled:        true,
+		BypassType:            "NEVER",
+		IcmpAccessType:        "PING_TRACEROUTING",
+		HealthReporting:       "ON_ACCESS",
+		HealthCheckType:       "DEFAULT",
+		TCPKeepAlive:          "1",
+		InspectTrafficWithZia: false,
+		DomainNames:           []string{"test.example.com"},
 		TCPAppPortRange: []common.NetworkPorts{
 			{
 				From: rPort,
