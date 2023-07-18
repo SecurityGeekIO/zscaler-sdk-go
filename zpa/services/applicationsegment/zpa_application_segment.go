@@ -42,6 +42,8 @@ type ApplicationSegmentResource struct {
 	IsIncompleteDRConfig      bool                                `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                                `json:"useInDrMode"`
 	InspectTrafficWithZia     bool                                `json:"inspectTrafficWithZia"`
+	MicroTenantID             string                              `json:"microtenantId,omitempty"`
+	MicroTenantName           string                              `json:"microtenantName,omitempty"`
 	TCPPortRanges             []string                            `json:"tcpPortRanges"`
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`

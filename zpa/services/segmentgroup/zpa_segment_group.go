@@ -91,20 +91,6 @@ func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Resp
 	return nil, resp, fmt.Errorf("no application named '%s' was found", segmentName)
 }
 
-func (service *Service) GetByMicrotenant(microTenantName string) (*SegmentGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGeneric[SegmentGroup](service.Client, relativeURL, microTenantName)
-	if err != nil {
-		return nil, nil, err
-	}
-	for _, app := range list {
-		if strings.EqualFold(app.Name, microTenantName) {
-			return &app, resp, nil
-		}
-	}
-	return nil, resp, fmt.Errorf("no application named '%s' was found", microTenantName)
-}
-
 func (service *Service) Create(segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
 	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, nil, segmentGroup, &v)
