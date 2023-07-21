@@ -6,9 +6,9 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/SecurityGeekIO/terraform-provider-zia/v2/zia"
 	client "github.com/SecurityGeekIO/zscaler-sdk-go/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/activation"
+	"github.com/zscaler/terraform-provider-zia/v2/zia"
 )
 
 func getEnvVarOrFail(k string) string {
