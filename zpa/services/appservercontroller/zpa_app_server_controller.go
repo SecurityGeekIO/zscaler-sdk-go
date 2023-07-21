@@ -21,8 +21,8 @@ type ApplicationServer struct {
 	Description       string   `json:"description"`
 	Enabled           bool     `json:"enabled"`
 	ID                string   `json:"id,omitempty"`
-	ModifiedBy        string   `json:"modifiedBy,"`
-	ModifiedTime      string   `json:"modifiedTime,"`
+	ModifiedBy        string   `json:"modifiedBy"`
+	ModifiedTime      string   `json:"modifiedTime"`
 	Name              string   `json:"name"`
 	MicroTenantID     string   `json:"microtenantId,omitempty"`
 	MicroTenantName   string   `json:"microtenantName,omitempty"`

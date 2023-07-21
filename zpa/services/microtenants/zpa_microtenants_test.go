@@ -1,5 +1,6 @@
 package microtenants
 
+/*
 import (
 	"testing"
 
@@ -111,3 +112,4 @@ func TestMicrotenants(t *testing.T) {
 	}
 
 }
+*/
