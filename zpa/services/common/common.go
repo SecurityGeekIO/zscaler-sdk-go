@@ -31,7 +31,8 @@ type Filter struct {
 }
 
 type DeleteApplicationQueryParams struct {
-	ForceDelete bool `json:"forceDelete,omitempty" url:"forceDelete,omitempty"`
+	ForceDelete   bool    `json:"forceDelete,omitempty" url:"forceDelete,omitempty"`
+	MicroTenantID *string `url:"microtenantId,omitempty"`
 }
 type NetworkPorts struct {
 	From string `json:"from,omitempty"`
