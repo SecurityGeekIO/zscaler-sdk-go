@@ -37,7 +37,8 @@ type AppSegmentInspection struct {
 	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
 	UseInDrMode               bool                  `json:"useInDrMode"`
-	InspectTrafficWithZia     bool                  `json:"inspectTrafficWithZia"`
+	MicroTenantID             string                `json:"microtenantId,omitempty"`
+	MicroTenantName           string                `json:"microtenantName,omitempty"`
 	TCPPortRanges             []string              `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string              `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
@@ -85,6 +86,8 @@ type InspectionAppDto struct {
 	Name                string `json:"name,omitempty"`
 	Hidden              bool   `json:"hidden"`
 	Portal              bool   `json:"portal"`
+	MicroTenantID       string `json:"microtenantId,omitempty"`
+	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
 
 type AppServerGroups struct {

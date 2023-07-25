@@ -151,5 +151,4 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

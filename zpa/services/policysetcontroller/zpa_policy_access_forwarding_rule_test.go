@@ -153,5 +153,4 @@ func TestAccessForwardingPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
