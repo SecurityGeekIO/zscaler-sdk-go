@@ -91,7 +91,7 @@ type AppServerGroups struct {
 func (service *Service) Get(id string) (*BrowserAccess, *http.Response, error) {
 	v := new(BrowserAccess)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -100,7 +100,7 @@ func (service *Service) Get(id string) (*BrowserAccess, *http.Response, error) {
 
 func (service *Service) GetByName(BaName string) (*BrowserAccess, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
-	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BrowserAccess](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -114,7 +114,7 @@ func (service *Service) GetByName(BaName string) (*BrowserAccess, *http.Response
 
 func (service *Service) Create(browserAccess BrowserAccess) (*BrowserAccess, *http.Response, error) {
 	v := new(BrowserAccess)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, nil, browserAccess, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, common.Filter{MicroTenantID: service.microTenantID}, browserAccess, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -123,7 +123,7 @@ func (service *Service) Create(browserAccess BrowserAccess) (*BrowserAccess, *ht
 
 func (service *Service) Update(id string, browserAccess *BrowserAccess) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, id)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, browserAccess, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, browserAccess, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (service *Service) Update(id string, browserAccess *BrowserAccess) (*http.R
 
 func (service *Service) Delete(id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.microTenantID}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (service *Service) Delete(id string) (*http.Response, error) {
 
 func (service *Service) GetAll() ([]BrowserAccess, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
-	list, resp, err := common.GetAllPagesGeneric[BrowserAccess](service.Client, relativeURL, "")
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BrowserAccess](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
 	if err != nil {
 		return nil, nil, err
 	}
