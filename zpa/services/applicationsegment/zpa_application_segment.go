@@ -57,8 +57,8 @@ type ApplicationSegmentResource struct {
 }
 
 type SharedMicrotenantDetails struct {
-	SharedFromMicrotenant string `json:"sharedFromMicrotenant,omitempty"`
-	SharedToMicrotenants  string `json:"sharedToMicrotenants,omitempty"`
+	SharedFromMicrotenant SharedFromMicrotenant `json:"sharedFromMicrotenant,omitempty"`
+	SharedToMicrotenants  []SharedToMicrotenant `json:"sharedToMicrotenants,omitempty"`
 }
 
 type SharedFromMicrotenant struct {
