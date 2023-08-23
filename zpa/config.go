@@ -290,27 +290,33 @@ func NewRateLimiter() *RateLimiter {
 
 func (rl *RateLimiter) Wait(method string) (bool, time.Duration) {
 	rl.mu.Lock()
+	defer rl.mu.Unlock()
 
 	now := time.Now()
 
 	switch method {
 	case http.MethodGet:
-		if len(rl.getRequests) >= rl.getLimit && now.Sub(rl.getRequests[len(rl.getRequests)-rl.getLimit]) < 10*time.Second {
-			d := 10*time.Second - now.Sub(rl.getRequests[len(rl.getRequests)-rl.getLimit])
-			rl.mu.Unlock()
-			return true, d
-		} else {
-			rl.getRequests = append(rl.getRequests, now)
+		if len(rl.getRequests) >= rl.getLimit {
+			oldestRequest := rl.getRequests[0]
+			if now.Sub(oldestRequest) < 10*time.Second {
+				d := 10*time.Second - now.Sub(oldestRequest)
+				return true, d
+			}
+			rl.getRequests = rl.getRequests[1:]
 		}
+		rl.getRequests = append(rl.getRequests, now)
+
 	case http.MethodPost, http.MethodPut, http.MethodDelete:
-		if len(rl.postPutDeleteRequests) >= rl.postPutDeleteLimit && now.Sub(rl.postPutDeleteRequests[len(rl.postPutDeleteRequests)-rl.postPutDeleteLimit]) < 10*time.Second {
-			d := 10*time.Second - now.Sub(rl.postPutDeleteRequests[len(rl.postPutDeleteRequests)-rl.postPutDeleteLimit])
-			rl.mu.Unlock()
-			return true, d
-		} else {
-			rl.postPutDeleteRequests = append(rl.postPutDeleteRequests, now)
+		if len(rl.postPutDeleteRequests) >= rl.postPutDeleteLimit {
+			oldestRequest := rl.postPutDeleteRequests[0]
+			if now.Sub(oldestRequest) < 10*time.Second {
+				d := 10*time.Second - now.Sub(oldestRequest)
+				return true, d
+			}
+			rl.postPutDeleteRequests = rl.postPutDeleteRequests[1:]
 		}
+		rl.postPutDeleteRequests = append(rl.postPutDeleteRequests, now)
 	}
-	rl.mu.Unlock()
+
 	return false, 0
 }
