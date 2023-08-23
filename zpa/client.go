@@ -179,13 +179,16 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	if err != nil {
 		return nil, err
 	}
-
-	if err := checkErrorInResponse(resp); err != nil {
+	respData, err := io.ReadAll(resp.Body)
+	if err == nil {
+		resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+	}
+	if err := checkErrorInResponse(resp, respData); err != nil {
 		return resp, err
 	}
 
 	if v != nil {
-		if err := decodeJSON(resp, v); err != nil {
+		if err := decodeJSON(respData, v); err != nil {
 			return resp, err
 		}
 	}
@@ -194,8 +197,8 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	return resp, nil
 }
 
-func decodeJSON(res *http.Response, v interface{}) error {
-	return json.NewDecoder(res.Body).Decode(&v)
+func decodeJSON(respData []byte, v interface{}) error {
+	return json.NewDecoder(bytes.NewBuffer(respData)).Decode(&v)
 }
 
 func unescapeHTML(entity interface{}) {
