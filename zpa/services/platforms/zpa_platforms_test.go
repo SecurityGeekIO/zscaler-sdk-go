@@ -7,41 +7,58 @@ import (
 )
 
 func TestGetAllPlatforms(t *testing.T) {
+	// Setup the client
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
 	service := New(client)
-	platforms, _, err := service.GetAllPlatforms()
 
+	// Basic check for all platforms
+	platforms, _, err := service.GetAllPlatforms()
 	if err != nil {
 		t.Fatalf("Error getting all platforms: %v", err)
-		return
 	}
 
-	if platforms == nil {
-		t.Fatal("Received nil platforms")
-		return
-	}
-
-	// Verifying some of the platforms (you can add more based on your use-case)
+	// Basic tests on the received platforms data
 	if platforms.Linux == "" {
-		t.Error("Expected Linux platform version, but got empty string.")
+		t.Errorf("Linux platform not found")
 	}
 	if platforms.Android == "" {
-		t.Error("Expected Android platform version, but got empty string.")
+		t.Errorf("Android platform not found")
 	}
 	if platforms.Windows == "" {
-		t.Error("Expected Windows platform version, but got empty string.")
+		t.Errorf("Windows platform not found")
 	}
 	if platforms.IOS == "" {
-		t.Error("Expected IOS platform version, but got empty string.")
+		t.Errorf("IOS platform not found")
 	}
 	if platforms.MacOS == "" {
-		t.Error("Expected MacOS platform version, but got empty string.")
+		t.Errorf("Mac platform not found")
 	}
 
-	// Any additional checks or logics based on real-world scenarios can be added here.
+	// 1. Test with specific customer ID
+	client.Config.CustomerID = "216196257331281920"
+	_, _, err = service.GetAllPlatforms()
+	if err != nil {
+		t.Errorf("Error fetching platforms for specific customer ID: %v", err)
+	}
+
+	// 2. Ensure response has no HTTP errors
+	_, resp, err := service.GetAllPlatforms()
+	if err != nil {
+		t.Fatalf("Error fetching platforms: %v", err)
+	}
+	if resp.StatusCode >= 400 {
+		t.Errorf("Received an HTTP error: %d", resp.StatusCode)
+	}
+
+	// 3. Test empty platform response - this assumes that the API might sometimes return a valid response with empty data
+	platforms, _, err = service.GetAllPlatforms()
+	if err != nil {
+		t.Fatalf("Error fetching platforms: %v", err)
+	}
+	if platforms == nil {
+		t.Error("Expected platforms to be non-nil, even for empty response")
+	}
 }
