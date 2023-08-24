@@ -144,6 +144,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
+	cacheEnabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE"))
 	return &Config{
 		BaseURL:          baseURL,
 		Logger:           logger,
@@ -155,7 +156,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		BackoffConf:      defaultBackoffConf,
 		UserAgent:        userAgent,
 		rateLimiter:      NewRateLimiter(),
-		cacheEnabled:     false,
+		cacheEnabled:     cacheEnabled,
 		cacheTtl:         time.Minute * 10,
 		cacheCleanwindow: time.Minute * 8,
 		cacheMaxSizeMB:   0,
