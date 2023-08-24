@@ -80,7 +80,12 @@ type Config struct {
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
 	sync.Mutex
-	UserAgent string
+	UserAgent        string
+	cacheEnabled     bool
+	freshCache       bool
+	cacheTtl         time.Duration
+	cacheCleanwindow time.Duration
+	cacheMaxSizeMB   int
 }
 
 /*
@@ -140,17 +145,33 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
 	return &Config{
-		BaseURL:      baseURL,
-		Logger:       logger,
-		httpClient:   nil,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		CustomerID:   customerID,
-		Cloud:        cloud,
-		BackoffConf:  defaultBackoffConf,
-		UserAgent:    userAgent,
-		rateLimiter:  NewRateLimiter(),
+		BaseURL:          baseURL,
+		Logger:           logger,
+		httpClient:       nil,
+		ClientID:         clientID,
+		ClientSecret:     clientSecret,
+		CustomerID:       customerID,
+		Cloud:            cloud,
+		BackoffConf:      defaultBackoffConf,
+		UserAgent:        userAgent,
+		rateLimiter:      NewRateLimiter(),
+		cacheEnabled:     false,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
 	}, err
+}
+
+func (c *Config) WithCache(cache bool) {
+	c.cacheEnabled = cache
+}
+
+func (c *Config) WithCacheTtl(i time.Duration) {
+	c.cacheTtl = i
+}
+
+func (c *Config) WithCacheCleanWindow(i time.Duration) {
+	c.cacheCleanwindow = i
 }
 
 func (c *Config) SetBackoffConfig(backoffConf BackoffConfig) {
