@@ -1,6 +1,11 @@
 package policysetcontroller
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
@@ -10,10 +15,34 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
+// clean all resources
+func init() {
+	log.Printf("init cleaning test")
+	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
+	if !shouldCleanAllResources {
+		return
+	}
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		panic(fmt.Sprintf("Error creating client: %v", err))
+	}
+	service := New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(accessPolicyType)
+	if err != nil {
+		return
+	}
+	resources, _, _ := service.GetAllByType(accessPolicyType)
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-rule2") {
+			continue
+		}
+		_, _ = service.Delete(accessPolicySet.ID, r.ID)
+	}
+}
+
 func TestPolicyAccessRule2(t *testing.T) {
-	policyType := "ACCESS_POLICY"
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	name := "tests-rule2" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-rule2" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -47,7 +76,7 @@ func TestPolicyAccessRule2(t *testing.T) {
 		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
 	}
 	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	accessPolicySet, _, err := service.GetByPolicyType(accessPolicyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
 		return
@@ -118,7 +147,7 @@ func TestPolicyAccessRule2(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
+	retrievedResource, _, err = service.GetByNameAndType(accessPolicyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -129,7 +158,7 @@ func TestPolicyAccessRule2(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(policyType)
+	resources, _, err := service.GetAllByType(accessPolicyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
