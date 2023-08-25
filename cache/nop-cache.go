@@ -23,3 +23,6 @@ func (c nopCache) Delete(key string) {
 
 func (c nopCache) Clear() {
 }
+
+func (c nopCache) ClearAllKeysWithPrefix(prefix string) {
+}
