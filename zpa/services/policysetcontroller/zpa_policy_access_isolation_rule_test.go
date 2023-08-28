@@ -1,6 +1,11 @@
 package policysetcontroller
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
@@ -10,8 +15,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
+const isoPolicyType = "ISOLATION_POLICY"
+
+// clean all resources
+func init() {
+	log.Printf("init cleaning test")
+	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
+	if !shouldCleanAllResources {
+		return
+	}
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		panic(fmt.Sprintf("Error creating client: %v", err))
+	}
+	service := New(client)
+	accessPolicySet, _, err := service.GetByPolicyType(isoPolicyType)
+	if err != nil {
+		return
+	}
+	resources, _, _ := service.GetAllByType(isoPolicyType)
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(accessPolicySet.ID, r.ID)
+	}
+}
+
 func TestAccessIsolationPolicy(t *testing.T) {
-	policyType := "ISOLATION_POLICY"
+
 	isolationProfileID := "BD_SA_Profile1"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -39,7 +71,7 @@ func TestAccessIsolationPolicy(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(policyType)
+	accessPolicySet, _, err := service.GetByPolicyType(isoPolicyType)
 	if err != nil {
 		t.Errorf("Error getting access isolation policy set: %v", err)
 		return
@@ -117,7 +149,7 @@ func TestAccessIsolationPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
+	retrievedResource, _, err = service.GetByNameAndType(isoPolicyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -128,7 +160,7 @@ func TestAccessIsolationPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(policyType)
+	resources, _, err := service.GetAllByType(isoPolicyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
