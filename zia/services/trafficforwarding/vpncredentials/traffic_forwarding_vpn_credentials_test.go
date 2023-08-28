@@ -2,6 +2,9 @@ package vpncredentials
 
 import (
 	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,7 +16,55 @@ import (
 const maxRetries = 3
 const retryInterval = 2 * time.Second
 
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	if !present {
+		return true // default value
+	}
+	shouldClean, err := strconv.ParseBool(val)
+	if err != nil {
+		return true // default to cleaning if the value is not parseable
+	}
+	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
+	return shouldClean
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Comments, "tests-") {
+			continue
+		}
+		_ = service.Delete(r.ID)
+	}
+}
 func TestTrafficForwardingVPNCreds(t *testing.T) {
+	cleanResources()
 	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -135,6 +186,7 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
+	cleanResources()
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
