@@ -1,4 +1,4 @@
-package appconnectorgroup
+package appservercontroller
 
 import (
 	"log"
@@ -60,9 +60,10 @@ func cleanResources() {
 	}
 }
 
-func TestAppConnectorGroup(t *testing.T) {
+func TestApplicationServer(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	randomIP, _ := acctest.RandIpAddress("192.168.0.0/24")
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -71,29 +72,15 @@ func TestAppConnectorGroup(t *testing.T) {
 
 	service := New(client)
 
-	group := AppConnectorGroup{
-		Name:                     name,
-		Description:              name,
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
+	server := ApplicationServer{
+		Name:        name,
+		Description: name,
+		Enabled:     true,
+		Address:     randomIP,
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(group)
+	createdResource, _, err := service.Create(server)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -119,7 +106,7 @@ func TestAppConnectorGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = service.Update(createdResource.ID, *retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}

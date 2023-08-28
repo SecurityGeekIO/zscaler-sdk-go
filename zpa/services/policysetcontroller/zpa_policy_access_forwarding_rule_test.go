@@ -1,11 +1,6 @@
 package policysetcontroller
 
 import (
-	"fmt"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
@@ -15,34 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const clientForwardingPolicyType = "CLIENT_FORWARDING_POLICY"
-
-// clean all resources
-func init() {
-	log.Printf("init cleaning test")
-	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
-	if !shouldCleanAllResources {
-		return
-	}
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		panic(fmt.Sprintf("Error creating client: %v", err))
-	}
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(clientForwardingPolicyType)
-	if err != nil {
-		return
-	}
-	resources, _, _ := service.GetAllByType(clientForwardingPolicyType)
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		_, _ = service.Delete(accessPolicySet.ID, r.ID)
-	}
-}
-
 func TestAccessForwardingPolicy(t *testing.T) {
+	policyType := "CLIENT_FORWARDING_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -78,7 +47,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
 	}
 	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(clientForwardingPolicyType)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
 		t.Errorf("Error getting access forwarding policy set: %v", err)
 		return
@@ -143,7 +112,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(clientForwardingPolicyType, updateName)
+	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -154,7 +123,7 @@ func TestAccessForwardingPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(clientForwardingPolicyType)
+	resources, _, err := service.GetAllByType(policyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -184,5 +153,4 @@ func TestAccessForwardingPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

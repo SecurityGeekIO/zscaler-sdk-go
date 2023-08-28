@@ -1,6 +1,10 @@
 package dlp_web_rules
 
 import (
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
@@ -8,6 +12,54 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
+
+// clean all resources
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	if !present {
+		return true // default value
+	}
+	shouldClean, err := strconv.ParseBool(val)
+	if err != nil {
+		return true // default to cleaning if the value is not parseable
+	}
+	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
+	return shouldClean
+}
+
+func cleanResources() {
+	if !shouldClean() {
+		return
+	}
+
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+	resources, _ := service.GetAll()
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		_, _ = service.Delete(r.ID)
+	}
+}
 
 func TestDLPWebRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -57,7 +109,6 @@ func TestDLPWebRule(t *testing.T) {
 
 	// Test resource creation
 	createdResource, err := service.Create(&rule)
-
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -139,5 +190,4 @@ func TestDLPWebRule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
