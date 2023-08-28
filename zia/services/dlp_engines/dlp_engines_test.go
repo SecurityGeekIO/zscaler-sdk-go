@@ -59,6 +59,9 @@ func cleanResources() {
 	}
 }
 func TestDLPEngine(t *testing.T) {
+	cleanResources()  // At the start of the test
+    defer t.Cleanup(cleanResources)  // Will be called at the end
+
 	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)

@@ -87,7 +87,9 @@ func cleanResources() {
 }
 
 func TestTrafficForwardingVPNCreds(t *testing.T) {
-	cleanResources()
+	cleanResources()                // At the start of the test
+	defer t.Cleanup(cleanResources) // Will be called at the end
+
 	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -219,7 +221,6 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
-	cleanResources()
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.

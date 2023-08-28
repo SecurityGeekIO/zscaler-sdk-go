@@ -60,6 +60,9 @@ func cleanResources() {
 }
 
 func TestTrafficForwardingStaticIPs(t *testing.T) {
+	cleanResources()  // At the start of the test
+    defer t.Cleanup(cleanResources)  // Will be called at the end
+
 	ipAddress, _ := acctest.RandIpAddress("104.239.237.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)

@@ -60,6 +60,9 @@ func cleanResources() {
 }
 
 func TestFWFileringIPSourceGroups(t *testing.T) {
+	cleanResources()  // At the start of the test
+    defer t.Cleanup(cleanResources)  // Will be called at the end
+
 	ipAddress1, _ := acctest.RandIpAddress("192.168.1.0/24")
 	ipAddress2, _ := acctest.RandIpAddress("192.168.2.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
