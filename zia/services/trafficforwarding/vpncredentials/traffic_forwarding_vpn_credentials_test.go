@@ -16,7 +16,29 @@ import (
 const maxRetries = 3
 const retryInterval = 2 * time.Second
 
-// clean all resources
+// Constants for conflict retries
+const maxConflictRetries = 5
+const conflictRetryInterval = 1 * time.Second
+
+func retryOnConflict(operation func() error) error {
+	var lastErr error
+	for i := 0; i < maxConflictRetries; i++ {
+		lastErr = operation()
+		if lastErr == nil {
+			return nil
+		}
+
+		if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
+			log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		return lastErr
+	}
+	return lastErr
+}
+
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
@@ -63,6 +85,7 @@ func cleanResources() {
 		_ = service.Delete(r.ID)
 	}
 }
+
 func TestTrafficForwardingVPNCreds(t *testing.T) {
 	cleanResources()
 	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
@@ -99,7 +122,12 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		PreSharedKey: "newPassword123!",
 	}
 
-	createdResource, _, err := service.Create(&cred)
+	var createdResource *VPNCredentials
+
+	err = retryOnConflict(func() error {
+		createdResource, _, err = service.Create(&cred)
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
@@ -126,7 +154,10 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	}
 
 	retrievedResource.Comments = updateComment
-	_, _, err = service.Update(createdResource.ID, retrievedResource)
+	err = retryOnConflict(func() error {
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
@@ -177,7 +208,9 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 
-	err = service.Delete(createdResource.ID)
+	err = retryOnConflict(func() error {
+		return service.Delete(createdResource.ID)
+	})
 	if err != nil {
 		t.Fatalf("Error deleting resource: %v", err)
 	}
