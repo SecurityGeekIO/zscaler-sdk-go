@@ -209,7 +209,7 @@ func (service *Service) GetSubLocationBySubID(subLocationID int) (*Locations, er
 			return subLoc, nil
 		}
 	}
-	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
+	return nil, fmt.Errorf("sublocation not found: %d", subLocationID)
 }
 
 // GetSublocations gets all sub-locations for a given location ID.
@@ -230,7 +230,7 @@ func (service *Service) GetSubLocation(locationID, subLocationID int) (*Location
 			return &location, nil
 		}
 	}
-	return nil, fmt.Errorf("Sublocation not found: %d", subLocationID)
+	return nil, fmt.Errorf("sublocation not found: %d", subLocationID)
 }
 
 // GetLocationByName gets a location by its name.

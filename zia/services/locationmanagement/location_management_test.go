@@ -5,11 +5,38 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/trafficforwarding/staticips"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
+
+const maxRetries = 3
+const retryInterval = 2 * time.Second
+
+// Constants for conflict retries
+const maxConflictRetries = 5
+const conflictRetryInterval = 1 * time.Second
+
+func retryOnConflict(operation func() error) error {
+	var lastErr error
+	for i := 0; i < maxConflictRetries; i++ {
+		lastErr = operation()
+		if lastErr == nil {
+			return nil
+		}
+
+		if strings.Contains(lastErr.Error(), `"code":"EDIT_LOCK_NOT_AVAILABLE"`) {
+			log.Printf("Conflict error detected, retrying in %v... (Attempt %d/%d)", conflictRetryInterval, i+1, maxConflictRetries)
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		return lastErr
+	}
+	return lastErr
+}
 
 func TestMain(m *testing.M) {
 	setup()
@@ -102,11 +129,16 @@ func TestLocationManagement(t *testing.T) {
 		IPAddresses:       []string{ipAddress},
 	}
 
+	var createdResource *Locations
+
 	// Test resource creation
-	createdResource, err := service.Create(&location)
+	err = retryOnConflict(func() error {
+		createdResource, err = service.Create(&location)
+		return err
+	})
 	// Check if the request was successful
 	if err != nil {
-		t.Errorf("Error making POST request: %v", err)
+		t.Fatalf("Error making POST request: %v", err)
 	}
 
 	if createdResource.ID == 0 {
@@ -116,9 +148,9 @@ func TestLocationManagement(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, err := service.GetLocation(createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -128,13 +160,16 @@ func TestLocationManagement(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, _, err = service.Update(createdResource.ID, retrievedResource)
+	err = retryOnConflict(func() error {
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		return err
+	})
 	if err != nil {
-		t.Errorf("Error updating resource: %v", err)
+		t.Fatalf("Error updating resource: %v", err)
 	}
 	updatedResource, err := service.GetLocation(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
@@ -146,7 +181,7 @@ func TestLocationManagement(t *testing.T) {
 	// Test resource retrieval by name
 	retrievedResource, err = service.GetLocationByName(updateName)
 	if err != nil {
-		t.Errorf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -157,10 +192,10 @@ func TestLocationManagement(t *testing.T) {
 	// Test resources retrieval
 	resources, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error retrieving resources: %v", err)
+		t.Fatalf("Error retrieving resources: %v", err)
 	}
 	if len(resources) == 0 {
-		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
+		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
 	// check if the created resource is in the list
 	found := false
@@ -174,15 +209,29 @@ func TestLocationManagement(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
-	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
-		return
-	}
-
-	// Test resource retrieval after deletion
+	err = retryOnConflict(func() error {
+		_, delErr := service.Delete(createdResource.ID)
+		return delErr
+	})
 	_, err = service.GetLocation(createdResource.ID)
 	if err == nil {
-		t.Errorf("Expected error retrieving deleted resource, but got nil")
+		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
+}
+
+// tryRetrieveResource attempts to retrieve a resource with retry mechanism.
+func tryRetrieveResource(s *Service, id int) (*Locations, error) {
+	var resource *Locations
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		resource, err = s.GetLocation(id)
+		if err == nil && resource != nil && resource.ID == id {
+			return resource, nil
+		}
+		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
+		time.Sleep(retryInterval)
+	}
+
+	return nil, err
 }
