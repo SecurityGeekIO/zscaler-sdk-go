@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
@@ -86,7 +87,6 @@ func cleanResources() error {
 }
 
 func TestAppConnectorGroupProvisiongKey(t *testing.T) {
-
 	randStr := func() string { return "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha) }
 	assertNoError := func(err error, errMsg string) {
 		if err != nil {
@@ -149,6 +149,8 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 	}
 	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
 	assertNoError(err, "Error making POST request: %v")
+	log.Printf("Created resource with ID: %s", createdResource.ID) // Log the ID
+	time.Sleep(5 * time.Second)                                    // Wait for 5 seconds
 
 	assertNoError(checkResourceFields(*createdResource, name), "")
 
@@ -158,8 +160,10 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 
 	// Test resource update
 	retrievedResource.Name = updateName
+	log.Printf("Updating resource with ID: %s", createdResource.ID) // Log the ID
 	_, err = service.Update(connGrpAssociationType, createdResource.ID, retrievedResource)
 	assertNoError(err, "Error updating resource: %v")
+	time.Sleep(5 * time.Second) // Wait for 5 seconds
 
 	updatedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
 	assertNoError(err, "Error retrieving resource: %v")
@@ -179,8 +183,10 @@ func TestAppConnectorGroupProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 
+	log.Printf("Deleting resource with ID: %s", createdResource.ID) // Log the ID
 	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
 	assertNoError(err, "Error deleting resource: %v")
+	time.Sleep(5 * time.Second) // Wait for 5 seconds
 
 	_, _, err = service.Get(connGrpAssociationType, createdResource.ID)
 	if err == nil {
@@ -245,6 +251,8 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 	}
 	createdResource, _, err := service.Create(serviceEdgeGrpAssociationType, &resource)
 	assertNoError(err, "Error making POST request: %v")
+	log.Printf("Created resource with ID: %s", createdResource.ID) // Log the ID
+	time.Sleep(5 * time.Second)                                    // Wait for 5 seconds
 
 	assertNoError(checkResourceFields(*createdResource, name), "")
 
@@ -254,8 +262,10 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 
 	// Test resource update
 	retrievedResource.Name = updateName
+	log.Printf("Updating resource with ID: %s", createdResource.ID) // Log the ID
 	_, err = service.Update(serviceEdgeGrpAssociationType, createdResource.ID, retrievedResource)
 	assertNoError(err, "Error updating resource: %v")
+	time.Sleep(5 * time.Second) // Wait for 5 seconds
 
 	updatedResource, _, err := service.Get(serviceEdgeGrpAssociationType, createdResource.ID)
 	assertNoError(err, "Error retrieving resource: %v")
@@ -275,8 +285,10 @@ func TestServiceEdgeGroupProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 
+	log.Printf("Deleting resource with ID: %s", createdResource.ID) // Log the ID
 	_, err = service.Delete(serviceEdgeGrpAssociationType, createdResource.ID)
 	assertNoError(err, "Error deleting resource: %v")
+	time.Sleep(5 * time.Second) // Wait for 5 seconds
 
 	_, _, err = service.Get(serviceEdgeGrpAssociationType, createdResource.ID)
 	if err == nil {
