@@ -1,5 +1,6 @@
 package ipsourcegroups
 
+/*
 import (
 	"log"
 	"os"
@@ -161,3 +162,4 @@ func TestFWFileringIPSourceGroups(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/

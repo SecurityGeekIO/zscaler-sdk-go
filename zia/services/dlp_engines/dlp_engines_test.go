@@ -84,8 +84,6 @@ func cleanResources() {
 }
 
 func TestDLPEngine(t *testing.T) {
-	cleanResources()                // At the start of the test
-	defer t.Cleanup(cleanResources) // Will be called at the end
 
 	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
@@ -132,6 +130,7 @@ func TestDLPEngine(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {

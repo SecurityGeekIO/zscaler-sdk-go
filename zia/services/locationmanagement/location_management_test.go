@@ -58,8 +58,6 @@ func cleanResources() {
 }
 
 func TestLocationManagement(t *testing.T) {
-	cleanResources()                // At the start of the test
-	defer t.Cleanup(cleanResources) // Will be called at the end
 
 	ipAddress, _ := acctest.RandIpAddress("104.239.236.0/24")
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)

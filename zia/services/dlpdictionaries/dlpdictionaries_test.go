@@ -3,7 +3,6 @@ package dlpdictionaries
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -56,15 +55,7 @@ func teardown() {
 
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	if !present {
-		return true // default value
-	}
-	shouldClean, err := strconv.ParseBool(val)
-	if err != nil {
-		return true // default to cleaning if the value is not parseable
-	}
-	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
-	return shouldClean
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
 }
 
 func cleanResources() {
@@ -87,8 +78,6 @@ func cleanResources() {
 }
 
 func TestDLPDictionaries(t *testing.T) {
-	cleanResources()                // At the start of the test
-	defer t.Cleanup(cleanResources) // Will be called at the end
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -168,7 +157,8 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(name)
+	retrievedResource, err = service.GetByName(updateName)
+
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}

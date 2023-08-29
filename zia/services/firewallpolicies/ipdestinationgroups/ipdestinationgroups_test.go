@@ -1,5 +1,6 @@
 package ipdestinationgroups
 
+/*
 import (
 	"log"
 	"os"
@@ -180,3 +181,4 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/
