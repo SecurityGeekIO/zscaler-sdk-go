@@ -3,6 +3,7 @@ package idpcontroller
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
 )
@@ -73,8 +74,11 @@ func (service *Service) Get(IdpID string) (*IdpController, *http.Response, error
 }
 
 func (service *Service) GetByName(idpName string) (*IdpController, *http.Response, error) {
+	// TODO: should the space be replaced with a dash "-" or we just search with  the first token
+	// searchName := strings.Replace(idpName, " ", "-")
+	searchName := strings.Split(idpName, " ")[0]
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + idpControllerEndpoint)
-	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, idpName)
+	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, searchName)
 	if err != nil {
 		return nil, nil, err
 	}
