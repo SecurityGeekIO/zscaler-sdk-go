@@ -3,7 +3,6 @@ package ipdestinationgroups
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -19,24 +18,16 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	cleanResources() // clean up at the beginning
+	cleanResources()
 }
 
 func teardown() {
-	cleanResources() // clean up at the end
+	cleanResources()
 }
 
 func shouldClean() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	if !present {
-		return true // default value
-	}
-	shouldClean, err := strconv.ParseBool(val)
-	if err != nil {
-		return true // default to cleaning if the value is not parseable
-	}
-	log.Printf("ZSCALER_SDK_TEST_SWEEP value: %v", shouldClean)
-	return shouldClean
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
 }
 
 func cleanResources() {
@@ -49,24 +40,29 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, _ := service.GetAll()
+	resources, err := service.GetAll()
+	if err != nil {
+		log.Printf("Error retrieving resources during cleanup: %v", err)
+		return
+	}
+
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
+		if strings.HasPrefix(r.Name, "tests-") {
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("Error deleting resource %d: %v", r.ID, err)
+			}
 		}
-		_, _ = service.Delete(r.ID)
 	}
 }
 
 func TestFWFileringIPDestGroups(t *testing.T) {
-	cleanResources()                // At the start of the test
-	defer t.Cleanup(cleanResources) // Will be called at the end
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 	service := New(client)
@@ -174,7 +170,7 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error deleting resource: %v", err)
+		t.Fatalf("Error deleting resource: %v", err)
 		return
 	}
 
