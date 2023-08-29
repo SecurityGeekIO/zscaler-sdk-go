@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-// clean all resources
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
@@ -60,8 +59,8 @@ func cleanResources() {
 }
 
 func TestFWFileringIPDestGroups(t *testing.T) {
-	cleanResources()  // At the start of the test
-    defer t.Cleanup(cleanResources)  // Will be called at the end
+	cleanResources()                // At the start of the test
+	defer t.Cleanup(cleanResources) // Will be called at the end
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -81,21 +80,22 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 
 	// Test resource creation
 	createdResource, err := service.Create(&group)
-	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
+		return
 	}
-
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
 	retrievedResource, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
+		return
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -103,16 +103,29 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if retrievedResource.Name != name {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
+	// Ensure that the Addresses field (and others if needed) remains unchanged during the update
+	retrievedResource.Addresses = group.Addresses
+
 	_, _, err = service.Update(createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
+		return
 	}
+
 	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
+		return
 	}
+	if updatedResource == nil {
+		t.Error("Updated resource is nil")
+		return
+	}
+
+	// Continue checking
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
@@ -124,6 +137,11 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	retrievedResource, err = service.GetByName(updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
+		return
+	}
+	if retrievedResource == nil {
+		t.Error("Retrieved resource by name is nil")
+		return
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -131,6 +149,7 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, err := service.GetAll()
 	if err != nil {
@@ -139,7 +158,8 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
+
+	// Check if the created resource is in the list
 	found := false
 	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
@@ -150,6 +170,7 @@ func TestFWFileringIPDestGroups(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
 	_, err = service.Delete(createdResource.ID)
 	if err != nil {
