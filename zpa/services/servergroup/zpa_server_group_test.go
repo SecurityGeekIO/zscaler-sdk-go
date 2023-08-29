@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
@@ -89,9 +90,15 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Error creating app connector group for testing server group: %v", err)
 	}
 	defer func() {
-		_, err := appConnGroupService.Delete(appConnGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting app connector group: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting app connector group: %v", err)
+			}
 		}
 	}()
 
@@ -107,9 +114,15 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Error creating app server for testing server group: %v", err)
 	}
 	defer func() {
-		_, err := appServerService.Delete(appServer.ID)
-		if err != nil {
-			t.Errorf("Error deleting app server: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appServerService.Get(appServer.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appServerService.Delete(appServer.ID)
+			if err != nil {
+				t.Errorf("Error deleting app server: %v", err)
+			}
 		}
 	}()
 
