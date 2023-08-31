@@ -52,7 +52,6 @@ func cleanResources() {
 }
 
 func TestApplicationServer(t *testing.T) {
-
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	randomIP, _ := acctest.RandIpAddress("192.168.0.0/24")

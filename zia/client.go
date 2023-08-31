@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
+	"github.com/google/uuid"
 )
 
 // Request ... // Needs to review this function.

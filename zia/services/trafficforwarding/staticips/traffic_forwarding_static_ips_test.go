@@ -11,12 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const maxRetries = 3
-const retryInterval = 2 * time.Second
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
 
 // Constants for conflict retries
-const maxConflictRetries = 5
-const conflictRetryInterval = 1 * time.Second
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -84,7 +88,6 @@ func cleanResources() {
 }
 
 func TestTrafficForwardingStaticIPs(t *testing.T) {
-
 	ipAddress, _ := acctest.RandIpAddress("104.239.237.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)

@@ -9,17 +9,19 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/rule_labels"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const maxRetries = 3
-const retryInterval = 2 * time.Second
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
 
 // Constants for conflict retries
-const maxConflictRetries = 5
-const conflictRetryInterval = 1 * time.Second
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -87,7 +89,6 @@ func cleanResources() {
 }
 
 func TestDLPWebRule(t *testing.T) {
-
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
@@ -95,29 +96,6 @@ func TestDLPWebRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// create rule label for testing
-	ruleLabelService := rule_labels.New(client)
-	ruleLabel, _, err := ruleLabelService.Create(&rule_labels.RuleLabels{
-		Name:        name,
-		Description: name,
-	})
-	if err != nil {
-		t.Fatalf("Error creating rule label for testing: %v", err)
-	}
-
-	// Ensure the rule label is cleaned up at the end of this test
-	defer func() {
-		_, getErr := ruleLabelService.Get(ruleLabel.ID)
-		if getErr != nil {
-			t.Logf("Rule label %d may have already been deleted: %v", ruleLabel.ID, getErr)
-			return
-		}
-		_, err := ruleLabelService.Delete(ruleLabel.ID)
-		if err != nil {
-			t.Errorf("Error deleting rule label: %v", err)
-		}
-	}()
 
 	service := New(client)
 	rule := WebDLPRules{
@@ -133,11 +111,6 @@ func TestDLPWebRule(t *testing.T) {
 		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
 		FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
-		Labels: []common.IDNameExtensions{
-			{
-				ID: ruleLabel.ID,
-			},
-		},
 	}
 
 	var createdResource *WebDLPRules

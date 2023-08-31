@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/tests"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/zscaler/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/isolationprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
 )
 
 func TestAccessIsolationPolicy(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 )
 
-func TestCBIZPAProfiles(t *testing.T) {
+func TestCBIZPAProfile(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -17,22 +17,22 @@ func TestCBIZPAProfiles(t *testing.T) {
 
 	profiles, _, err := service.GetAll()
 	if err != nil {
-		t.Errorf("Error getting cbi zpa profile: %v", err)
+		t.Errorf("Error getting isolation profiles: %v", err)
 		return
 	}
 	if len(profiles) == 0 {
-		t.Errorf("No cbi zpa profiles found")
+		t.Errorf("No isolation profile found")
 		return
 	}
 	name := profiles[0].Name
-	t.Log("Getting cbi zpa profiles by name:" + name)
-	rg, _, err := service.GetByName(name)
+	t.Log("Getting isolation profile by name:" + name)
+	profile, _, err := service.GetByName(name)
 	if err != nil {
-		t.Errorf("Error getting cbi zpa profile by name: %v", err)
+		t.Errorf("Error getting isolation profile by name: %v", err)
 		return
 	}
-	if rg.Name != name {
-		t.Errorf("cbi region name does not match: expected %s, got %s", name, rg.Name)
+	if profile.Name != name {
+		t.Errorf("isolation profile name does not match: expected %s, got %s", name, profile.Name)
 		return
 	}
 }

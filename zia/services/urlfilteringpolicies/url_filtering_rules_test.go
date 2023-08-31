@@ -11,12 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const maxRetries = 3
-const retryInterval = 2 * time.Second
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
 
 // Constants for conflict retries
-const maxConflictRetries = 5
-const conflictRetryInterval = 1 * time.Second
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -84,9 +88,9 @@ func cleanResources() {
 }
 
 func TestURLFilteringRule(t *testing.T) {
-
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
@@ -107,7 +111,6 @@ func TestURLFilteringRule(t *testing.T) {
 	}
 
 	var createdResource *URLFilteringRule
-
 	// Test resource creation
 	err = retryOnConflict(func() error {
 		createdResource, err = service.Create(&rule)
@@ -116,6 +119,21 @@ func TestURLFilteringRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
+
+	alreadyDeleted := false
+	// Defer function to delete the created URLFilteringRule
+	defer func() {
+		if alreadyDeleted {
+			return
+		}
+		err = retryOnConflict(func() error {
+			_, delErr := service.Delete(createdResource.ID)
+			return delErr
+		})
+		if err != nil {
+			t.Errorf("Error deleting rule: %v", err)
+		}
+	}()
 
 	if createdResource.ID == 0 {
 		t.Error("Expected created resource ID to be non-empty, but got ''")
@@ -132,11 +150,11 @@ func TestURLFilteringRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved url filtering rule '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
 	}
-
 	// Test resource update
 	retrievedResource.Name = updateName
+	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
@@ -144,16 +162,15 @@ func TestURLFilteringRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
-
 	updatedResource, err := service.Get(createdResource.ID)
 	if err != nil {
-		t.Errorf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving resource: %v", err)
 	}
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Description != updateDescription {
+		t.Errorf("Expected retrieved updated resource description '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 
 	// Test resource retrieval by name
@@ -165,7 +182,7 @@ func TestURLFilteringRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+		t.Errorf("Expected retrieved resource description '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
 	resources, err := service.GetAll()
@@ -191,6 +208,11 @@ func TestURLFilteringRule(t *testing.T) {
 		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
+	if err != nil {
+		t.Fatalf("Error deleting resource: %v", err)
+	}
+	alreadyDeleted = true // Set the flag to true after successfully deleting the rule
+
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
@@ -199,17 +221,17 @@ func TestURLFilteringRule(t *testing.T) {
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
 func tryRetrieveResource(s *Service, id int) (*URLFilteringRule, error) {
-	var resource *URLFilteringRule
-	var err error
+	var result *URLFilteringRule
+	var lastErr error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
-		if err == nil && resource != nil && resource.ID == id {
-			return resource, nil
+		result, lastErr = s.Get(id)
+		if lastErr == nil {
+			return result, nil
 		}
-		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
+
 		time.Sleep(retryInterval)
 	}
 
-	return nil, err
+	return nil, lastErr
 }

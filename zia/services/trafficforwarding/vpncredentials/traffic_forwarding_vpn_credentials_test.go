@@ -12,12 +12,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const maxRetries = 3
-const retryInterval = 2 * time.Second
+const (
+	maxRetries    = 3
+	retryInterval = 2 * time.Second
+)
 
 // Constants for conflict retries
-const maxConflictRetries = 5
-const conflictRetryInterval = 1 * time.Second
+const (
+	maxConflictRetries    = 5
+	conflictRetryInterval = 1 * time.Second
+)
 
 func retryOnConflict(operation func() error) error {
 	var lastErr error
@@ -85,7 +89,6 @@ func cleanResources() {
 }
 
 func TestTrafficForwardingVPNCreds(t *testing.T) {
-
 	ipAddress, _ := acctest.RandIpAddress("104.239.238.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -100,7 +103,6 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		IpAddress: ipAddress,
 		Comment:   comment,
 	})
-
 	if err != nil {
 		t.Fatalf("Creating static ip failed: %v", err)
 	}
