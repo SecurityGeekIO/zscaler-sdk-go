@@ -37,8 +37,8 @@ type AppSegmentPRA struct {
 	ModifiedTime              string                `json:"modifiedTime,omitempty"`
 	TCPKeepAlive              string                `json:"tcpKeepAlive,omitempty"`
 	IsIncompleteDRConfig      bool                  `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                  `json:"useInDrMode"`
 	InspectTrafficWithZia     bool                  `json:"inspectTrafficWithZia"`
+	UseInDrMode               bool                  `json:"useInDrMode"`
 	TCPAppPortRange           []common.NetworkPorts `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts `json:"udpPortRange,omitempty"`
 	ServerGroups              []AppServerGroups     `json:"serverGroups,omitempty"`
@@ -105,7 +105,7 @@ func (service *Service) Get(id string) (*AppSegmentPRA, *http.Response, error) {
 
 func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, BaName)
+	list, resp, err := common.GetAllPagesGeneric[AppSegmentPRA](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
 	}

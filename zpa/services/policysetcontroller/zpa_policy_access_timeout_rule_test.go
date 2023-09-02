@@ -1,11 +1,6 @@
 package policysetcontroller
 
 import (
-	"fmt"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
@@ -14,34 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-const timeoutPolicyType = "TIMEOUT_POLICY"
-
-// clean all resources
-func init() {
-	log.Printf("init cleaning test")
-	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
-	if !shouldCleanAllResources {
-		return
-	}
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		panic(fmt.Sprintf("Error creating client: %v", err))
-	}
-	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(timeoutPolicyType)
-	if err != nil {
-		return
-	}
-	resources, _, _ := service.GetAllByType(timeoutPolicyType)
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		_, _ = service.Delete(accessPolicySet.ID, r.ID)
-	}
-}
-
 func TestAccessTimeoutPolicy(t *testing.T) {
+	policyType := "TIMEOUT_POLICY"
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	client, err := tests.NewZpaClient()
@@ -68,7 +37,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
 	service := New(client)
-	accessPolicySet, _, err := service.GetByPolicyType(timeoutPolicyType)
+	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
 		t.Errorf("Error getting access timeout policy set: %v", err)
 		return
@@ -141,7 +110,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByNameAndType(timeoutPolicyType, updateName)
+	retrievedResource, _, err = service.GetByNameAndType(policyType, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -152,7 +121,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAllByType(timeoutPolicyType)
+	resources, _, err := service.GetAllByType(policyType)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -182,5 +151,4 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }

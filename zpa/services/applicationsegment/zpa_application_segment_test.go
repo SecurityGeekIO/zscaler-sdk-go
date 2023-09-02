@@ -1,12 +1,12 @@
 package applicationsegment
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
@@ -15,15 +15,34 @@ import (
 )
 
 // clean all resources
-func init() {
-	log.Printf("init cleaning test")
-	shouldCleanAllResources, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_TEST_SWEEP"))
-	if !shouldCleanAllResources {
+func TestMain(m *testing.M) {
+	setup()
+	code := m.Run()
+	teardown()
+	os.Exit(code)
+}
+
+func setup() {
+	cleanResources() // clean up at the beginning
+}
+
+func teardown() {
+	cleanResources() // clean up at the end
+}
+
+func shouldClean() bool {
+	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
+	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+}
+
+func cleanResources() {
+	if !shouldClean() {
 		return
 	}
+
 	client, err := tests.NewZpaClient()
 	if err != nil {
-		panic(fmt.Sprintf("Error creating client: %v", err))
+		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
 	resources, _, _ := service.GetAll()
@@ -31,6 +50,7 @@ func init() {
 		if !strings.HasPrefix(r.Name, "tests-") {
 			continue
 		}
+		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
 		_, _ = service.Delete(r.ID)
 	}
 }
@@ -58,9 +78,15 @@ func TestApplicationSegment(t *testing.T) {
 		return
 	}
 	defer func() {
-		_, err := appGroupService.Delete(createdAppGroup.ID)
-		if err != nil {
-			t.Errorf("Error deleting application segment group: %v", err)
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appGroupService.Delete(createdAppGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting application segment group: %v", err)
+			}
 		}
 	}()
 

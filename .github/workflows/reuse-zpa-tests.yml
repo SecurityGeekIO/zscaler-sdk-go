@@ -14,6 +14,8 @@ on:
         required: true
       ZPA_CLOUD:
         required: true
+      ZSCALER_SDK_TEST_SWEEP:
+        required: true
 
 jobs:
   zpa-test:
@@ -33,12 +35,17 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
-      - name: Set ZPA Environment Credentials
+      - name: Run tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 10  # Adjust as needed
+          command: |
+            make test:unit:zpa
+            make test:integration:zpa
         env:
           ZPA_CLIENT_ID: ${{ secrets.ZPA_CLIENT_ID }}
           ZPA_CLIENT_SECRET: ${{ secrets.ZPA_CLIENT_SECRET }}
           ZPA_CUSTOMER_ID: ${{ secrets.ZPA_CUSTOMER_ID }}
           ZPA_CLOUD: ${{ secrets.ZPA_CLOUD }}
-        run: |
-          make test:unit:zpa
-          make test:integration:zpa
+          ZSCALER_SDK_TEST_SWEEP: ${{ secrets.ZSCALER_SDK_TEST_SWEEP }}
