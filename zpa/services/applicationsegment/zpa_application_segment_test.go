@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

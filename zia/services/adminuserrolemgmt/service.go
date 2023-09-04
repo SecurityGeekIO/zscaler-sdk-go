@@ -1,7 +1,7 @@
 package adminuserrolemgmt
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
 )
 
 type Service struct {
