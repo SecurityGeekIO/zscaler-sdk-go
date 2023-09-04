@@ -1,6 +1,6 @@
 package applications
 
-import "github.com/SecurityGeekIO/zscaler-sdk-go/zdx/services/common"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
 
 type GetAppsFilters struct {
 	common.GetFromToFilters

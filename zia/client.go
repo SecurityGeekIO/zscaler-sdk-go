@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/google/uuid"
 )
 

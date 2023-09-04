@@ -3,7 +3,7 @@ package samlattribute
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestSAMLAttribute(t *testing.T) {

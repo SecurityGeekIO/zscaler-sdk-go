@@ -1,8 +1,8 @@
-[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
-[![Test](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/.go-version)
+[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/actions/workflows/release.yml)
+[![Test](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/actions/workflows/test.yml)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/.go-version)
 [![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
 # Zscaler GO SDK
@@ -54,8 +54,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 )
 
 func main() {

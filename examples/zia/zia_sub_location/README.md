@@ -5,8 +5,8 @@ import (
     "log"
     "os"
 
-    "github.com/SecurityGeekIO/zscaler-sdk-go/zia"
-    "github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/locationmanagement"
+    "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+    "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/locationmanagement"
 )
 
 func main() {

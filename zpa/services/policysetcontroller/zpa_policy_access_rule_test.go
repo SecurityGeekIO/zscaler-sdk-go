@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/postureprofile"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/postureprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
