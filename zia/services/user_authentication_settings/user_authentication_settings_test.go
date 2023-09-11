@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestMain(m *testing.M) {
