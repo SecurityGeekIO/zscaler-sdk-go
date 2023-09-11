@@ -1,5 +1,42 @@
 # Changelog
 
+# 2.0.2 (September 10, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #162](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/162) Fixed microtenant search criteria for ``provisioning_key``
+
+# 2.0.0 (September 6, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #159](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/159)
+  1. Zscaler Private Access Microtenant feature is now supported across the following ZPA resources:
+      - ``application_controller``
+      - ``app_connector_group``
+      - ``application_segment``
+      - ``application_segment_browser_access``
+      - ``application_segment_inspection``
+      - ``application_segment_pra``
+      - ``app_server_controller``
+      - ``machine_group``
+      - ``access_policy_rule``
+      - ``timeout_policy_rule``
+      - ``forward_policy_rule``
+      - ``inspection_policy_rule``
+      - ``isolation_policy_rule``
+      - ``provisioning_key``
+      - ``segment_group``
+      - ``server_group``
+      - ``service_edge_controller``
+      - ``service_edge_group``
+
 # 1.8.0-beta (August 25, 2023)
 
 ## Notes
@@ -10,7 +47,7 @@
 - [PR #153](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/153)
   1. Added additional rate limit optimization
   2. Improved backoff mechanism retry strategy
-  3. Updated `zpa/config.go` to use `github.com/zscaler/zscaler-sdk-go/cache` new cache mechanism to decrease number of API calls being made to the ZPA API.
+  3. Updated `zpa/config.go` to use `github.com/SecurityGeekIO/zscaler-sdk-go/cache` new cache mechanism to decrease number of API calls being made to the ZPA API.
 
 ⚠️ **WARNING:**: This version is being released as a Beta solution pending additional performance tests.
 
@@ -33,7 +70,7 @@
   - Cloud Browser Isolation Regions
   - Cloud Browser Isolation ZPA Profile
 
-- [PR #145](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/SecurityGeekIO/terraform-provider-zpa/issues/333)
+- [PR #145](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
 
 ### Fixes
 
