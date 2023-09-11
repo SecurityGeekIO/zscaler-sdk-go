@@ -3,7 +3,7 @@ package inspection_predefined_controls
 import (
 	"testing"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestInspectionPredefinedControls(t *testing.T) {

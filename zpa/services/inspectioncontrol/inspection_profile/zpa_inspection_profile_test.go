@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_custom_controls"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_predefined_controls"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
