@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 )
 
