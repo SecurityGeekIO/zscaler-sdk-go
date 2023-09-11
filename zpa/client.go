@@ -14,15 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
-
-	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
-
 	cache "github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	utils "github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
 )
 
 type Client struct {
