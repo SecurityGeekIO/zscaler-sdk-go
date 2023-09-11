@@ -3,7 +3,7 @@ package dlp_incident_receiver_servers
 import (
 	"testing"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestDLPIncidentReceiver_data(t *testing.T) {

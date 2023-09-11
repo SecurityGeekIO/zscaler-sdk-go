@@ -3,7 +3,7 @@ package timewindow
 import (
 	"testing"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestTimeWindow_data(t *testing.T) {
