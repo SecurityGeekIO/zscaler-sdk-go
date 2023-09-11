@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/stretchr/testify/assert"
 )
 
