@@ -4,8 +4,8 @@ package main
 import (
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/firewallpolicies/networkapplications"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkapplications"
 )
 
 func main() {

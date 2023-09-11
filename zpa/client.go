@@ -16,9 +16,9 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/utils"
+	cache "github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	utils "github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
 )
 
 type Client struct {

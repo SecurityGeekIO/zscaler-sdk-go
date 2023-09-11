@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa"
+	zpa "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
 
 const (

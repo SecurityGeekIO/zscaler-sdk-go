@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/google/uuid"
 )
 

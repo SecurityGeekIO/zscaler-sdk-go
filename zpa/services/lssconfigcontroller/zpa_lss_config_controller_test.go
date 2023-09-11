@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

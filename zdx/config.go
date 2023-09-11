@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
+	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
 )
 
 const (

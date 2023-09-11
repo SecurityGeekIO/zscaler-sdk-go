@@ -1,7 +1,7 @@
 package devices
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zdx"
+	zdx "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 )
 
 type Service struct {

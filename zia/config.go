@@ -20,9 +20,9 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
 )
 
 const (

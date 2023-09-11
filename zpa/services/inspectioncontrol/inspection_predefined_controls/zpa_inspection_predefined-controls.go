@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (

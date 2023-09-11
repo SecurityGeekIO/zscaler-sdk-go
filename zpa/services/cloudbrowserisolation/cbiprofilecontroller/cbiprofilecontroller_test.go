@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbibannercontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/cloudbrowserisolation/cbiregions"
+	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiregions"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (

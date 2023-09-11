@@ -3,7 +3,7 @@ package cbiregions
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestGetAllRegions(t *testing.T) {

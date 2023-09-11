@@ -1,7 +1,7 @@
 package appservercontroller
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa"
+	zpa "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
 
 type Service struct {

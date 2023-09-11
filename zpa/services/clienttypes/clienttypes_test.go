@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
+	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 func TestGetAllClientTypes(t *testing.T) {

@@ -3,7 +3,7 @@ package administration
 import (
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
 )
 
 const (

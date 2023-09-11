@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/zpa/services/bacertificate"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/bacertificate"
 )
 
 func TestBaCertificate_Get(t *testing.T) {
