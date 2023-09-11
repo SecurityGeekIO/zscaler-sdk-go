@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	tests "github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbibannercontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbicertificatecontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/cbiregions"
