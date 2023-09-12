@@ -17,7 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
@@ -71,7 +72,7 @@ type CredentialsConfig struct {
 type Config struct {
 	BaseURL     *url.URL
 	httpClient  *http.Client
-	rateLimiter *RateLimiter
+	rateLimiter *rl.RateLimiter
 	// The logger writer interface to write logging messages to. Defaults to standard out.
 	Logger logger.Logger
 	// Credentials for basic authentication.
@@ -155,7 +156,7 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 		Cloud:            cloud,
 		BackoffConf:      defaultBackoffConf,
 		UserAgent:        userAgent,
-		rateLimiter:      NewRateLimiter(),
+		rateLimiter:      rl.NewRateLimiter(20, 10, 10, 10),
 		cacheEnabled:     !cacheDisabled,
 		cacheTtl:         time.Minute * 10,
 		cacheCleanwindow: time.Minute * 8,
@@ -291,54 +292,4 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-}
-
-type RateLimiter struct {
-	mu                    sync.Mutex
-	getRequests           []time.Time
-	postPutDeleteRequests []time.Time
-	getLimit              int
-	postPutDeleteLimit    int
-}
-
-func NewRateLimiter() *RateLimiter {
-	return &RateLimiter{
-		getRequests:           []time.Time{},
-		postPutDeleteRequests: []time.Time{},
-		getLimit:              20,
-		postPutDeleteLimit:    10,
-	}
-}
-
-func (rl *RateLimiter) Wait(method string) (bool, time.Duration) {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-
-	now := time.Now()
-
-	switch method {
-	case http.MethodGet:
-		if len(rl.getRequests) >= rl.getLimit {
-			oldestRequest := rl.getRequests[0]
-			if now.Sub(oldestRequest) < 10*time.Second {
-				d := 10*time.Second - now.Sub(oldestRequest)
-				return true, d
-			}
-			rl.getRequests = rl.getRequests[1:]
-		}
-		rl.getRequests = append(rl.getRequests, now)
-
-	case http.MethodPost, http.MethodPut, http.MethodDelete:
-		if len(rl.postPutDeleteRequests) >= rl.postPutDeleteLimit {
-			oldestRequest := rl.postPutDeleteRequests[0]
-			if now.Sub(oldestRequest) < 10*time.Second {
-				d := 10*time.Second - now.Sub(oldestRequest)
-				return true, d
-			}
-			rl.postPutDeleteRequests = rl.postPutDeleteRequests[1:]
-		}
-		rl.postPutDeleteRequests = append(rl.postPutDeleteRequests, now)
-	}
-
-	return false, 0
 }
