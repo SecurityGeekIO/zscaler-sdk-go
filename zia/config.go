@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -344,11 +345,21 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 				}
 			}
 		}
-		wait, d := rateLimiter.Wait(resp.Request.Method)
-		if wait {
-			return d
+		if resp.Request != nil {
+			wait, d := rateLimiter.Wait(resp.Request.Method)
+			if wait {
+				return d
+			} else {
+				return 0
+			}
 		}
-		return 0
+		// default to exp backoff
+		mult := math.Pow(2, float64(attemptNum)) * float64(min)
+		sleep := time.Duration(mult)
+		if float64(sleep) != mult || sleep > max {
+			sleep = max
+		}
+		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
