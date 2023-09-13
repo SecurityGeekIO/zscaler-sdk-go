@@ -389,6 +389,11 @@ func getRetryOnStatusCodes() []int {
 	return []int{http.StatusTooManyRequests}
 }
 
+type ApiErr struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
 // Used to make http client retry on provided list of response status codes.
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	// do not retry on context.Canceled or context.DeadlineExceeded
@@ -398,10 +403,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
 	}
-	type ApiErr struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	}
+
 	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict) {
 		apiRespErr := ApiErr{}
 		data, err := io.ReadAll(resp.Body)
