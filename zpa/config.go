@@ -279,6 +279,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	if resp != nil && resp.StatusCode == http.StatusBadRequest {
 		respMap := map[string]string{}
 		data, err := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 		if err == nil {
 			_ = json.Unmarshal(data, &respMap)
 			if errorID, ok := respMap["id"]; ok && (errorID == "non.restricted.entity.authorization.failed" || errorID == "bad.request") {
@@ -294,7 +295,6 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 				return true, nil
 			}
 		}
-		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
