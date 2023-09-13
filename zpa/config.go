@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -218,18 +219,22 @@ func (c *Config) GetHTTPClient() *http.Client {
 							}
 						}
 					}
-				}
-				wait, duration := c.rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
-				}
-				/*
-					sleep := time.Duration(float64(min) * float64(attemptNum+1))
-					if sleep > max {
-						sleep = max
+					if resp.Request != nil {
+						wait, duration := c.rateLimiter.Wait(resp.Request.Method)
+						if wait {
+							c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
+						} else {
+							return 0
+						}
 					}
-				*/
-				return duration
+				}
+				// default to exp backoff
+				mult := math.Pow(2, float64(attemptNum)) * float64(min)
+				sleep := time.Duration(mult)
+				if float64(sleep) != mult || sleep > max {
+					sleep = max
+				}
+				return sleep
 			}
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
