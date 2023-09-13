@@ -344,13 +344,13 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 					return retryAfter
 				}
 			}
-		}
-		if resp.Request != nil {
-			wait, d := rateLimiter.Wait(resp.Request.Method)
-			if wait {
-				return d
-			} else {
-				return 0
+			if resp.Request != nil {
+				wait, d := rateLimiter.Wait(resp.Request.Method)
+				if wait {
+					return d
+				} else {
+					return 0
+				}
 			}
 		}
 		// default to exp backoff

@@ -219,13 +219,13 @@ func (c *Config) GetHTTPClient() *http.Client {
 							}
 						}
 					}
-				}
-				if resp.Request != nil {
-					wait, duration := c.rateLimiter.Wait(resp.Request.Method)
-					if wait {
-						c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
-					} else {
-						return 0
+					if resp.Request != nil {
+						wait, duration := c.rateLimiter.Wait(resp.Request.Method)
+						if wait {
+							c.Logger.Printf("[INFO] rate limiter wait duration:%s\n", duration.String())
+						} else {
+							return 0
+						}
 					}
 				}
 				// default to exp backoff
