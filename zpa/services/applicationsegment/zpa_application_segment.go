@@ -17,10 +17,11 @@ const (
 
 type ApplicationSegmentResource struct {
 	ID                        string                              `json:"id,omitempty"`
-	DomainNames               []string                            `json:"domainNames,omitempty"`
 	Name                      string                              `json:"name,omitempty"`
 	Description               string                              `json:"description,omitempty"`
 	Enabled                   bool                                `json:"enabled"`
+	DomainNames               []string                            `json:"domainNames,omitempty"`
+	ADPEnabled                bool                                `json:"adpEnabled"`
 	PassiveHealthEnabled      bool                                `json:"passiveHealthEnabled"`
 	DoubleEncrypt             bool                                `json:"doubleEncrypt"`
 	ConfigSpace               string                              `json:"configSpace,omitempty"`
@@ -48,6 +49,8 @@ type ApplicationSegmentResource struct {
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts               `json:"udpPortRange,omitempty"`
+	TCPProtocols              []string                            `json:"tcpProtocols"`
+	UDPProtocols              []string                            `json:"udpProtocols"`
 	ServerGroups              []AppServerGroups                   `json:"serverGroups"`
 	DefaultIdleTimeout        string                              `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
