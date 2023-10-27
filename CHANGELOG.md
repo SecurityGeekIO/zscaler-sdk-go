@@ -1,5 +1,62 @@
 # Changelog
 
+# 2.1.4 (October 18, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Enhancements
+
+- [PR #172](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/172) Added ``GetAllSubLocations`` function to ZIA package.
+
+# 2.1.3 (October 5, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #170](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/170) Fixed ZPA common custom pagination function `GetAllPagesGenericWithCustomFilters` to accommodate recent API changes on searches of objects containing multiple spaces when searching by name. Issue [#169](https://github.com/SecurityGeekIO/zscaler-sdk-go/issues/169)
+- [PR #171](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/171) Fixed ZPA application segment PRA and Inspection to include additional attributes within the ``apps_config`` menu
+
+# 2.1.2 (October 3, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #168](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/168) Restructured zia user management package directory for better organization and readability.
+
+# 2.1.1 (September 30, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #167](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/167) Added ZPA LSS Config Controller `ResourceLHSRHSValue` to allow for more granular SIEM policy configuration.
+
+# 2.1.0 (September 22, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #166](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/166) Added new ZIA Firewall attribute ``excludeSrcCountries``
+- [PR #166](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/166) Added support documents and updated README page.
+
+# 2.1.0-beta (September 14, 2023)
+
+## Notes
+- Golang: **v1.19**
+
+### Fixes
+
+- [PR #164](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/164) Implemented caching (BigCache) for ZIA API client.
+- [PR #164](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/164) Implemented detailed rate limiter per method for ZPA and ZIA API Clients. The rate limiter separates limits and frequencies for GET and other (POST, PUT, DELETE) requests for further flexibility.
+
 # 2.0.2 (September 10, 2023)
 
 ## Notes
@@ -70,7 +127,7 @@
   - Cloud Browser Isolation Regions
   - Cloud Browser Isolation ZPA Profile
 
-- [PR #145](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/zscaler/terraform-provider-zpa/issues/333)
+- [PR #145](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/145) - Added support to ZPA GOV US Cloud. [ZPA Terraform Provider Issue#333](https://github.com/SecurityGeekIO/terraform-provider-zpa/issues/333)
 
 ### Fixes
 

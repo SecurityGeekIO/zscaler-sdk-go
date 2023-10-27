@@ -5,7 +5,7 @@ builds:
     skip: true
 release:
   github:
-    owner: SecurityGeekIO
+    owner: zscaler
     name: zscaler-sdk-go
 
   draft: true

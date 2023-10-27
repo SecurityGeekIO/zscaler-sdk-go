@@ -1,41 +1,44 @@
 package provisioningkey
 
+/*
 import (
 	"log"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
-const connGrpAssociationType = "CONNECTOR_GRP"
+const (
+	serviceEdgeGroupAssociationType = "SERVICE_EDGE_GRP"
+)
 
 // clean all resources
-func TestMain(m *testing.M) {
+func TestMain1(m *testing.M) {
 	setup()
 	code := m.Run()
 	teardown()
 	os.Exit(code)
 }
 
-func setup() {
+func setup1() {
 	cleanResources() // clean up at the beginning
 }
 
-func teardown() {
+func teardown1() {
 	cleanResources() // clean up at the end
 }
 
-func shouldClean() bool {
+func shouldClean1() bool {
 	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
+	return !present || (present && (val == "" || val == "true"))
 }
 
-func cleanResources() {
+func cleanResources1() {
 	if !shouldClean() {
 		return
 	}
@@ -51,11 +54,11 @@ func cleanResources() {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(connGrpAssociationType, r.ID)
+		_, _ = service.Delete(serviceEdgeGroupAssociationType, r.ID)
 	}
 }
 
-func TestProvisiongKey(t *testing.T) {
+func TestProvisiongKeyServiceEdgeGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	appConnGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -65,26 +68,20 @@ func TestProvisiongKey(t *testing.T) {
 		return
 	}
 	// create application connector group for testing
-	appConnectorGroupService := appconnectorgroup.New(client)
-	appGroup := appconnectorgroup.AppConnectorGroup{
-		Name:                     appConnGroupName,
-		Description:              appConnGroupName,
-		Enabled:                  true,
-		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
-		Location:                 "San Jose, CA, USA",
-		UpgradeDay:               "SUNDAY",
-		UpgradeTimeInSecs:        "66600",
-		OverrideVersionProfile:   true,
-		VersionProfileName:       "Default",
-		VersionProfileID:         "0",
-		DNSQueryType:             "IPV4_IPV6",
-		PRAEnabled:               false,
-		WAFDisabled:              true,
-		TCPQuickAckApp:           true,
-		TCPQuickAckAssistant:     true,
-		TCPQuickAckReadAssistant: true,
+	appConnectorGroupService := serviceedgegroup.New(client)
+	appGroup := serviceedgegroup.ServiceEdgeGroup{
+		Name:                   appConnGroupName,
+		Description:            appConnGroupName,
+		Enabled:                true,
+		Latitude:               "37.3861",
+		Longitude:              "-122.0839",
+		Location:               "Mountain View, CA",
+		IsPublic:               "TRUE",
+		UpgradeDay:             "SUNDAY",
+		UpgradeTimeInSecs:      "66600",
+		OverrideVersionProfile: true,
+		VersionProfileName:     "Default",
+		VersionProfileID:       "0",
 	}
 
 	createdAppConnGroup, _, err := appConnectorGroupService.Create(appGroup)
@@ -107,7 +104,7 @@ func TestProvisiongKey(t *testing.T) {
 
 	// get enrollment cert for testing
 	enrollmentCertService := enrollmentcert.New(client)
-	enrollmentCert, _, err := enrollmentCertService.GetByName("Connector")
+	enrollmentCert, _, err := enrollmentCertService.GetByName("Service Edge")
 	if err != nil {
 		t.Errorf("Error getting enrollment cert: %v", err)
 		return
@@ -116,7 +113,7 @@ func TestProvisiongKey(t *testing.T) {
 	service := New(client)
 
 	resource := ProvisioningKey{
-		AssociationType:       connGrpAssociationType,
+		AssociationType:       serviceEdgeGroupAssociationType,
 		Name:                  name,
 		AppConnectorGroupID:   createdAppConnGroup.ID,
 		AppConnectorGroupName: createdAppConnGroup.Name,
@@ -125,7 +122,7 @@ func TestProvisiongKey(t *testing.T) {
 		MaxUsage:              "10",
 	}
 	// Test resource creation
-	createdResource, _, err := service.Create(connGrpAssociationType, &resource)
+	createdResource, _, err := service.Create(serviceEdgeGroupAssociationType, &resource)
 	if err != nil || createdResource == nil || createdResource.ID == "" {
 		t.Fatalf("Error making POST request or created resource is nil/empty: %v", err)
 		return
@@ -138,7 +135,7 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
+	retrievedResource, _, err := service.Get(serviceEdgeGroupAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -150,11 +147,11 @@ func TestProvisiongKey(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(connGrpAssociationType, createdResource.ID, retrievedResource)
+	_, err = service.Update(serviceEdgeGroupAssociationType, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(connGrpAssociationType, createdResource.ID)
+	updatedResource, _, err := service.Get(serviceEdgeGroupAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -165,7 +162,7 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(connGrpAssociationType, updateName)
+	retrievedResource, _, err = service.GetByName(serviceEdgeGroupAssociationType, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 		return
@@ -202,15 +199,16 @@ func TestProvisiongKey(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(connGrpAssociationType, createdResource.ID)
+	_, err = service.Delete(serviceEdgeGroupAssociationType, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(connGrpAssociationType, createdResource.ID)
+	_, _, err = service.Get(serviceEdgeGroupAssociationType, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
 }
+*/

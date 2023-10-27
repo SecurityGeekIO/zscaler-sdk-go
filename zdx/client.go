@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
 )
 
 type Client struct {

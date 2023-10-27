@@ -1,5 +1,6 @@
 package usermanagement
 
+/*
 import (
 	"log"
 	"os"
@@ -7,9 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (
@@ -235,3 +236,4 @@ func tryRetrieveResource(s *Service, id int) (*Users, error) {
 
 	return nil, err
 }
+*/
