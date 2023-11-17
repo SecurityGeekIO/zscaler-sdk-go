@@ -89,6 +89,15 @@ func LogRequest(logger Logger, req *http.Request, reqID string) {
 
 func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID string) {
 	if logger != nil && resp != nil {
+		// Log the Set-Cookie header if present
+		cookies := resp.Header["Set-Cookie"]
+		for _, cookie := range cookies {
+			if strings.Contains(cookie, "JSESSIONID") {
+				logger.Printf("[RESPONSE-COOKIE] %s: %s\n", "Set-Cookie", cookie)
+			}
+		}
+
+		// Dump the entire response
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			WriteLog(logger, logRespMsg, resp.Request.Method, resp.Request.URL, reqID, time.Since(start).String(), string(out))
