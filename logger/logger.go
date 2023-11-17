@@ -78,8 +78,14 @@ func LogRequestSensitive(logger Logger, req *http.Request, reqID string, sensiti
 	}
 }
 
-func LogRequest(logger Logger, req *http.Request, reqID string) {
+func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParams map[string]string) {
 	if logger != nil && req != nil {
+		l, ok := logger.(*defaultLogger)
+		if ok && l.Verbose {
+			for k, v := range otherHeaderParams {
+				req.Header.Add(k, v)
+			}
+		}
 		out, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
@@ -89,14 +95,6 @@ func LogRequest(logger Logger, req *http.Request, reqID string) {
 
 func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID string) {
 	if logger != nil && resp != nil {
-		// Log the Set-Cookie header if present
-		cookies := resp.Header["Set-Cookie"]
-		for _, cookie := range cookies {
-			if strings.Contains(cookie, "JSESSIONID") {
-				logger.Printf("[RESPONSE-COOKIE] %s: %s\n", "Set-Cookie", cookie)
-			}
-		}
-
 		// Dump the entire response
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {

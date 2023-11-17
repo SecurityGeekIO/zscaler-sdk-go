@@ -39,13 +39,6 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		}
 	}
 
-	// Debug: Print cookies before the request is sent
-	if cookies := c.HTTPClient.Jar.Cookies(req.URL); len(cookies) > 0 {
-		for _, cookie := range cookies {
-			c.Logger.Printf("Cookie being sent: %s=%s", cookie.Name, cookie.Value)
-		}
-	}
-
 	resp, err := c.HTTPClient.Do(req)
 	logger.LogResponse(c.Logger, resp, start, reqID)
 	if err != nil {
@@ -76,9 +69,13 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
+	err = c.checkSession()
+	if err != nil {
+		return nil, err
+	}
 	reqID := uuid.New().String()
-	logger.LogRequest(c.Logger, req, reqID)
 	start := time.Now()
+	logger.LogRequest(c.Logger, req, reqID, map[string]string{"JSessionID": c.session.JSessionID})
 	for retry := 1; retry <= 5; retry++ {
 		err = c.checkSession()
 		if err != nil {
