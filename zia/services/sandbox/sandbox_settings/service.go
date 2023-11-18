@@ -1,4 +1,4 @@
-package zpa_gateways
+package sandbox_settings
 
 import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"

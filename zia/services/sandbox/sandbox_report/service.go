@@ -1,4 +1,4 @@
-package forwarding_rules
+package sandbox_report
 
 import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
