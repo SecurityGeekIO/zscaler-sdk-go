@@ -13,6 +13,8 @@
   - **Sandbox Advanced Settings** - Gets and Upddates the custom list of MD5 file hashes that are blocked by Sandbox.
   - **Sandbox Advanced Settings Hash Count** - Gets the used and unused quota for blocking MD5 file hashes with Sandbox
 
+- [PR #xxx](https://github.com/zscaler/zscaler-sdk-go/pull/xxx) Added support for ZIA User Management SortOrder and SortBy search criteria option
+
 # 2.1.6 (November 17, 2023)
 
 ## Notes
