@@ -1,4 +1,4 @@
-package adminuserrolemgmt
+package adminusers
 
 import (
 	"log"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services/adminuserrolemgmt/adminroles"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -95,7 +96,7 @@ func cleanResources() {
 		return
 	}
 
-	client, err := tests.NewZiaClient()
+	client, err := tests.NewZConClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -116,17 +117,17 @@ func cleanResources() {
 	}
 }
 
-func TestUserManagement(t *testing.T) {
+func TestZCONUserManagement(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComments := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	client, err := tests.NewZConClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
 	}
 
-	roleService := New(client)
+	roleService := adminroles.New(client)
 	roles, err := roleService.GetAllAdminRoles()
 	if err != nil || len(roles) == 0 {
 		t.Fatalf("Error retrieving roles or no roles found: %v", err)
@@ -238,7 +239,7 @@ func TestUserManagement(t *testing.T) {
 		_, delErr := service.DeleteAdminUser(createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = service.GetAdminUsers(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}

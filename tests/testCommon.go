@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
@@ -92,4 +93,18 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 	}
 
 	return nil
+}
+
+func NewZConClient() (*zcon.Client, error) {
+	username := os.Getenv("ZCON_USERNAME")
+	password := os.Getenv("ZCON_PASSWORD")
+	apiKey := os.Getenv("ZCON_API_KEY")
+	zconCloud := os.Getenv("ZCON_CLOUD")
+
+	cli, err := zcon.NewClient(username, password, apiKey, zconCloud, "testing")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
