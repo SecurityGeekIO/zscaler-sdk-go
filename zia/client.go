@@ -61,10 +61,16 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 	var req *http.Request
 	var resp *http.Response
 	var err error
-	if urlParams == nil {
-		urlParams = url.Values{}
+	params := ""
+	if urlParams != nil {
+		params = urlParams.Encode()
 	}
-	fullURL := fmt.Sprintf("%s%s?%s", baseUrl, endpoint, urlParams.Encode())
+	if strings.Contains(endpoint, "?") && params != "" {
+		endpoint += "&" + params
+	} else if params != "" {
+		endpoint += "?" + params
+	}
+	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
 	isSandboxRequest := baseUrl == c.GetSandboxURL()
 	req, err = http.NewRequest(method, fullURL, body)
 	if err != nil {
