@@ -1,4 +1,4 @@
-package sandbox
+package sandbox_submission
 
 import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
