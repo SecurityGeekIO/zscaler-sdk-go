@@ -20,10 +20,12 @@ type RatingQuota struct {
 }
 
 type ReportMD5Hash struct {
+	Details *FullDetails `json:"details,omitempty"`
+}
+
+type ReportMD5HashApiResponse struct {
 	FullDetails *FullDetails `json:"Full Details,omitempty"`
-	Summary     *Summary     `json:"Summary,omitempty"`
-	MD5Hash     string       `json:"md5Hash,omitempty"`
-	Details     string       `json:"details,omitempty"`
+	Summary     *FullDetails `json:"Summary,omitempty"`
 }
 
 type Summary struct {
@@ -60,17 +62,17 @@ type FileProperties struct {
 }
 
 type FullDetails struct {
-	Summary        *SummaryDetail         `json:"Summary,omitempty"`
-	Classification *Classification        `json:"Classification,omitempty"`
-	FileProperties *FileProperties        `json:"FileProperties,omitempty"`
-	Origin         *Origin                `json:"Origin,omitempty"`
-	SystemSummary  []*SystemSummaryDetail `json:"SystemSummary,omitempty"`
-	Spyware        []*common.SandboxRSS   `json:"Spyware,omitempty"`
-	Networking     []*common.SandboxRSS   `json:"Networking,omitempty"`
-	SecurityBypass []*common.SandboxRSS   `json:"SecurityBypass,omitempty"`
-	Exploit        []*common.SandboxRSS   `json:"Exploit,omitempty"`
-	Stealth        []*common.SandboxRSS   `json:"Stealth,omitempty"`
-	Persistence    []*common.SandboxRSS   `json:"Persistence,omitempty"`
+	Summary        SummaryDetail         `json:"Summary,omitempty"`
+	Classification Classification        `json:"Classification,omitempty"`
+	FileProperties FileProperties        `json:"FileProperties,omitempty"`
+	Origin         *Origin               `json:"Origin,omitempty"`
+	SystemSummary  []SystemSummaryDetail `json:"SystemSummary,omitempty"`
+	Spyware        []*common.SandboxRSS  `json:"Spyware,omitempty"`
+	Networking     []*common.SandboxRSS  `json:"Networking,omitempty"`
+	SecurityBypass []*common.SandboxRSS  `json:"SecurityBypass,omitempty"`
+	Exploit        []*common.SandboxRSS  `json:"Exploit,omitempty"`
+	Stealth        []*common.SandboxRSS  `json:"Stealth,omitempty"`
+	Persistence    []*common.SandboxRSS  `json:"Persistence,omitempty"`
 }
 
 type Origin struct {
@@ -106,10 +108,17 @@ func (service *Service) GetReportMD5Hash(md5Hash, details string) (*ReportMD5Has
 	// Construct the endpoint URL with the md5Hash and details query parameters.
 	endpoint := fmt.Sprintf("%s%s?details=%s", reportMD5Endpoint, md5Hash, details)
 
-	var report ReportMD5Hash
-	err := service.Client.Read(endpoint, &report)
+	var resp ReportMD5HashApiResponse
+	err := service.Client.Read(endpoint, &resp)
 	if err != nil {
 		return nil, err
+	}
+
+	var report ReportMD5Hash
+	if details == "full" {
+		report.Details = resp.FullDetails
+	} else {
+		report.Details = resp.Summary
 	}
 
 	service.Client.Logger.Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
