@@ -21,6 +21,11 @@ type IDExtensions struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
+type IDName struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type UserGroups struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -46,10 +51,15 @@ type Devices struct {
 	Name string `json:"name,omitempty"`
 }
 
-type SandboxRSS struct {
-	Risk             string `json:"Risk,omitempty"`
-	Signature        string `json:"Signature,omitempty"`
-	SignatureSources string `json:"SignatureSources,omitempty"`
+type DatacenterSearchParameters struct {
+	RoutableIP                bool
+	WithinCountryOnly         bool
+	IncludePrivateServiceEdge bool
+	IncludeCurrentVips        bool
+	SourceIp                  string
+	Latitude                  float64
+	Longitude                 float64
+	Subcloud                  string
 }
 
 // GetPageSize returns the page size.

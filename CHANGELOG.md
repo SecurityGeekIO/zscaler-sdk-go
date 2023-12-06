@@ -7,7 +7,7 @@
 
 ### Enhancements
 
-- [PR #185](https://github.com/zscaler/zscaler-sdk-go/pull/185) Added ZIA Sandbox Resources:
+- [PR #185](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/185) Added ZIA Sandbox Resources:
   - **Sandbox Quota Report** - The resource access quota for retrieving Sandbox Detail Reports is restricted to 1000 requests per day, with a rate limit of 2/sec and 1000/hour. Use GET /sandbox/report/quota to retrieve details regarding your organization's daily Sandbox API resource usage (i.e., used quota, unused quota).
   - **Sandbox Quota MD5 Hash Report** - Gets a full (i.e., complete) or summary detail report for an MD5 hash of a file that was analyzed by Sandbox.
   - **Sandbox Advanced Settings** - Gets and Upddates the custom list of MD5 file hashes that are blocked by Sandbox.
@@ -15,7 +15,7 @@
   - **Sandbox Submission** - Submits raw or archive files (e.g., ZIP) to Sandbox for analysis. You can submit up to 100 files per day and it supports all file types that are currently supported by Sandbox.
   - **Sandbox Out-of-Band File Inspection** - Submits raw or archive files (e.g., ZIP) to the Zscaler service for out-of-band file inspection to generate real-time verdicts for known and unknown files. It leverages capabilities such as Malware Prevention, Advanced Threat Prevention, Sandbox cloud effect, AI/ML-driven file analysis, and integrated third-party threat intelligence feeds to inspect files and classify them as benign or malicious instantaneously.
 
-- [PR #xxx](https://github.com/zscaler/zscaler-sdk-go/pull/xxx) Added support for ZIA User Management SortOrder and SortBy search criteria option
+- [PR #xxx](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/xxx) Added support for ZIA User Management SortOrder and SortBy search criteria option
 
 # 2.1.6 (November 17, 2023)
 
@@ -24,8 +24,8 @@
 
 ### Enhancements
 
-- [PR #182](https://github.com/zscaler/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
-- [PR #184](https://github.com/zscaler/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
+- [PR #182](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/182) Added support for ZPA SCIM Group SortOrder and SortBy search criteria option
+- [PR #184](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/184) - Added `JSESSIONID` to every ZIA API Request
 
 # 2.1.5 (November 1, 2023)
 
@@ -34,8 +34,8 @@
 
 ### Fixes
 
-- [PR #177](https://github.com/zscaler/zscaler-sdk-go/pull/177) Temporarily disabled Cloud Browser Isolation test edge cases to prevent some errors
-- [PR #178](https://github.com/zscaler/zscaler-sdk-go/pull/178) Added missing `microtenant_id` attribute to ZPA Enrollment Certificate resource.
+- [PR #177](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/177) Temporarily disabled Cloud Browser Isolation test edge cases to prevent some errors
+- [PR #178](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/178) Added missing `microtenant_id` attribute to ZPA Enrollment Certificate resource.
 
 # 2.1.4 (October 18, 2023)
 

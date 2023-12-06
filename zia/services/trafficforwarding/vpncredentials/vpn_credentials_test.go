@@ -1,7 +1,6 @@
-package dlp_web_rules
+package vpncredentials
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -79,8 +79,8 @@ func cleanResources() {
 	}
 
 	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
+		if strings.HasPrefix(r.Comments, "tests-") {
+			err := service.Delete(r.ID)
 			if err != nil {
 				log.Printf("Error deleting resource %d: %v", r.ID, err)
 			}
@@ -88,47 +88,56 @@ func cleanResources() {
 	}
 }
 
-func TestDLPWebRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestTrafficForwardingVPNCreds(t *testing.T) {
+	ipAddress, _ := acctest.RandIpAddress("104.239.239.0/24")
+	comment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateComment := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+	staticipsService := staticips.New(client)
+	staticIP, _, err := staticipsService.Create(&staticips.StaticIP{
+		IpAddress: ipAddress,
+		Comment:   comment,
+	})
+	if err != nil {
+		t.Fatalf("Creating static ip failed: %v", err)
 	}
 
-	var createdResource *WebDLPRules
+	defer func() {
+		_, err := staticipsService.Delete(staticIP.ID)
+		if err != nil {
+			t.Errorf("Deleting static ip failed: %v", err)
+		}
+	}()
 
-	// Test resource creation
+	service := New(client)
+	cred := VPNCredentials{
+		Type:         "IP",
+		IPAddress:    ipAddress,
+		Comments:     comment,
+		PreSharedKey: "newPassword123!",
+	}
+
+	var createdResource *VPNCredentials
+
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, _, err = service.Create(&cred)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+
+	if createdResource.Comments != comment {
+		t.Errorf("Expected created resource comment '%s', but got '%s'", comment, createdResource.Comments)
 	}
 
 	// Test resource retrieval
@@ -136,17 +145,18 @@ func TestDLPWebRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
+
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+
+	if retrievedResource.Comments != comment {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", comment, retrievedResource.Comments)
 	}
 
-	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Comments = updateComment
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -157,37 +167,39 @@ func TestDLPWebRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
+
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+
+	if updatedResource.Comments != updateComment {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comments)
 	}
 
-	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedResource, err = service.GetVPNByType("IP")
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedByNameResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
-	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 
-	// Test resources retrieval
-	allResources, err := service.GetAll()
+	if retrievedResource.Comments != updateComment {
+		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComment, retrievedResource.Comments)
+	}
+
+	resources, err := service.GetAll()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(allResources) == 0 {
+
+	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
 
-	// check if the created resource is in the list
 	found := false
-	for _, resource := range allResources {
+	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -197,18 +209,13 @@ func TestDLPWebRule(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
 
-	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
-
-	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
-		_, delErr := service.Delete(createdResource.ID)
-		return delErr
+		return service.Delete(createdResource.ID)
 	})
+	if err != nil {
+		t.Fatalf("Error deleting resource: %v", err)
+	}
+
 	_, err = service.Get(createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
@@ -216,8 +223,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*VPNCredentials, error) {
+	var resource *VPNCredentials
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
