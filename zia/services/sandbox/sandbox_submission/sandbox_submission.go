@@ -1,4 +1,4 @@
-package sandbox
+package sandbox_submission
 
 import (
 	"bytes"

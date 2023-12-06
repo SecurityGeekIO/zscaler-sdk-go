@@ -34,7 +34,7 @@ func TestGetReportMD5Hash(t *testing.T) {
 	service := &Service{Client: client}
 
 	// Replace with an actual MD5 hash of known malware. This is just an example.
-	md5Hashes := []string{"c0202cf6aeab8437c638533d14563d35", "42914d6d213a20a2684064be5c80ffa9"}
+	md5Hashes := []string{"F69CA01D65E6C8F9E3540029E5F6AB92"}
 
 	for _, md5Hash := range md5Hashes {
 		for _, details := range []string{"full", "summary"} {
