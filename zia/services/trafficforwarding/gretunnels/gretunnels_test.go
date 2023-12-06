@@ -134,10 +134,12 @@ func TestGRETunnel(t *testing.T) {
 
 	service := New(client)
 
+	withinCountry := true // Create a boolean variable
+
 	greTunnel := GreTunnels{
 		SourceIP:      staticIP.IpAddress,
 		Comment:       comment,
-		WithinCountry: true,
+		WithinCountry: &withinCountry,
 		IPUnnumbered:  true,
 		PrimaryDestVip: &PrimaryDestVip{
 			ID:        vipRecommendedList[0].ID,
