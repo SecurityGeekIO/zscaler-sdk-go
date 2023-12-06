@@ -25,11 +25,6 @@ type ReportMD5Hash struct {
 	Details *FullDetails `json:"details,omitempty"`
 }
 
-type ReportMD5HashApiResponse struct {
-	FullDetails *FullDetails `json:"Full Details,omitempty"`
-	Summary     *FullDetails `json:"Summary,omitempty"`
-}
-
 type Summary struct {
 	Detail         *SummaryDetail  `json:"Summary,omitempty"`
 	Classification *Classification `json:"Classification,omitempty"`
