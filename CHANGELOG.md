@@ -15,6 +15,8 @@
   - **Sandbox Submission** - Submits raw or archive files (e.g., ZIP) to Sandbox for analysis. You can submit up to 100 files per day and it supports all file types that are currently supported by Sandbox.
   - **Sandbox Out-of-Band File Inspection** - Submits raw or archive files (e.g., ZIP) to the Zscaler service for out-of-band file inspection to generate real-time verdicts for known and unknown files. It leverages capabilities such as Malware Prevention, Advanced Threat Prevention, Sandbox cloud effect, AI/ML-driven file analysis, and integrated third-party threat intelligence feeds to inspect files and classify them as benign or malicious instantaneously.
 
+- [PR #xxx](https://github.com/zscaler/zscaler-sdk-go/pull/xxx) Added support for ZIA User Management SortOrder and SortBy search criteria option
+
 # 2.1.6 (November 17, 2023)
 
 ## Notes
