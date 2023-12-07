@@ -1,8 +1,6 @@
-package dlp_notification_templates
+package dlp_engines
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -11,6 +9,7 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -89,60 +88,41 @@ func cleanResources() {
 	}
 }
 
-func readFileContent(path string) (string, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
-func TestDlpNotificationTemplates(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-
+func TestDLPEngine(t *testing.T) {
+	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	htmlContent, err := readFileContent("dlp_notification_template.html")
-	if err != nil {
-		t.Fatalf("Error reading HtmlMessage content: %v", err)
-	}
-
-	textContent, err := readFileContent("dlp_notification_template.txt")
-	if err != nil {
-		t.Fatalf("Error reading PlainTextMessage content: %v", err)
-	}
-
 	service := New(client)
-	dlpTemplate := DlpNotificationTemplates{
-		Name:             name + "DLP Template Test",
-		Subject:          "DLP Violation: ${TRANSACTION_ID} ${ENGINES}",
-		AttachContent:    true,
-		TLSEnabled:       true,
-		HtmlMessage:      htmlContent,
-		PlainTextMessage: textContent,
+
+	engine := DLPEngines{
+		Name:             name,
+		Description:      description,
+		EngineExpression: "((D63.S > 1))",
+		CustomDlpEngine:  true,
 	}
-	var createdResource *DlpNotificationTemplates
+
+	var createdResource *DLPEngines
+
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&dlpTemplate)
+		createdResource, _, err = service.Create(&engine)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	expectedName := name + "DLP Template Test"
-	if createdResource.Name != expectedName {
-		t.Errorf("Expected created resource name '%s', but got '%s'", expectedName, createdResource.Name)
+	if createdResource.Name != name {
+		t.Errorf("Expected created dlp engine '%s', but got '%s'", name, createdResource.Name)
 	}
-
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
@@ -151,14 +131,15 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != expectedName {
-		t.Errorf("Expected retrieved dlp template '%s', but got '%s'", expectedName, retrievedResource.Name)
+	if retrievedResource.Name != name {
+		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
 		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		require.NoError(t, err, "Updating a dlp engine caused an error")
 		return err
 	})
 	if err != nil {
@@ -172,34 +153,32 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	if updatedResource.Description != updateDescription {
+		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateDescription, updatedResource.Description)
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedResource, err = service.GetByName(name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedByNameResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+	if retrievedResource.Description != updateDescription {
+		t.Errorf("Expected retrieved resource description '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
-
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	resources, err := service.GetAll()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(allResources) == 0 {
+	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range allResources {
+	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -208,17 +187,10 @@ func TestDlpNotificationTemplates(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
-
-	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
-
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
 		_, delErr := service.Delete(createdResource.ID)
+		require.NoError(t, err, "Should not error when deleting")
 		return delErr
 	})
 	_, err = service.Get(createdResource.ID)
@@ -228,8 +200,8 @@ func TestDlpNotificationTemplates(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DlpNotificationTemplates, error) {
-	var resource *DlpNotificationTemplates
+func tryRetrieveResource(s *Service, id int) (*DLPEngines, error) {
+	var resource *DLPEngines
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -242,4 +214,56 @@ func tryRetrieveResource(s *Service, id int) (*DlpNotificationTemplates, error) 
 	}
 
 	return nil, err
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Get(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Update(0, &DLPEngines{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }

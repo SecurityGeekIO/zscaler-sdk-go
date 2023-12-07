@@ -1,7 +1,8 @@
-package dlp_web_rules
+package dlp_notification_templates
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -88,7 +89,15 @@ func cleanResources() {
 	}
 }
 
-func TestDLPWebRule(t *testing.T) {
+func readFileContent(path string) (string, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func TestDlpNotificationTemplates(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
@@ -96,27 +105,29 @@ func TestDLPWebRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := New(client)
-	rule := WebDLPRules{
-		Name:                     name,
-		Description:              name,
-		Order:                    1,
-		Rank:                     7,
-		State:                    "ENABLED",
-		Action:                   "BLOCK",
-		ZscalerIncidentReceiver:  true,
-		WithoutContentInspection: false,
-		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
-		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
+	htmlContent, err := readFileContent("dlp_notification_template.html")
+	if err != nil {
+		t.Fatalf("Error reading HtmlMessage content: %v", err)
 	}
 
-	var createdResource *WebDLPRules
+	textContent, err := readFileContent("dlp_notification_template.txt")
+	if err != nil {
+		t.Fatalf("Error reading PlainTextMessage content: %v", err)
+	}
 
+	service := New(client)
+	dlpTemplate := DlpNotificationTemplates{
+		Name:             name + "DLP Template Test",
+		Subject:          "DLP Violation: ${TRANSACTION_ID} ${ENGINES}",
+		AttachContent:    true,
+		TLSEnabled:       true,
+		HtmlMessage:      htmlContent,
+		PlainTextMessage: textContent,
+	}
+	var createdResource *DlpNotificationTemplates
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&rule)
+		createdResource, _, err = service.Create(&dlpTemplate)
 		return err
 	})
 	if err != nil {
@@ -127,8 +138,9 @@ func TestDLPWebRule(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+	expectedName := name + "DLP Template Test"
+	if createdResource.Name != expectedName {
+		t.Errorf("Expected created resource name '%s', but got '%s'", expectedName, createdResource.Name)
 	}
 
 	// Test resource retrieval
@@ -139,14 +151,14 @@ func TestDLPWebRule(t *testing.T) {
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+	if retrievedResource.Name != expectedName {
+		t.Errorf("Expected retrieved dlp template '%s', but got '%s'", expectedName, retrievedResource.Name)
 	}
 
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -216,8 +228,8 @@ func TestDLPWebRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
-	var resource *WebDLPRules
+func tryRetrieveResource(s *Service, id int) (*DlpNotificationTemplates, error) {
+	var resource *DlpNotificationTemplates
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -230,4 +242,56 @@ func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
 	}
 
 	return nil, err
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Get(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, _, err = service.Update(0, &DlpNotificationTemplates{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }

@@ -1,6 +1,7 @@
-package dlpdictionaries
+package dlp_web_rules
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -41,7 +42,6 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-// clean all resources
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
@@ -50,11 +50,11 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	cleanResources() // clean up at the beginning
+	cleanResources()
 }
 
 func teardown() {
-	cleanResources() // clean up at the end
+	cleanResources()
 }
 
 func shouldClean() bool {
@@ -72,60 +72,63 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 	service := New(client)
-	resources, _ := service.GetAll()
+	resources, err := service.GetAll()
+	if err != nil {
+		log.Printf("Error retrieving resources during cleanup: %v", err)
+		return
+	}
+
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
+		if strings.HasPrefix(r.Name, "tests-") {
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("Error deleting resource %d: %v", r.ID, err)
+			}
 		}
-		_, _ = service.DeleteDlpDictionary(r.ID)
 	}
 }
 
-func TestDLPDictionaries(t *testing.T) {
+func TestDLPWebRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
 	service := New(client)
-
-	dictionary := DlpDictionary{
-		Name:                  name,
-		Description:           name,
-		DictionaryType:        "PATTERNS_AND_PHRASES",
-		CustomPhraseMatchType: "MATCH_ALL_CUSTOM_PHRASE_PATTERN_DICTIONARY",
-		Phrases: []Phrases{
-			{
-				Action: "PHRASE_COUNT_TYPE_ALL",
-				Phrase: "YourPhrase",
-			},
-		},
-		Patterns: []Patterns{
-			{
-				Action:  "PATTERN_COUNT_TYPE_UNIQUE",
-				Pattern: "YourPattern",
-			},
-		},
+	rule := WebDLPRules{
+		Name:                     name,
+		Description:              name,
+		Order:                    1,
+		Rank:                     7,
+		State:                    "ENABLED",
+		Action:                   "BLOCK",
+		ZscalerIncidentReceiver:  true,
+		WithoutContentInspection: false,
+		Protocols:                []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:        []string{"WINDOWS_LIVE_HOTMAIL"},
+		// FileTypes:                []string{"WINDOWS_META_FORMAT", "BITMAP", "JPEG", "PNG", "TIFF"},
 	}
 
-	var createdResource *DlpDictionary
+	var createdResource *WebDLPRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&dictionary)
+		createdResource, err = service.Create(&rule)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
+	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created dlp dictionary '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
 	// Test resource retrieval
@@ -137,12 +140,13 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp dictionary '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, err = service.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -159,29 +163,31 @@ func TestDLPDictionaries(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
-	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
 
+	// Test resource retrieval by name
+	retrievedByNameResource, err := service.GetByName(updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	if retrievedByNameResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	allResources, err := service.GetAll()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(resources) == 0 {
+	if len(allResources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
+
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range resources {
+	for _, resource := range allResources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -190,9 +196,17 @@ func TestDLPDictionaries(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
+
+	// Introduce a delay before deleting
+	time.Sleep(5 * time.Second) // sleep for 5 seconds
+
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.DeleteDlpDictionary(createdResource.ID)
+		_, getErr := service.Get(createdResource.ID)
+		if getErr != nil {
+			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
+		}
+		_, delErr := service.Delete(createdResource.ID)
 		return delErr
 	})
 	_, err = service.Get(createdResource.ID)
@@ -202,8 +216,8 @@ func TestDLPDictionaries(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DlpDictionary, error) {
-	var resource *DlpDictionary
+func tryRetrieveResource(s *Service, id int) (*WebDLPRules, error) {
+	var resource *WebDLPRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -216,4 +230,56 @@ func tryRetrieveResource(s *Service, id int) (*DlpDictionary, error) {
 	}
 
 	return nil, err
+}
+
+func TestRetrieveNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Get(0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
+
+func TestDeleteNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Delete(0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
+
+func TestUpdateNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.Update(0, &WebDLPRules{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+
+func TestGetByNameNonExistentResource(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := New(client)
+
+	_, err = service.GetByName("non-existent-name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
 }
