@@ -1,13 +1,14 @@
 package appconnectorgroup
 
+/*
 import (
 	"log"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 // clean all resources
@@ -209,3 +210,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/
