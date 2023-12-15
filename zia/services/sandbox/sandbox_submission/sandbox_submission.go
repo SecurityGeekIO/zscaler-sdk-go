@@ -42,6 +42,7 @@ func (service *Service) Discan(filename string, file io.Reader) (*ScanResult, er
 	return service.scanFile(filename, file, "", discanEndpoint)
 }
 
+// We need to ensure that the api_token is not encoded when appended to the URL.
 func (service *Service) scanFile(filename string, file io.Reader, force, endpoint string) (*ScanResult, error) {
 	// Add the API token and force parameter to the request URL query
 	urlParams := url.Values{}
