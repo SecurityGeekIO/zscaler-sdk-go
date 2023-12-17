@@ -176,11 +176,19 @@ func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, err
 	return createdURLFilteringRule, nil
 }
 
-func (service *Service) Update(ruleID int, rules *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
-	// Add debug log to print the rules object
-	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rules)
-
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rules)
+func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
+	// Add debug log to print the rule object
+	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
+	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
+		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
+		r, err := service.GetByName(rule.Name)
+		if err != nil {
+			return nil, nil, err
+		}
+		rule.CBIProfile = r.CBIProfile
+		rule.CBIProfileID = r.CBIProfileID
+	}
+	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
 	if err != nil {
 		return nil, nil, err
 	}
