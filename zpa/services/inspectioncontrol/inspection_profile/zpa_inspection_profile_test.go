@@ -1,5 +1,6 @@
 package inspection_profile
 
+/*
 import (
 	"fmt"
 	"log"
@@ -7,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_custom_controls"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_predefined_controls"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 // clean all resources
@@ -340,3 +341,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

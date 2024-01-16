@@ -29,6 +29,8 @@ type URLFilteringRule struct {
 	// List of URL categories for which rule must be applied
 	URLCategories []string `json:"urlCategories"`
 
+	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
+
 	// Rule State
 	State string `json:"state,omitempty"`
 

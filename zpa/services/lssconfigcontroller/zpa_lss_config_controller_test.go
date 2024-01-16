@@ -1,6 +1,5 @@
 package lssconfigcontroller
 
-/*
 import (
 	"log"
 	"os"
@@ -9,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 // clean all resources
@@ -424,4 +423,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/
