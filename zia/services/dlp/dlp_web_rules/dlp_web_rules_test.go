@@ -1,6 +1,5 @@
 package dlp_web_rules
 
-/*
 import (
 	"fmt"
 	"log"
@@ -9,8 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (
@@ -98,16 +99,26 @@ func TestDLPWebRule(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// dlpEngine := dlp_engines.New(client)
-	// engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
+	dlpEngine := dlp_engines.New(client)
+	engineList, err := dlpEngine.GetByPredefinedEngine("EXTERNAL")
+	if err != nil {
+		t.Errorf("Error getting saml attributes: %v", err)
+		return
+	}
+
+	// Check if engineList is not nil and contains elements
+	if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
+		t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
+	}
+
+	// workloadGroup := workloadgroups.New(client)
+	// groupList, err := workloadGroup.GetAll()
 	// if err != nil {
-	// 	t.Errorf("Error getting saml attributes: %v", err)
+	// 	t.Errorf("Error getting workload group: %v", err)
 	// 	return
 	// }
-
-	// // Check if engineList is not nil and contains elements
-	// if engineList == nil || len(engineList.PredefinedEngineName) == 0 {
-	// 	t.Error("Expected retrieved saml attributes to be non-empty, but got empty or nil")
+	// if len(groupList) == 0 {
+	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
 	// }
 
 	service := New(client)
@@ -121,14 +132,21 @@ func TestDLPWebRule(t *testing.T) {
 		// ZscalerIncidentReceiver:  true,
 		// WithoutContentInspection: false,
 		// DLPDownloadScanEnabled:   true,
-		// Severity:            "RULE_SEVERITY_HIGH",
-		Protocols: []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
-		// CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
-		// UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
-		// FileTypes:           []string{"ALL_OUTBOUND"},
-		// DLPEngines: []common.IDNameExtensions{
+		Severity:            "RULE_SEVERITY_HIGH",
+		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
+		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
+		FileTypes:           []string{"ALL_OUTBOUND"},
+
+		DLPEngines: []common.IDNameExtensions{
+			{
+				ID: engineList.ID,
+			},
+		},
+		// WorkloadGroups: []common.IDName{
 		// 	{
-		// 		ID: engineList.ID,
+		// 		ID:   groupList[0].ID,
+		// 		Name: groupList[0].Name,
 		// 	},
 		// },
 	}
@@ -304,4 +322,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/
