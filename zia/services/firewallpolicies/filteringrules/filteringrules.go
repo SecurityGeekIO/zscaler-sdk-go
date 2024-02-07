@@ -190,3 +190,4 @@ func (service *Service) GetAll() ([]FirewallFilteringRules, error) {
 	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
 	return rules, err
 }
+

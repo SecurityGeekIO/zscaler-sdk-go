@@ -215,3 +215,4 @@ func (service *Service) GetAll() ([]WebDLPRules, error) {
 	err := common.ReadAllPages(service.Client, webDlpRulesEndpoint, &webDlpRules)
 	return webDlpRules, err
 }
+
