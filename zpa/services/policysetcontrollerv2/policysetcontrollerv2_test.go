@@ -60,7 +60,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := service.CreateRuleV2(&accessPolicyRule)
+		createdResource, _, err := service.CreateRule(&accessPolicyRule)
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 			continue
@@ -74,7 +74,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
-		_, updateErr := service.UpdateRuleV2(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+		_, updateErr := service.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
 			continue

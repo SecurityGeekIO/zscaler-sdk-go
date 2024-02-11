@@ -181,7 +181,7 @@ func (service *Service) GetPolicyRule(policySetID, ruleId string) (*PolicyRuleRe
 }
 
 // POST --> mgmtconfig​/v2​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
-func (service *Service) CreateRuleV2(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
+func (service *Service) CreateRule(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfigV2+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
 	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.microTenantID}, &rule, v)
@@ -192,7 +192,7 @@ func (service *Service) CreateRuleV2(rule *PolicyRule) (*PolicyRule, *http.Respo
 }
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func (service *Service) UpdateRuleV2(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+func (service *Service) UpdateRule(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
 	// Correct the initialization of Conditions slice with the correct type
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []PolicyRuleResourceConditions{}
