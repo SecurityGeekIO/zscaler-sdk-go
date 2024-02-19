@@ -366,7 +366,7 @@ func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 			switch operand.ObjectType {
 			case "APP", "APP_GROUP", "MACHINE_GRP", "LOCATION", "BRANCH_CONNECTOR_GROUP", "EDGE_CONNECTOR_GROUP":
 				operandMap[operand.ObjectType] = append(operandMap[operand.ObjectType], operand.RHS)
-			case "PLATFORM", "POSTURE", "TRUSTED_NETWORK", "SAML", "SCIM", "SCIM_GROUP":
+			case "PLATFORM", "POSTURE", "TRUSTED_NETWORK", "SAML", "SCIM", "SCIM_GROUP", "COUNTRY_CODE":
 				entryValuesMap[operand.ObjectType] = append(entryValuesMap[operand.ObjectType], OperandsResourceLHSRHSValue{
 					LHS: operand.LHS,
 					RHS: operand.RHS,
