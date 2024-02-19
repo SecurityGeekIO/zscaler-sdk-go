@@ -355,7 +355,6 @@ func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 	for _, condition := range v1Response.Conditions {
 		newCondition := PolicyRuleResourceConditions{
 			Operator: condition.Operator,
-			Negated:  condition.Negated,
 			Operands: make([]PolicyRuleResourceOperands, 0),
 		}
 
