@@ -14,7 +14,6 @@ import (
 
 const (
 	mgmtConfigV1 = "/mgmtconfig/v1/admin/customers/"
-	mgmtConfigV2 = "/mgmtconfig/v2/admin/customers/"
 )
 
 type PolicySet struct {
@@ -78,23 +77,16 @@ type Conditions struct {
 }
 
 type Operands struct {
-	ID            string        `json:"id,omitempty"`
-	Name          string        `json:"name,omitempty"`
-	CreationTime  string        `json:"creationTime,omitempty"`
-	ModifiedBy    string        `json:"modifiedBy,omitempty"`
-	ModifiedTime  string        `json:"modifiedTime,omitempty"`
-	IdpID         string        `json:"idpId,omitempty"`
-	LHS           string        `json:"lhs,omitempty"`
-	RHS           string        `json:"rhs,omitempty"`
-	ObjectType    string        `json:"objectType,omitempty"`
-	MicroTenantID string        `json:"microtenantId,omitempty"`
-	Values        []string      `json:"values,omitempty"`
-	EntryValues   []EntryValues `json:"entryValues,omitempty"`
-}
-
-type EntryValues struct {
-	RHS string `json:"rhs,omitempty"`
-	LHS string `json:"lhs,omitempty"`
+	ID            string `json:"id,omitempty"`
+	Name          string `json:"name,omitempty"`
+	CreationTime  string `json:"creationTime,omitempty"`
+	ModifiedBy    string `json:"modifiedBy,omitempty"`
+	ModifiedTime  string `json:"modifiedTime,omitempty"`
+	IdpID         string `json:"idpId,omitempty"`
+	LHS           string `json:"lhs,omitempty"`
+	RHS           string `json:"rhs,omitempty"`
+	ObjectType    string `json:"objectType,omitempty"`
+	MicroTenantID string `json:"microtenantId,omitempty"`
 }
 
 type AppServerGroups struct {
@@ -132,7 +124,7 @@ func (service *Service) GetPolicyRule(policySetID, ruleId string) (*PolicyRule, 
 }
 
 // POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
-func (service *Service) CreateRuleV1(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
+func (service *Service) CreateRule(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfigV1+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
 	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.microTenantID}, &rule, v)
@@ -142,19 +134,8 @@ func (service *Service) CreateRuleV1(rule *PolicyRule) (*PolicyRule, *http.Respo
 	return v, resp, nil
 }
 
-// POST --> mgmtconfig​/v2​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
-func (service *Service) CreateRuleV2(rule *PolicyRule) (*PolicyRule, *http.Response, error) {
-	v := new(PolicyRule)
-	path := fmt.Sprintf(mgmtConfigV2+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
-	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.microTenantID}, &rule, v)
-	if err != nil {
-		return nil, nil, err
-	}
-	return v, resp, nil
-}
-
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func (service *Service) UpdateRuleV1(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+func (service *Service) UpdateRule(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
 	} else {
@@ -171,31 +152,6 @@ func (service *Service) UpdateRuleV1(policySetID, ruleId string, policySetRule *
 		}
 	}
 	path := fmt.Sprintf(mgmtConfigV1+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, policySetRule, nil)
-	if err != nil {
-		return nil, err
-	}
-	return resp, err
-}
-
-// PUT --> mgmtconfig​/v2​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func (service *Service) UpdateRuleV2(policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
-	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
-		policySetRule.Conditions = []Conditions{}
-	} else {
-		for i, condtion := range policySetRule.Conditions {
-			if len(condtion.Operands) == 0 {
-				policySetRule.Conditions[i].Operands = []Operands{}
-			} else {
-				for i, operand := range condtion.Operands {
-					if operand.Name != "" {
-						condtion.Operands[i].Name = ""
-					}
-				}
-			}
-		}
-	}
-	path := fmt.Sprintf(mgmtConfigV2+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, policySetRule, nil)
 	if err != nil {
 		return nil, err

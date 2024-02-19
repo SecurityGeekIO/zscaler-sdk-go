@@ -66,38 +66,24 @@ func TestPolicyAccessRule(t *testing.T) {
 					Operator: "OR",
 					Operands: []Operands{
 						{
-							ObjectType: "APP",
-							Values:     []string{"145262059234263763", "145262059234263043", "145262059234263767"},
-						},
-						{
-							ObjectType: "APP_GROUP",
-							Values:     []string{"145262059234263762"},
+							ObjectType: "COUNTRY_CODE",
+							LHS:        "US",
+							RHS:        "true",
 						},
 						{
 							ObjectType: "COUNTRY_CODE",
-							EntryValues: []EntryValues{
-								{
-									LHS: "US",
-									RHS: "true",
-								},
-								{
-									LHS: "CA",
-									RHS: "true",
-								},
-							},
+							LHS:        "CA",
+							RHS:        "true",
 						},
 						{
 							ObjectType: "SAML",
-							EntryValues: []EntryValues{
-								{
-									LHS: samlsList[0].ID,
-									RHS: "user1@acme.com",
-								},
-								{
-									LHS: samlsList[0].ID,
-									RHS: "user2@acme.com",
-								},
-							},
+							LHS:        samlsList[0].ID,
+							RHS:        "user1@acme.com",
+						},
+						{
+							ObjectType: "SAML",
+							LHS:        samlsList[0].ID,
+							RHS:        "user2@acme.com",
 						},
 					},
 				},
@@ -105,7 +91,7 @@ func TestPolicyAccessRule(t *testing.T) {
 		}
 
 		// Test resource creation
-		createdResource, _, err := service.CreateRuleV2(&accessPolicyRule)
+		createdResource, _, err := service.CreateRule(&accessPolicyRule)
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 		}
