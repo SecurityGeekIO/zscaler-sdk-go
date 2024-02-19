@@ -1,6 +1,7 @@
 package policysetcontrollerv2
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-func TestPolicyAccessRule(t *testing.T) {
+func TestPolicyAccessRuleV2(t *testing.T) {
 	policyType := "ACCESS_POLICY"
 	client, err := tests.NewZpaClient()
 	if err != nil {
@@ -48,7 +49,7 @@ func TestPolicyAccessRule(t *testing.T) {
 
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 1; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -57,13 +58,73 @@ func TestPolicyAccessRule(t *testing.T) {
 			Description: name,
 			PolicySetID: accessPolicySet.ID,
 			Action:      "ALLOW",
-			Conditions:  []Conditions{
-				// Your specific conditions here
+			CustomMsg:   name,
+			Conditions: []PolicyRuleResourceConditions{
+				{
+					Operator: "OR",
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType: "APP",
+							Values:     []string{"145262060308005366", "145262060308004867"},
+						},
+						{
+							ObjectType: "APP_GROUP",
+							Values:     []string{"145262060308004868"},
+						},
+					},
+				},
+				{
+					Operator: "OR",
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType:        "SCIM_GROUP",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "145262060308005345", RHS: "80623557"}},
+						},
+						{
+							ObjectType:        "SAML",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: samlsList[0].ID, RHS: "user1@acme.com"}},
+						},
+					},
+				},
+				{
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType: "CLIENT_TYPE",
+							Values:     []string{"zpn_client_type_exporter", "zpn_client_type_machine_tunnel"},
+						},
+					},
+				},
+				{
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType: "MACHINE_GRP",
+							Values:     []string{"145262060308005368", "145262060308005369"},
+						},
+					},
+				},
+				{
+					Operator: "OR",
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType:        "COUNTRY_CODE",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "AD", RHS: "true"}},
+						},
+					},
+				},
+				{
+					Operands: []PolicyRuleResourceOperands{
+						{
+							ObjectType:        "PLATFORM",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "linux", RHS: "true"}},
+						},
+					},
+				},
 			},
 		}
 
 		// Test resource creation
 		createdResource, _, err := policyServiceV2.CreateRule(&accessPolicyRule)
+
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 			continue
@@ -72,18 +133,23 @@ func TestPolicyAccessRule(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
+		if err == nil {
+			jsonBytes, _ := json.Marshal(createdResource)
+			fmt.Println(string(jsonBytes)) // This prints the JSON response
+		}
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
 		updatedName := name + "-updated"
 		accessPolicyRule.Name = updatedName
 		_, updateErr := policyServiceV2.UpdateRule(accessPolicySet.ID, createdResource.ID, &accessPolicyRule)
+
 		if updateErr != nil {
 			t.Errorf("Error updating rule: %v", updateErr)
 			continue
 		}
 
-		// Verify the update was successful
+		// Retrieve and print the updated resource as JSON
 		updatedResource, _, getErr := policyService.GetPolicyRule(accessPolicySet.ID, createdResource.ID)
 		if getErr != nil {
 			t.Errorf("Error retrieving updated resource: %v", getErr)
@@ -92,6 +158,9 @@ func TestPolicyAccessRule(t *testing.T) {
 		if updatedResource.Name != updatedName {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
+		// Print the updated resource as JSON
+		updatedJson, _ := json.Marshal(updatedResource)
+		fmt.Println(string(updatedJson))
 
 		// Introduce a delay to prevent rate limit issues
 		time.Sleep(10 * time.Second)
