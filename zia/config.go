@@ -432,7 +432,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return true, nil
 	}
 
-	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict) {
+	if resp != nil && (resp.StatusCode == http.StatusPreconditionFailed || resp.StatusCode == http.StatusConflict || resp.StatusCode == http.StatusUnauthorized) {
 		apiRespErr := ApiErr{}
 		data, err := io.ReadAll(resp.Body)
 		resp.Body = io.NopCloser(bytes.NewBuffer(data))
@@ -440,7 +440,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			err = json.Unmarshal(data, &apiRespErr)
 			if err == nil {
 				if apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Failed during enter Org barrier" ||
-					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" {
+					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" {
 					return true, nil
 				}
 			}
