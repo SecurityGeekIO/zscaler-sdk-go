@@ -266,7 +266,7 @@ func (c *Client) checkSession() error {
 	} else {
 		now := time.Now()
 		// Refresh if session has expire time (diff than -1)  & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
-		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).Before(now) {
+		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).After(now) {
 			err := c.refreshSession()
 			if err != nil {
 				c.Logger.Printf("[ERROR] failed to refresh session id: %v\n", err)
