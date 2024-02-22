@@ -1,10 +1,15 @@
 package emergencyaccess
 
 import (
+	"context"
+	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/okta/okta-sdk-golang/v2/okta"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,5 +69,44 @@ func TestEmergencyAccessIntegration(t *testing.T) {
 	_, err = service.Activate(createdResource.UserID)
 	if err != nil {
 		t.Errorf("Failed to activate emergency user: %v", err)
+	}
+
+	// Test Emergency Access User Deactivation
+	_, err = service.Deactivate(createdResource.UserID)
+	if err != nil {
+		t.Errorf("Failed to deactivate emergency user: %v", err)
+	}
+
+	// Simulate delay after deactivation in Cloud Service 1 before proceeding to Okta deletion
+	time.Sleep(10 * time.Second) // Adjust the delay as necessary
+
+	// Begin Okta deletion process
+	deleteUserInOkta(t, []string{createdResource.UserID}) // Passing the UserID to be deleted in Okta
+}
+
+// deleteUserInOkta deletes a user (or users) in Okta based on provided user IDs
+func deleteUserInOkta(t *testing.T, userIDs []string) {
+	// Fetch Okta domain and API token from environment variables
+	oktaDomain := os.Getenv("OKTA_DOMAIN")
+	apiToken := os.Getenv("OKTA_API_TOKEN")
+
+	// Initialize Okta client with environment variables
+	ctx, client, err := okta.NewClient(
+		context.TODO(),
+		okta.WithOrgUrl(fmt.Sprintf("https://%s", oktaDomain)),
+		okta.WithToken(apiToken),
+	)
+	if err != nil {
+		t.Errorf("Error initializing Okta client: %v", err)
+		return
+	}
+
+	for _, userID := range userIDs {
+		_, err := client.User.DeactivateOrDeleteUser(ctx, userID, nil)
+		if err != nil {
+			t.Errorf("Failed to delete user %s in Okta: %v", userID, err)
+		} else {
+			fmt.Printf("User %s deleted successfully in Okta\n", userID)
+		}
 	}
 }
