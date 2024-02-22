@@ -14,12 +14,12 @@ type EmergencyAccess struct {
 	ActivatedOn       string `json:"activatedOn,omitempty"`
 	AllowedActivate   bool   `json:"allowedActivate"`
 	AllowedDeactivate bool   `json:"allowedDeactivate"`
-	EmailId           string `json:"emailId,omitempty"`
+	EmailID           string `json:"emailId,omitempty"`
 	FirstName         string `json:"firstName,omitempty"`
 	LastLoginTime     string `json:"lastLoginTime,omitempty"`
 	LastName          string `json:"lastName,omitempty"`
 	UpdateEnabled     bool   `json:"updateEnabled"`
-	UserId            string `json:"userId,omitempty"`
+	UserID            string `json:"userId,omitempty"`
 	UserStatus        string `json:"userStatus,omitempty"`
 	ActivateNow       bool   `json:"activateNow,omitempty" url:"activateNow,omitempty"`
 }
