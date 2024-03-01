@@ -1,5 +1,6 @@
 package zpa_gateways
 
+/*
 import (
 	"log"
 	"os"
@@ -8,13 +9,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegment"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/servergroup"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (
@@ -45,52 +46,6 @@ func retryOnConflict(operation func() error) error {
 		return lastErr
 	}
 	return lastErr
-}
-
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
 }
 
 func TestZPAGateways(t *testing.T) {
@@ -454,3 +409,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

@@ -243,4 +243,3 @@ func (service *Service) Reorder(ruleID, order int) (int, error) {
 	_, _, err = service.Update(ruleID, resp)
 	return order, err
 }
-
