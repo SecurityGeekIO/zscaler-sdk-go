@@ -1,4 +1,4 @@
-package credentialcontroller
+package pracredential
 
 import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"

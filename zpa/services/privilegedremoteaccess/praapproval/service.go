@@ -1,4 +1,4 @@
-package privilegedapproval
+package praapproval
 
 import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
