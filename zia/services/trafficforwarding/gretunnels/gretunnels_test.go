@@ -2,7 +2,6 @@ package gretunnels
 
 import (
 	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -41,52 +40,6 @@ func retryOnConflict(operation func() error) error {
 		return lastErr
 	}
 	return lastErr
-}
-
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.SourceIP, "tests-") {
-			_, err := service.DeleteGreTunnels(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
 }
 
 func TestGRETunnel(t *testing.T) {
@@ -152,7 +105,7 @@ func TestGRETunnel(t *testing.T) {
 	// Inside TestZPAGateways function
 	createdResource, _, err := service.CreateGreTunnels(&greTunnel)
 	if err != nil {
-		t.Fatalf("Error creating ZPAGateways resource: %v", err)
+		t.Fatalf("Error creating GRE Tunnel resource: %v", err)
 	}
 
 	defer func() {

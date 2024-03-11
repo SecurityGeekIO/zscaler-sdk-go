@@ -18,15 +18,16 @@ import (
 	"sync"
 	"time"
 
-	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
 )
 
 const (
 	defaultBaseURL           = "https://config.private.zscaler.com"
 	betaBaseURL              = "https://config.zpabeta.net"
+	zpaTwoBaseUrl            = "https://config.zpatwo.net"
 	govBaseURL               = "https://config.zpagov.net"
 	govUsBaseURL             = "https://config.zpagov.us"
 	previewBaseUrl           = "https://config.zpapreview.net"
@@ -126,6 +127,8 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = defaultBaseURL
+	} else if strings.EqualFold(cloud, "ZPATWO") {
+		rawUrl = zpaTwoBaseUrl
 	} else if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
 	} else if strings.EqualFold(cloud, "GOV") {

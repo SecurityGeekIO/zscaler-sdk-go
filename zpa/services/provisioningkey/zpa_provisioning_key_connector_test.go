@@ -1,9 +1,6 @@
 package provisioningkey
 
 import (
-	"log"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
@@ -16,47 +13,6 @@ const (
 	connGrpAssociationType          = "CONNECTOR_GRP"
 	serviceEdgeGroupAssociationType = "SERVICE_EDGE_GRP"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true"))
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(connGrpAssociationType, r.ID)
-	}
-}
 
 func TestProvisiongKeyConnectorGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -219,8 +175,9 @@ func TestProvisiongKeyConnectorGroup(t *testing.T) {
 }
 
 /*
-//// TEST SERVICE EDGE GROUP PROVISIONING KEY /////
-
+// ######################################################################################################################################
+// ############################################## TEST SERVICE EDGE GROUP PROVISIONING KEY ##############################################
+// ######################################################################################################################################
 func TestProvisiongKeyServiceEdgeGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -382,12 +339,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.Get(connGrpAssociationType, "non-existent-id")
+	_, _, err = service.Get(connGrpAssociationType, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
 
-	_, _, err = service.Get(serviceEdgeGroupAssociationType, "non-existent-id")
+	_, _, err = service.Get(serviceEdgeGroupAssociationType, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -400,12 +357,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Delete(connGrpAssociationType, "non-existent-id")
+	_, err = service.Delete(connGrpAssociationType, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
 
-	_, err = service.Delete(serviceEdgeGroupAssociationType, "non-existent-id")
+	_, err = service.Delete(serviceEdgeGroupAssociationType, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -418,11 +375,11 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.Update(connGrpAssociationType, "non-existent-id", &ProvisioningKey{})
+	_, err = service.Update(connGrpAssociationType, "non_existent_id", &ProvisioningKey{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
-	_, err = service.Update(serviceEdgeGroupAssociationType, "non-existent-id", &ProvisioningKey{})
+	_, err = service.Update(serviceEdgeGroupAssociationType, "non_existent_id", &ProvisioningKey{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -435,11 +392,11 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, _, err = service.GetByName(connGrpAssociationType, "non-existent-name")
+	_, _, err = service.GetByName(connGrpAssociationType, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
-	_, _, err = service.GetByName(serviceEdgeGroupAssociationType, "non-existent-name")
+	_, _, err = service.GetByName(serviceEdgeGroupAssociationType, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

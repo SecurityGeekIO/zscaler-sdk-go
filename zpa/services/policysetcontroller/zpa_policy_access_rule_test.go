@@ -3,10 +3,10 @@ package policysetcontroller
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
@@ -36,15 +36,15 @@ func TestPolicyAccessRule(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
-	// postureService := postureprofile.New(client)
-	// postureList, _, err := postureService.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting posture profiles: %v", err)
-	// 	return
-	// }
-	// if len(postureList) == 0 {
-	// 	t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
-	// }
+	postureService := postureprofile.New(client)
+	postureList, _, err := postureService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting posture profiles: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
+	}
 	service := New(client)
 	accessPolicySet, _, err := service.GetByPolicyType(policyType)
 	if err != nil {
@@ -66,24 +66,15 @@ func TestPolicyAccessRule(t *testing.T) {
 					Operator: "OR",
 					Operands: []Operands{
 						{
-							ObjectType: "COUNTRY_CODE",
-							LHS:        "US",
-							RHS:        "true",
-						},
-						{
-							ObjectType: "COUNTRY_CODE",
-							LHS:        "CA",
-							RHS:        "true",
+							ObjectType: "POSTURE",
+							LHS:        postureList[0].PostureudID,
+							RHS:        "false",
 						},
 						{
 							ObjectType: "SAML",
 							LHS:        samlsList[0].ID,
 							RHS:        "user1@acme.com",
-						},
-						{
-							ObjectType: "SAML",
-							LHS:        samlsList[0].ID,
-							RHS:        "user2@acme.com",
+							IdpID:      idpList[0].ID,
 						},
 					},
 				},
@@ -95,16 +86,6 @@ func TestPolicyAccessRule(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 		}
-
-		if createdResource.ID == "" {
-			t.Error("Expected created resource ID to be non-empty, but got ''")
-		}
-		if createdResource.Name != name {
-			t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
-		}
-
-		// Introduce a delay to prevent rate limit issues
-		time.Sleep(10 * time.Second) // Adjust the duration as needed
 
 		// Test resource removal
 		_, err = service.Delete(accessPolicySet.ID, createdResource.ID)

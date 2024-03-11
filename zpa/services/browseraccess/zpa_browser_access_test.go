@@ -1,9 +1,6 @@
 package browseraccess
 
 import (
-	"log"
-	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -14,48 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
-
-func TestApplicationSegment(t *testing.T) {
+func TestBaApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -145,6 +101,25 @@ func TestApplicationSegment(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 
+	// // *** New step to use GetByApplicationType function ***
+	// // Search for application segments of type SECURE_REMOTE_ACCESS
+	// applicationType := "BROWSER_ACCESS"
+	// expandAll := false // Set based on your requirement
+	// resourcesByType, _, err := service.GetByApplicationType(applicationType, expandAll)
+	// if err != nil {
+	// 	t.Errorf("Error retrieving resources by application type %s: %v", applicationType, err)
+	// } else {
+	// 	found := false
+	// 	for _, resource := range resourcesByType {
+	// 		if resource.ID == createdResource.ID {
+	// 			found = true
+	// 			break
+	// 		}
+	// 	}
+	// 	if !found {
+	// 		t.Errorf("Expected resource with ID '%s' to be found in resources of type '%s'", createdResource.ID, applicationType)
+	// 	}
+	// }
 	// Test resource retrieval
 	retrievedResource, _, err := service.Get(createdResource.ID)
 	if err != nil {
@@ -184,6 +159,7 @@ func TestApplicationSegment(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
 	resources, _, err := service.GetAll()
 	if err != nil {

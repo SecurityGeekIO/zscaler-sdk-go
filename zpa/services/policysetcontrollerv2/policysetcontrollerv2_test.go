@@ -1,7 +1,6 @@
 package policysetcontrollerv2
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -9,21 +8,28 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/policysetcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/trustednetwork"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestPolicyAccessRuleV2(t *testing.T) {
+	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	policyType := "ACCESS_POLICY"
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
+	appGroupService := segmentgroup.New(client)
 	idpService := idpcontroller.New(client)
 	samlService := samlattribute.New(client)
-	policyService := policysetcontroller.New(client) // For GetByPolicyType, GetPolicyRule, and Delete
-	policyServiceV2 := New(client)                   // For CreateRule and UpdateRule
+	postureService := postureprofile.New(client)
+	trustedNwService := trustednetwork.New(client)
+	policyService := policysetcontroller.New(client)
+	policyServiceV2 := New(client)
 
 	idpList, _, err := idpService.GetAll()
 	if err != nil {
@@ -31,8 +37,10 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 		return
 	}
 	if len(idpList) == 0 {
-		t.Error("Expected retrieved idps to be non-empty, but got empty slice")
+		t.Skip("No IdPs retrieved, skipping test as it requires at least one IdP")
+		return
 	}
+
 	samlsList, _, err := samlService.GetAll()
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
@@ -41,6 +49,47 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
+
+	postureList, _, err := postureService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting posture profiles: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved posture profiles to be non-empty, but got empty slice")
+	}
+
+	trustedNetworkList, _, err := trustedNwService.GetAll()
+	if err != nil {
+		t.Errorf("Error getting trusted networks: %v", err)
+		return
+	}
+	if len(postureList) == 0 {
+		t.Error("Expected retrieved trusted networks to be non-empty, but got empty slice")
+	}
+
+	appGroup := segmentgroup.SegmentGroup{
+		Name:        segmentGroupName,
+		Description: segmentGroupName,
+	}
+	createdAppGroup, _, err := appGroupService.Create(&appGroup)
+	if err != nil {
+		t.Errorf("Error creating segment group: %v", err)
+		return
+	}
+	defer func() {
+		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
+		_, _, getErr := appGroupService.Get(createdAppGroup.ID)
+		if getErr != nil {
+			t.Logf("Resource might have already been deleted: %v", getErr)
+		} else {
+			_, err := appGroupService.Delete(createdAppGroup.ID)
+			if err != nil {
+				t.Errorf("Error deleting segment group: %v", err)
+			}
+		}
+	}()
+
 	accessPolicySet, _, err := policyService.GetByPolicyType(policyType)
 	if err != nil {
 		t.Errorf("Error getting access policy set: %v", err)
@@ -49,7 +98,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 
 	var ruleIDs []string // Store the IDs of the created rules
 
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 5; i++ {
 		// Generate a unique name for each iteration
 		name := fmt.Sprintf("tests-%s-%d", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha), i)
 
@@ -64,12 +113,8 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 					Operator: "OR",
 					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType: "APP",
-							Values:     []string{"145262060308005366", "145262060308004867"},
-						},
-						{
 							ObjectType: "APP_GROUP",
-							Values:     []string{"145262060308004868"},
+							Values:     []string{createdAppGroup.ID},
 						},
 					},
 				},
@@ -77,28 +122,21 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 					Operator: "OR",
 					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType:        "SCIM_GROUP",
-							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "145262060308005345", RHS: "80623557"}},
-						},
-						{
 							ObjectType:        "SAML",
 							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: samlsList[0].ID, RHS: "user1@acme.com"}},
 						},
 					},
 				},
 				{
+					Operator: "OR",
 					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType: "CLIENT_TYPE",
-							Values:     []string{"zpn_client_type_exporter", "zpn_client_type_machine_tunnel"},
+							ObjectType:        "POSTURE",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: postureList[0].PostureudID, RHS: "true"}, {LHS: postureList[1].PostureudID, RHS: "true"}},
 						},
-					},
-				},
-				{
-					Operands: []PolicyRuleResourceOperands{
 						{
-							ObjectType: "MACHINE_GRP",
-							Values:     []string{"145262060308005368", "145262060308005369"},
+							ObjectType:        "TRUSTED_NETWORK",
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: trustedNetworkList[0].NetworkID, RHS: "true"}, {LHS: trustedNetworkList[1].NetworkID, RHS: "true"}},
 						},
 					},
 				},
@@ -107,7 +145,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 					Operands: []PolicyRuleResourceOperands{
 						{
 							ObjectType:        "COUNTRY_CODE",
-							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "AD", RHS: "true"}},
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "CA", RHS: "true"}, {LHS: "US", RHS: "true"}},
 						},
 					},
 				},
@@ -115,7 +153,7 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 					Operands: []PolicyRuleResourceOperands{
 						{
 							ObjectType:        "PLATFORM",
-							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "linux", RHS: "true"}},
+							EntryValuesLHSRHS: []OperandsResourceLHSRHSValue{{LHS: "linux", RHS: "true"}, {LHS: "windows", RHS: "true"}},
 						},
 					},
 				},
@@ -133,10 +171,10 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 			t.Error("Expected created resource ID to be non-empty, but got ''")
 			continue
 		}
-		if err == nil {
-			jsonBytes, _ := json.Marshal(createdResource)
-			fmt.Println(string(jsonBytes)) // This prints the JSON response
-		}
+		// if err == nil {
+		// 	jsonBytes, _ := json.Marshal(createdResource)
+		// 	fmt.Println(string(jsonBytes)) // This prints the JSON response
+		// }
 		ruleIDs = append(ruleIDs, createdResource.ID) // Collect rule ID for reordering
 
 		// Update the rule name
@@ -159,8 +197,8 @@ func TestPolicyAccessRuleV2(t *testing.T) {
 			t.Errorf("Expected updated resource name '%s', but got '%s'", updatedName, updatedResource.Name)
 		}
 		// Print the updated resource as JSON
-		updatedJson, _ := json.Marshal(updatedResource)
-		fmt.Println(string(updatedJson))
+		// updatedJson, _ := json.Marshal(updatedResource)
+		// fmt.Println(string(updatedJson))
 
 		// Introduce a delay to prevent rate limit issues
 		time.Sleep(10 * time.Second)
