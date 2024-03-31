@@ -218,6 +218,11 @@ func (c *Config) GetHTTPClient() *http.Client {
 						if s := resp.Header.Get("Retry-After"); s != "" {
 							if sleep, err := strconv.ParseInt(s, 10, 64); err == nil {
 								return time.Second * time.Duration(sleep)
+							} else {
+								dur, err := time.ParseDuration(s)
+								if err == nil {
+									return dur
+								}
 							}
 						}
 					}

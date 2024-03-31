@@ -305,6 +305,10 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 			l.Printf("[INFO] got Retry-After from header:%s\n", s)
 			return time.Second * time.Duration(sleep)
 		} else {
+			dur, err := time.ParseDuration(s)
+			if err == nil {
+				return dur
+			}
 			l.Printf("[INFO] error getting Retry-After from header:%s\n", err)
 		}
 	}
