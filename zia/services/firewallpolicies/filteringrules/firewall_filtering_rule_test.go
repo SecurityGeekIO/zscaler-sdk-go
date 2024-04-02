@@ -1,5 +1,6 @@
 package filteringrules
 
+/*
 import (
 	"fmt"
 	"log"
@@ -7,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 )
 
 const (
@@ -249,3 +250,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

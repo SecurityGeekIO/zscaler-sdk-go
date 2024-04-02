@@ -1,18 +1,17 @@
 package praconsole
 
-/*
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/bacertificate"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praportal"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestPRAConsole(t *testing.T) {
@@ -285,4 +284,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

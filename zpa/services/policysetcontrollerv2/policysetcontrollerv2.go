@@ -54,6 +54,7 @@ type PolicyRuleResource struct {
 	ReauthTimeout            string                         `json:"reauthTimeout,omitempty"`
 	RuleOrder                string                         `json:"ruleOrder,omitempty"`
 	ZpnCbiProfileID          string                         `json:"zpnCbiProfileId,omitempty"`
+	ZpnIsolationProfileID    string                         `json:"zpnIsolationProfileId,omitempty"`
 	ZpnInspectionProfileID   string                         `json:"zpnInspectionProfileId,omitempty"`
 	ZpnInspectionProfileName string                         `json:"zpnInspectionProfileName,omitempty"`
 	MicroTenantID            string                         `json:"microtenantId,omitempty"`
@@ -61,6 +62,7 @@ type PolicyRuleResource struct {
 	Conditions               []PolicyRuleResourceConditions `json:"conditions,omitempty"`
 	AppConnectorGroups       []AppConnectorGroups           `json:"connectorGroups,omitempty"`
 	AppServerGroups          []AppServerGroups              `json:"appServerGroups,omitempty"`
+	ServiceEdgeGroups        []ServiceEdgeGroups            `json:"serviceEdgeGroups,omitempty"`
 	Credential               *Credential                    `json:"credential,omitempty"`
 	PrivilegedCapabilities   PrivilegedCapabilities         `json:"privilegedCapabilities,omitempty"`
 }
@@ -363,14 +365,15 @@ func (service *Service) GetAllByType(policyType string) ([]PolicyRuleResource, *
 // ConvertV1ResponseToV2Request converts a PolicyRuleResource (API v1 response) to a PolicyRule (API v2 request) with aggregated values.
 func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 	v2Request := PolicyRule{
-		ID:          v1Response.ID,
-		Name:        v1Response.Name,
-		Description: v1Response.Description,
-		Action:      v1Response.Action,
-		PolicySetID: v1Response.PolicySetID,
-		Operator:    v1Response.Operator,
-		CustomMsg:   v1Response.CustomMsg,
-		Conditions:  make([]PolicyRuleResourceConditions, 0),
+		ID:                    v1Response.ID,
+		Name:                  v1Response.Name,
+		Description:           v1Response.Description,
+		Action:                v1Response.Action,
+		PolicySetID:           v1Response.PolicySetID,
+		Operator:              v1Response.Operator,
+		CustomMsg:             v1Response.CustomMsg,
+		ZpnIsolationProfileID: v1Response.ZpnIsolationProfileID,
+		Conditions:            make([]PolicyRuleResourceConditions, 0),
 	}
 
 	for _, condition := range v1Response.Conditions {
@@ -385,7 +388,7 @@ func ConvertV1ResponseToV2Request(v1Response PolicyRuleResource) PolicyRule {
 
 		for _, operand := range condition.Operands {
 			switch operand.ObjectType {
-			case "APP", "APP_GROUP", "MACHINE_GRP", "LOCATION", "BRANCH_CONNECTOR_GROUP", "EDGE_CONNECTOR_GROUP", "CLIENT_TYPE":
+			case "APP", "APP_GROUP", "CONSOLE", "MACHINE_GRP", "LOCATION", "BRANCH_CONNECTOR_GROUP", "EDGE_CONNECTOR_GROUP", "CLIENT_TYPE":
 				operandMap[operand.ObjectType] = append(operandMap[operand.ObjectType], operand.RHS)
 			case "PLATFORM", "POSTURE", "TRUSTED_NETWORK", "SAML", "SCIM", "SCIM_GROUP", "COUNTRY_CODE":
 				entryValuesMap[operand.ObjectType] = append(entryValuesMap[operand.ObjectType], OperandsResourceLHSRHSValue{
