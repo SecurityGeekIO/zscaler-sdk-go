@@ -18,7 +18,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
 	"github.com/google/go-querystring/query"
-	"github.com/google/uuid"
 )
 
 type Client struct {
@@ -108,11 +107,9 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	if err != nil {
 		return nil, err
 	}
-	reqID := uuid.NewString()
-	start := time.Now()
-	logger.LogRequest(client.Config.Logger, req, reqID, nil, true)
+	logger.LogRequest(client.Config.Logger, req, nil, true)
 
-	resp, err := client.do(req, v, start, reqID)
+	resp, err := client.do(req, v)
 	if err != nil || resp == nil {
 		return resp, err
 	}
@@ -124,7 +121,7 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 			return nil, err
 		}
 
-		resp, err := client.do(req, v, start, reqID)
+		resp, err := client.do(req, v)
 		if err != nil || resp == nil {
 			return nil, err
 		}
@@ -189,10 +186,12 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 		req.Header.Add("User-Agent", client.Config.UserAgent)
 	}
 
+	req = logger.SetRequestDetails(req)
+
 	return req, nil
 }
 
-func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqID string) (*http.Response, error) {
+func (client *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	resp, err := client.Config.GetHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
@@ -207,7 +206,7 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 			return resp, err
 		}
 	}
-	logger.LogResponse(client.Config.Logger, resp, start, reqID)
+	logger.LogResponse(client.Config.Logger, resp)
 	unescapeHTML(v)
 	return resp, nil
 }

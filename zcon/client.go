@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
-	"github.com/google/uuid"
 )
 
-func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
+func (c *Client) do(req *http.Request) (*http.Response, error) {
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
@@ -40,7 +38,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	}
 
 	resp, err := c.HTTPClient.Do(req)
-	logger.LogResponse(c.Logger, resp, start, reqID)
+	logger.LogResponse(c.Logger, resp)
 	if err != nil {
 		return resp, err
 	}
@@ -73,11 +71,9 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	if err != nil {
 		return nil, err
 	}
-	reqID := uuid.New().String()
-	start := time.Now()
 	logRequestBody := true // or false, based on your requirements
 
-	logger.LogRequest(c.Logger, req, reqID, map[string]string{"JSessionID": c.session.JSessionID}, logRequestBody)
+	logger.LogRequest(c.Logger, req, map[string]string{"JSessionID": c.session.JSessionID}, logRequestBody)
 
 	for retry := 1; retry <= 5; retry++ {
 		err = c.checkSession()
@@ -85,7 +81,7 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 			return nil, err
 		}
 
-		resp, err = c.do(req, start, reqID)
+		resp, err = c.do(req)
 		if err != nil {
 			return nil, err
 		}

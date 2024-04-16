@@ -135,6 +135,9 @@ func (c *Config) GetHTTPClient() *http.Client {
 			retryableClient.RetryWaitMax = time.Second * time.Duration(c.BackoffConf.RetryWaitMaxSeconds)
 			retryableClient.RetryMax = c.BackoffConf.MaxNumOfRetries
 			retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
+			retryableClient.ResponseLogHook = func(l retryablehttp.Logger, resp *http.Response) {
+				logger.LogResponse(c.Logger, resp)
+			}
 			retryableClient.CheckRetry = checkRetry
 			retryableClient.HTTPClient.Timeout = defaultTimeout
 			c.httpClient = retryableClient.StandardClient()

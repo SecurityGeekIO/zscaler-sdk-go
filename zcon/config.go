@@ -344,10 +344,13 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 
 	// Configure the underlying HTTP client
 	retryableClient.HTTPClient = &http.Client{
+		Timeout: time.Duration(requestTimeout) * time.Second,
+		Transport: &http.Transport{
+			Proxy:               http.ProxyFromEnvironment,
+			MaxIdleConnsPerHost: maxIdleConnections,
+		},
 		Jar: jar, // Set the cookie jar
-		// ... other configurations ...
 	}
-
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
@@ -373,24 +376,11 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 		}
 		return sleep
 	}
-	retryableClient.CheckRetry = checkRetry
-	retryableClient.Logger = l
-	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
-	retryableClient.HTTPClient.Transport = &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
-		MaxIdleConnsPerHost: maxIdleConnections,
-	}
 
-	retryableClient.HTTPClient = &http.Client{
-		Timeout: time.Duration(requestTimeout) * time.Second,
-		Transport: &http.Transport{
-			Proxy:               http.ProxyFromEnvironment,
-			MaxIdleConnsPerHost: maxIdleConnections,
-		},
-		Jar: jar, // Set the cookie jar
-	}
 	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
-
+	retryableClient.ResponseLogHook = func(l retryablehttp.Logger, resp *http.Response) {
+		logger.LogResponse(l, resp)
+	}
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
 
