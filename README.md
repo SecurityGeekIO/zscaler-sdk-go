@@ -2,10 +2,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
 [![License](https://img.shields.io/github/license/SecurityGeekIO/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
 
-## Support Disclaimer
-
--> **Disclaimer:** Please refer to our [General Support Statement](docs/guides/support.md) before proceeding with the use of this provider. You can also refer to our [troubleshooting guide](docs/guides/troubleshooting.md) for guidance on typical problems.
-
 # Zscaler SDK GO
 
 * [Need help?](#need-help)
