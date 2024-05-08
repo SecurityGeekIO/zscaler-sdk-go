@@ -57,6 +57,7 @@ jobs:
         run: go mod download
 
       - name: Retrieve Secrets from Vault for Beta
+        id: import-secrets
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ secrets.VAULT_ADDR }}
