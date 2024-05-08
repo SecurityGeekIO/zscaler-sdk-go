@@ -22,7 +22,7 @@ jobs:
       matrix:
         goVersion: ["1.21"]
         environment:
-          - zpa-beta-tenants
+          - ZPA_BETA_TENANT01
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout code
