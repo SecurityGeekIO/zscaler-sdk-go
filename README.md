@@ -22,7 +22,6 @@ For more information about ZIA/ZPA APIs visit:
 
 If you run into problems using the SDK, you can
 
-* Refer to our [General Support Statement](/docs/guides/support.md)
 * Post [issues][github-issues] here on GitHub (for code errors)
 
 The latest release can always be found on the [releases page][github-releases].
