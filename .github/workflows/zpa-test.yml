@@ -59,7 +59,7 @@ jobs:
       - name: Retrieve Secrets from Vault for Beta
         uses: hashicorp/vault-action@v3
         with:
-          url: ${{ secrets.VAULT_URL }}
+          url: ${{ secrets.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           tlsSkipVerify: true
           secrets: |
