@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,15 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
-)
-
-type ContextKey string
-
-const (
-	RequestIDKey        ContextKey = "rid"
-	RequestStartTimeKey ContextKey = "rstart"
 )
 
 type Logger interface {
@@ -88,42 +78,7 @@ func LogRequestSensitive(logger Logger, req *http.Request, reqID string, sensiti
 	}
 }
 
-func SetRequestDetails(req *http.Request) *http.Request {
-	reqID := uuid.NewString()
-	start := time.Now()
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, RequestIDKey, reqID)
-	ctx = context.WithValue(ctx, RequestStartTimeKey, start)
-	req = req.WithContext(ctx)
-
-	return req
-}
-
-func GetRequestDetails(req *http.Request) (string, time.Time) {
-	if req == nil {
-		return "", time.Now()
-	}
-	ridAny := req.Context().Value(RequestIDKey)
-	startAny := req.Context().Value(RequestStartTimeKey)
-
-	if ridAny == nil || startAny == nil {
-		return "", time.Now()
-	}
-
-	rid, ok := ridAny.(string)
-	if !ok {
-		return "", time.Now()
-	}
-
-	start, ok := startAny.(time.Time)
-	if !ok {
-		return "", time.Now()
-	}
-
-	return rid, start
-}
-
-func LogRequest(logger Logger, req *http.Request, otherHeaderParams map[string]string, body bool) {
+func LogRequest(logger Logger, req *http.Request, reqID string, otherHeaderParams map[string]string, body bool) {
 	if logger != nil && req != nil {
 		l, ok := logger.(*defaultLogger)
 		if ok && l.Verbose {
@@ -131,7 +86,6 @@ func LogRequest(logger Logger, req *http.Request, otherHeaderParams map[string]s
 				req.Header.Add(k, v)
 			}
 		}
-		reqID, _ := GetRequestDetails(req)
 		out, err := httputil.DumpRequestOut(req, body)
 		if err == nil {
 			WriteLog(logger, logReqMsg, req.Method, req.URL, reqID, string(out))
@@ -139,9 +93,8 @@ func LogRequest(logger Logger, req *http.Request, otherHeaderParams map[string]s
 	}
 }
 
-func LogResponse(logger Logger, resp *http.Response) {
+func LogResponse(logger Logger, resp *http.Response, start time.Time, reqID string) {
 	if logger != nil && resp != nil {
-		reqID, start := GetRequestDetails(resp.Request)
 		// Dump the entire response
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {

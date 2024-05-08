@@ -10,12 +10,14 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/google/uuid"
 )
 
-func (c *Client) do(req *http.Request) (*http.Response, error) {
+func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
@@ -39,7 +41,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 	}
 
 	resp, err := c.HTTPClient.Do(req)
-	logger.LogResponse(c.Logger, resp)
+	logger.LogResponse(c.Logger, resp, start, reqID)
 	if err != nil {
 		return resp, err
 	}
@@ -86,8 +88,9 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		}
 		otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
 	}
-
-	logger.LogRequest(c.Logger, req, otherHeaders, !isSandboxRequest)
+	reqID := uuid.New().String()
+	start := time.Now()
+	logger.LogRequest(c.Logger, req, reqID, otherHeaders, !isSandboxRequest)
 	for retry := 1; retry <= 5; retry++ {
 		if !isSandboxRequest {
 			err = c.checkSession()
@@ -96,7 +99,7 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 			}
 		}
 
-		resp, err = c.do(req)
+		resp, err = c.do(req, start, reqID)
 		if err != nil {
 			return nil, err
 		}

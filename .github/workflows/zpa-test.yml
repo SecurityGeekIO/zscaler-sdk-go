@@ -1,0 +1,88 @@
+name: ZPA Test
+on:
+  pull_request:
+    types: [opened, synchronize]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 11 * * 1-5' # UTC
+  workflow_dispatch:
+
+jobs:
+  zpa-beta-tenants:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        goVersion: ["1.21"]
+        environment:
+          - zpa-beta-tenants
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goVersion }}
+
+      - name: Clean existing Go modules
+        run: go clean -modcache
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set Go env
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Retrieve Secrets from Vault for Beta
+        uses: hashicorp/vault-action@3
+        with:
+          url: ${{ secrets.VAULT_URL }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          tlsSkipVerify: true
+          secrets: |
+            zscaler/zpa-beta-tenants ZPA_CLIENT_ID | client_id
+            zscaler/zpa-beta-tenants ZPA_CLIENT_SECRET | client_secret
+            zscaler/zpa-beta-tenants ZPA_CUSTOMER_ID | customer_id
+            zscaler/zpa-beta-tenants ZPA_CLOUD | cloud
+
+      - name: Run tests for Beta Tenants
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 20
+          command: |
+            make test:unit
+            make test:unit:zpa
+            make sweep:zpa
+            make test:integration:zpa
+
+      # - name: Publish test coverage
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: ./coverage.out
+      #     fail_ci_if_error: true
+
