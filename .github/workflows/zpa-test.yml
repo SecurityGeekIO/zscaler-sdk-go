@@ -63,10 +63,10 @@ jobs:
           token: ${{ secrets.VAULT_TOKEN }}
           tlsSkipVerify: true
           secrets: |
-            zscaler/zpa-beta-tenants ZPA_CLIENT_ID | client_id
-            zscaler/zpa-beta-tenants ZPA_CLIENT_SECRET | client_secret
-            zscaler/zpa-beta-tenants ZPA_CUSTOMER_ID | customer_id
-            zscaler/zpa-beta-tenants ZPA_CLOUD | cloud
+            zscaler/data/zpa-beta-tenants ZPA_CLIENT_ID | client_id
+            zscaler/data/zpa-beta-tenants ZPA_CLIENT_SECRET | client_secret
+            zscaler/data/zpa-beta-tenants ZPA_CUSTOMER_ID | customer_id
+            zscaler/data/zpa-beta-tenants ZPA_CLOUD | cloud
 
       - name: Run tests for Beta Tenants
         uses: nick-fields/retry@v2
