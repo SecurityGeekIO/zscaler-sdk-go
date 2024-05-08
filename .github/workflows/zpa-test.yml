@@ -57,16 +57,16 @@ jobs:
         run: go mod download
 
       - name: Retrieve Secrets from Vault for Beta
-        uses: hashicorp/vault-action@v2
+        uses: hashicorp/vault-action@v3
         with:
           url: ${{ secrets.VAULT_URL }}
           token: ${{ secrets.VAULT_TOKEN }}
           tlsSkipVerify: true
           secrets: |
-            zscaler/data/zpa-beta-tenants ZPA_CLIENT_ID | client_id;
-            zscaler/data/zpa-beta-tenants ZPA_CLIENT_SECRET | client_secret;
-            zscaler/data/zpa-beta-tenants ZPA_CUSTOMER_ID | customer_id;
-            zscaler/data/zpa-beta-tenants ZPA_CLOUD | cloud;
+            secret/data/zpa-beta-tenants client_id | ZPA_CLIENT_ID;
+            secret/data/zpa-beta-tenants client_secret | ZPA_CLIENT_SECRET;
+            secret/data/zpa-beta-tenants customer_id | ZPA_CUSTOMER_ID;
+            secret/data/zpa-beta-tenants cloud | ZPA_CLOUD;
 
       - name: Run tests for Beta Tenants
         uses: nick-fields/retry@v2
