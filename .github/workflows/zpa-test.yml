@@ -63,10 +63,10 @@ jobs:
           token: ${{ secrets.VAULT_TOKEN }}
           tlsSkipVerify: true
           secrets: |
-            zscaler/data/zpa-beta-tenants ZPA_CLIENT_ID | client_id
-            zscaler/data/zpa-beta-tenants ZPA_CLIENT_SECRET | client_secret
-            zscaler/data/zpa-beta-tenants ZPA_CUSTOMER_ID | customer_id
-            zscaler/data/zpa-beta-tenants ZPA_CLOUD | cloud
+            zscaler/data/zpa-beta-tenants client_id | ZPA_CLIENT_ID
+            zscaler/data/zpa-beta-tenants client_secret | ZPA_CLIENT_SECRET
+            zscaler/data/zpa-beta-tenants customer_id | ZPA_CUSTOMER_ID
+            zscaler/data/zpa-beta-tenants cloud | ZPA_CLOUD
 
       - name: Run tests for Beta Tenants
         uses: nick-fields/retry@v2
@@ -74,6 +74,10 @@ jobs:
           max_attempts: 3
           timeout_minutes: 20
           command: |
+            ZPA_CLIENT_ID: ${{ env.ZPA_CLIENT_ID }}
+            ZPA_CLIENT_SECRET: ${{ env.ZPA_CLIENT_SECRET }}
+            ZPA_CUSTOMER_ID: ${{ env.ZPA_CUSTOMER_ID }}
+            ZPA_CLOUD: ${{ env.ZPA_CLOUD }}
             make test:unit
             make test:unit:zpa
             make sweep:zpa
