@@ -70,19 +70,15 @@ jobs:
             secret/data/zpa-beta-tenants cloud | ZPA_CLOUD;
 
       - name: Run tests for Beta Tenants
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 20
-          command: |
-            ZPA_CLIENT_ID: ${{ env.ZPA_CLIENT_ID }}
-            ZPA_CLIENT_SECRET: ${{ env.ZPA_CLIENT_SECRET }}
-            ZPA_CUSTOMER_ID: ${{ env.ZPA_CUSTOMER_ID }}
-            ZPA_CLOUD: ${{ env.ZPA_CLOUD }}
-            make test:unit
-            make test:unit:zpa
-            make sweep:zpa
-            make test:integration:zpa
+        run: |
+          ZPA_CLIENT_ID: ${{ steps.import-secrets.outputs.ZPA_CLIENT_ID }}
+          ZPA_CLIENT_SECRET: ${{ steps.import-secrets.outputs.ZPA_CLIENT_SECRET }}
+          ZPA_CUSTOMER_ID: ${{ steps.import-secrets.outputs.ZPA_CUSTOMER_ID }}
+          ZPA_CLOUD: ${{ steps.import-secrets.outputs.ZPA_CLOUD }}
+          make test:unit
+          make test:unit:zpa
+          make sweep:zpa
+          make test:integration:zpa
 
       # - name: Publish test coverage
       #   uses: codecov/codecov-action@v4
