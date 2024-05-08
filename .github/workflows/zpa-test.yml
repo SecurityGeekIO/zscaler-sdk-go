@@ -13,10 +13,10 @@ on:
 
 jobs:
   zpa-beta-tenants:
-    runs-on: ubuntu-latest
-    # permissions:
-    #   id-token: write
-    #   contents: read
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -60,14 +60,14 @@ jobs:
         id: import-secrets
         uses: hashicorp/vault-action@v3
         with:
-          url: https://bdzs-gh-vault01-public-vault-dfefa63c.5ebc522c.z1.hashicorp.cloud:8200
+          url: ${{ secrets.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           tlsSkipVerify: true
           secrets: |
-            secret/data/zpa-beta-tenants client_id | ZPA_CLIENT_ID;
-            secret/data/zpa-beta-tenants client_secret | ZPA_CLIENT_SECRET;
-            secret/data/zpa-beta-tenants customer_id | ZPA_CUSTOMER_ID;
-            secret/data/zpa-beta-tenants cloud | ZPA_CLOUD;
+            secret/data/zpa-beta-tenants client_id | ZPA_CLIENT_ID ;
+            secret/data/zpa-beta-tenants client_secret | ZPA_CLIENT_SECRET ;
+            secret/data/zpa-beta-tenants customer_id | ZPA_CUSTOMER_ID ;
+            secret/data/zpa-beta-tenants cloud | ZPA_CLOUD ;
 
       - name: Run tests for Beta Tenants
         run: |
