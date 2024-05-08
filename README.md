@@ -1,5 +1,3 @@
-[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
-[![Test](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/test.yml)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/SecurityGeekIO/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/.go-version)
 [![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
 [![License](https://img.shields.io/github/license/SecurityGeekIO/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
