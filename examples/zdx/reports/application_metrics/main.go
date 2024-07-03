@@ -1,4 +1,3 @@
-```go
 package main
 
 import (
@@ -10,17 +9,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/applications"
+	"github.com/olekukonko/tablewriter"
 )
 
-type Device struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Platform string `json:"platform"`
+type AppMetric struct {
+	Metric    string
+	Unit      string
+	TimeStamp int64
+	Value     float64
 }
 
 func main() {
@@ -32,6 +32,15 @@ func main() {
 
 	if apiKey == "" || apiSecret == "" {
 		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	}
+
+	// Prompt for application ID
+	fmt.Print("Enter application ID: ")
+	appIDInput, _ := reader.ReadString('\n')
+	appIDInput = strings.TrimSpace(appIDInput)
+	appID, err := strconv.Atoi(appIDInput)
+	if err != nil {
+		log.Fatalf("[ERROR] Invalid application ID: %v\n", err)
 	}
 
 	// Prompt for from time
@@ -54,12 +63,18 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
+		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
+			log.Fatalf("[ERROR] Start time is out of range for int type\n")
+		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
+		}
+		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
+			log.Fatalf("[ERROR] End time is out of range for int type\n")
 		}
 		toTime = parsedTo
 	}
@@ -70,48 +85,42 @@ func main() {
 		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
 	cli := zdx.NewClient(cfg)
-	deviceService := services.New(cli)
+	appService := services.New(cli)
 
 	// Define filters
-	filters := devices.GetDevicesFilters{
-		GetFromToFilters: common.GetFromToFilters{
-			From: int(fromTime),
-			To:   int(toTime),
-		},
+	filters := common.GetFromToFilters{
+		From: int(fromTime),
+		To:   int(toTime),
 	}
 
-	// Get all devices
-	devicesList, _, err := devices.GetAllDevices(deviceService, filters)
+	// Get app metrics
+	metricsList, _, err := applications.GetAppMetrics(appService, appID, filters)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all devices failed: %v\n", err)
+		log.Fatalf("[ERROR] getting app metrics failed: %v\n", err)
 	}
 
-	// Extract device details and display in table format
-	var deviceData []Device
-	for _, device := range devicesList {
-		// Extract platform information from device name
-		parts := strings.Split(device.Name, "(")
-		platform := ""
-		if len(parts) > 1 {
-			platform = strings.TrimSuffix(parts[1], ")")
+	// Extract app metric details and display in table format
+	var metricData []AppMetric
+	for _, metric := range metricsList {
+		for _, dp := range metric.DataPoints {
+			metricData = append(metricData, AppMetric{
+				Metric:    metric.Metric,
+				Unit:      metric.Unit,
+				TimeStamp: int64(dp.TimeStamp),
+				Value:     dp.Value,
+			})
 		}
-		deviceData = append(deviceData, Device{
-			ID:       device.ID,
-			Name:     parts[0],
-			Platform: platform,
-		})
 	}
 
 	// Display the data in a formatted table
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"device_id", "device_name", "platform"})
+	table.SetHeader([]string{"Metric", "Unit", "Timestamp", "Value"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
-	for _, device := range deviceData {
-		table.Append([]string{strconv.Itoa(device.ID), device.Name, device.Platform})
+	for _, metric := range metricData {
+		table.Append([]string{metric.Metric, metric.Unit, strconv.FormatInt(metric.TimeStamp, 10), fmt.Sprintf("%.2f", metric.Value)})
 	}
 
 	table.Render()
 }
-```

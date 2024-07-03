@@ -1,4 +1,3 @@
-```go
 package main
 
 import (
@@ -10,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/olekukonko/tablewriter"
 )
 
 type Device struct {
@@ -49,19 +48,39 @@ func main() {
 	fromTime := now.Add(-2 * time.Hour).Unix()
 	toTime := now.Unix()
 
+	var fromInt, toInt int
+	var err error
+
 	if fromInput != "" {
 		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		fromTime = parsedFrom
+		fromInt, err = safeIntConversion(parsedFrom)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
+	} else {
+		fromInt, err = safeIntConversion(fromTime)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
 	}
+
 	if toInput != "" {
 		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		toTime = parsedTo
+		toInt, err = safeIntConversion(parsedTo)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
+	} else {
+		toInt, err = safeIntConversion(toTime)
+		if err != nil {
+			log.Fatalf("[ERROR] %v\n", err)
+		}
 	}
 
 	// Create configuration and client
@@ -75,8 +94,8 @@ func main() {
 	// Define filters
 	filters := devices.GetDevicesFilters{
 		GetFromToFilters: common.GetFromToFilters{
-			From: int(fromTime),
-			To:   int(toTime),
+			From: fromInt,
+			To:   toInt,
 		},
 	}
 
@@ -91,13 +110,14 @@ func main() {
 	for _, device := range devicesList {
 		// Extract platform information from device name
 		parts := strings.Split(device.Name, "(")
+		name := parts[0]
 		platform := ""
 		if len(parts) > 1 {
 			platform = strings.TrimSuffix(parts[1], ")")
 		}
 		deviceData = append(deviceData, Device{
 			ID:       device.ID,
-			Name:     parts[0],
+			Name:     name,
 			Platform: platform,
 		})
 	}
@@ -114,4 +134,10 @@ func main() {
 
 	table.Render()
 }
-```
+
+func safeIntConversion(value int64) (int, error) {
+	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
+		return 0, fmt.Errorf("value %d is out of range for int type", value)
+	}
+	return int(value), nil
+}

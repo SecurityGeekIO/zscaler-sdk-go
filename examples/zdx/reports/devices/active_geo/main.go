@@ -1,27 +1,21 @@
-```go
 package main
 
 import (
 	"bufio"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/olekukonko/tablewriter"
 )
-
-type Device struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Platform string `json:"platform"`
-}
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
@@ -70,48 +64,78 @@ func main() {
 		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
 	cli := zdx.NewClient(cfg)
-	deviceService := services.New(cli)
+	service := services.New(cli)
 
 	// Define filters
-	filters := devices.GetDevicesFilters{
+	fromInt, err := safeIntConversion(fromTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
+	toInt, err := safeIntConversion(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
+	filters := devices.GeoLocationFilter{
 		GetFromToFilters: common.GetFromToFilters{
-			From: int(fromTime),
-			To:   int(toTime),
+			From: fromInt,
+			To:   toInt,
 		},
 	}
 
-	// Get all devices
-	devicesList, _, err := devices.GetAllDevices(deviceService, filters)
+	// Get geolocations
+	geoLocations, resp, err := devices.GetGeoLocations(service, filters)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all devices failed: %v\n", err)
+		log.Fatalf("Error getting geo locations: %v", err)
 	}
 
-	// Extract device details and display in table format
-	var deviceData []Device
-	for _, device := range devicesList {
-		// Extract platform information from device name
-		parts := strings.Split(device.Name, "(")
-		platform := ""
-		if len(parts) > 1 {
-			platform = strings.TrimSuffix(parts[1], ")")
-		}
-		deviceData = append(deviceData, Device{
-			ID:       device.ID,
-			Name:     parts[0],
-			Platform: platform,
-		})
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
 	}
 
-	// Display the data in a formatted table
+	if len(geoLocations) == 0 {
+		log.Println("No geolocations found.")
+	} else {
+		displayGeoLocations(geoLocations)
+	}
+}
+
+func safeIntConversion(value int64) (int, error) {
+	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
+		return 0, fmt.Errorf("value %d is out of range for int type", value)
+	}
+	return int(value), nil
+}
+
+func displayGeoLocations(geoLocations []devices.GeoLocation) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"device_id", "device_name", "platform"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
+	table.SetHeader([]string{"ID", "Name", "GeoType", "Description", "Child ID", "Child GeoType", "Child Description"})
 
-	for _, device := range deviceData {
-		table.Append([]string{strconv.Itoa(device.ID), device.Name, device.Platform})
+	for _, geoLocation := range geoLocations {
+		if len(geoLocation.Children) == 0 {
+			table.Append([]string{
+				geoLocation.ID,
+				geoLocation.Name,
+				geoLocation.GeoType,
+				geoLocation.Description,
+				"",
+				"",
+				"",
+			})
+		} else {
+			for _, child := range geoLocation.Children {
+				table.Append([]string{
+					geoLocation.ID,
+					geoLocation.Name,
+					geoLocation.GeoType,
+					geoLocation.Description,
+					child.ID,
+					child.GeoType,
+					child.Description,
+				})
+			}
+		}
 	}
-
 	table.Render()
 }
-```
