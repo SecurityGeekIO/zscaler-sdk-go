@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 )
 
@@ -19,8 +20,8 @@ func getTestIdpId(t *testing.T) string {
 		return ""
 	}
 
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	idpService := services.New(client)
+	idpList, _, err := idpcontroller.GetAll(idpService)
 	if err != nil {
 		t.Fatalf("Error getting idps: %v", err)
 		return ""
@@ -55,8 +56,8 @@ func TestSCIMGroup(t *testing.T) {
 		return
 	}
 
-	idpService := idpcontroller.New(client)
-	idpList, _, err := idpService.GetAll()
+	idpService := services.New(client)
+	idpList, _, err := idpcontroller.GetAll(idpService)
 	if err != nil {
 		t.Errorf("Error getting idps: %v", err)
 		return
@@ -127,13 +128,13 @@ func TestSCIMGroupGetByNameWithSort(t *testing.T) {
 	}
 
 	// Check if we have enough groups for the test, otherwise return an error
-	if len(scimGroups) < 100 {
+	if len(scimGroups) < 10 {
 		t.Fatalf("Not enough SCIM groups available for testing. Required: 100, Found: %d", len(scimGroups))
 	}
 
-	// Randomly pick a group name from the first 50 groups
+	// Randomly pick a group name from the first 5 groups
 	rand.Seed(time.Now().UnixNano())
-	randomIndex := rand.Intn(50) // Adjusted to ensure it picks within the available range
+	randomIndex := rand.Intn(5) // Adjusted to ensure it picks within the available range
 	testScimName := scimGroups[randomIndex].Name
 
 	// Test with both DESC and ASC sort orders

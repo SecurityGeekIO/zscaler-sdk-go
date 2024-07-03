@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/browseraccess"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
-	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
-	appSegmentEndpoint      = "/application"
-	applicationTypeEndpoint = "/application/getAppsByType"
+	mgmtConfig         = "/mgmtconfig/v1/admin/customers/"
+	appSegmentEndpoint = "/application"
 )
 
 type ApplicationSegmentResource struct {
@@ -77,12 +77,6 @@ type SharedToMicrotenant struct {
 	Name string `json:"name,omitempty"`
 }
 
-type MicrotenantMove struct {
-	TargetSegmentGroupId string `json:"targetSegmentGroupId,omitempty"`
-	TargetMicrotenantId  string `json:"targetMicrotenantId,omitempty"`
-	TargetServerGroupId  string `json:"targetServerGroupId,omitempty"`
-}
-
 type AppServerGroups struct {
 	ConfigSpace      string `json:"configSpace,omitempty"`
 	CreationTime     string `json:"creationTime,omitempty"`
@@ -95,10 +89,10 @@ type AppServerGroups struct {
 	Name             string `json:"name"`
 }
 
-func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
+func Get(service *services.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -106,9 +100,9 @@ func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, 
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, *http.Response, error) {
+func GetByName(service *services.Service, appName string) (*ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{Search: appName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{Search: appName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -120,26 +114,9 @@ func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, 
 	return nil, resp, fmt.Errorf("no application segment named '%s' was found", appName)
 }
 
-func (service *Service) GetByApplicationType(applicationType string, expandAll bool) ([]ApplicationSegmentResource, *http.Response, error) {
-	if applicationType != "BROWSER_ACCESS" && applicationType != "SECURE_REMOTE_ACCESS" && applicationType != "INSPECT" {
-		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'SECURE_REMOTE_ACCESS', 'INSPECT'", applicationType)
-	}
-	// Constructing the query parameters as part of the URL
-	relativeURL := fmt.Sprintf("%s%s%s?applicationType=%s&expandAll=%t&page=1&pagesize=20",
-		mgmtConfig, service.Client.Config.CustomerID, applicationTypeEndpoint, applicationType, expandAll)
-	filter := common.Filter{} // Initialize an empty filter or with minimal required fields
-
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, filter)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return list, resp, nil
-}
-
-func (service *Service) Create(appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {
+func Create(service *services.Service, appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, common.Filter{MicroTenantID: service.microTenantID}, appSegment, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegment, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -147,9 +124,9 @@ func (service *Service) Create(appSegment ApplicationSegmentResource) (*Applicat
 	return v, resp, nil
 }
 
-func (service *Service) Update(applicationId string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationId)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, appSegmentRequest, nil)
+func Update(service *services.Service, appID string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, appID)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentRequest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +134,9 @@ func (service *Service) Update(applicationId string, appSegmentRequest Applicati
 	return resp, err
 }
 
-func (service *Service) Delete(applicationId string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationId)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.microTenantID}, nil, nil)
+func Delete(service *services.Service, appID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, appID)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +144,9 @@ func (service *Service) Delete(applicationId string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, error) {
+func GetAll(service *services.Service) ([]ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -181,32 +158,4 @@ func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, 
 		}
 	}
 	return result, resp, nil
-}
-
-func (service *Service) AppSegmentMicrotenantShare(applicationID string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
-	// Corrected URL format to include the applicationID before /share
-	relativeURL := fmt.Sprintf("%s%s%s/%s/share",
-		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
-
-	// Since microtenantId is being passed via an environment variable, it's not explicitly included in the URL.
-	// Ensure the NewRequestDo method or the infrastructure around it appropriately injects the microtenantId.
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{}, appSegmentRequest, nil)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
-// Move Application Segments from parent to another Microtenant Is Allowed
-// Application Segments can be moved from local microtenant to parent
-// Application Segments CANNOT be moved in between local microtenants.
-func (service *Service) AppSegmentMicrotenantMove(applicationID string, move MicrotenantMove) (*http.Response, error) {
-	// Corrected URL format to include the applicationID before /move
-	relativeURL := fmt.Sprintf("%s%s%s/%s/move",
-		mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{}, move, nil)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
 }

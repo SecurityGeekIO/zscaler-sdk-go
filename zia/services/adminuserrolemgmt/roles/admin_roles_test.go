@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,9 +17,9 @@ func TestAdminRoles_data(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	roles, err := service.GetAllAdminRoles()
+	roles, err := GetAllAdminRoles(service)
 	if err != nil {
 		t.Errorf("Error getting admin roles: %v", err)
 		return
@@ -28,19 +29,55 @@ func TestAdminRoles_data(t *testing.T) {
 		return
 	}
 	name := roles[0].Name
-	t.Log("Getting admin roles by name:" + name)
-	role, err := service.GetByName(name)
+	t.Log("Getting admin roles by name: " + name)
+
+	// Test GetByName function
+	role, err := GetByName(service, name)
 	if err != nil {
-		t.Errorf("Error getting admin roles by name: %v", err)
+		t.Errorf("Error getting admin role by name: %v", err)
 		return
 	}
 	if role.Name != name {
-		t.Errorf("admin role name does not match: expected %s, got %s", name, role.Name)
+		t.Errorf("Admin role name does not match: expected %s, got %s", name, role.Name)
 		return
 	}
+
+	// Test GetAPIRole function with includeApiRole=true
+	apiRole, err := GetAPIRole(service, name, "true")
+	if err != nil {
+		t.Errorf("Error getting API role: %v", err)
+		return
+	}
+	if apiRole.Name != name {
+		t.Errorf("API role name does not match: expected %s, got %s", name, apiRole.Name)
+		return
+	}
+
+	// Test GetAuditorRole function with includeAuditorRole=true
+	auditorRole, err := GetAuditorRole(service, name, "true")
+	if err != nil {
+		t.Errorf("Error getting Auditor role: %v", err)
+		return
+	}
+	if auditorRole.Name != name {
+		t.Errorf("Auditor role name does not match: expected %s, got %s", name, auditorRole.Name)
+		return
+	}
+
+	// Test GetPartnerRole function with includePartnerRole=true
+	partnerRole, err := GetPartnerRole(service, name, "true")
+	if err != nil {
+		t.Errorf("Error getting Partner role: %v", err)
+		return
+	}
+	if partnerRole.Name != name {
+		t.Errorf("Partner role name does not match: expected %s, got %s", name, partnerRole.Name)
+		return
+	}
+
 	// Negative Test: Try to retrieve an admin role with a non-existent name
 	nonExistentName := "ThisAdminRoleDoesNotExist"
-	_, err = service.GetByName(nonExistentName)
+	_, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -54,9 +91,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	roles, err := service.GetAllAdminRoles()
+	roles, err := GetAllAdminRoles(service)
 	if err != nil {
 		t.Errorf("Error getting admin role: %v", err)
 		return
@@ -85,7 +122,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a role with the name "Engineering" exists
 	knownName := "Super Admin"
@@ -99,7 +136,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve role with name variation: %s", variation)
-		role, err := service.GetByName(variation)
+		role, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting role with name variation '%s': %v", variation, err)
 			continue

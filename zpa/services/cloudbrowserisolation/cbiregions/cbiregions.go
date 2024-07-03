@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -16,21 +18,9 @@ type CBIRegions struct {
 	Name string `json:"name,omitempty"`
 }
 
-// The current API does not seem to support search by ID
-func (service *Service) Get(RegionID string) (*CBIRegions, *http.Response, error) {
-	v := new(CBIRegions)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiRegionsEndpoint, RegionID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return v, resp, nil
-}
-
 // The current API does not seem to support search by Name
-func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Response, error) {
-	list, resp, err := service.GetAll()
+func GetByName(service *services.Service, cbiRegionName string) (*CBIRegions, *http.Response, error) {
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -42,7 +32,7 @@ func (service *Service) GetByName(cbiRegionName string) (*CBIRegions, *http.Resp
 	return nil, resp, fmt.Errorf("no region named '%s' was found", cbiRegionName)
 }
 
-func (service *Service) GetAll() ([]CBIRegions, *http.Response, error) {
+func GetAll(service *services.Service) ([]CBIRegions, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
 	var list []CBIRegions
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)

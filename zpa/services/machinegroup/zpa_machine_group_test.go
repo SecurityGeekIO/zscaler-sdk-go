@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,10 +17,10 @@ func TestMachineGroup(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Test to retrieve all machine groups
-	groups, _, err := service.GetAll()
+	groups, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting machine groups: %v", err)
 		return
@@ -32,21 +33,41 @@ func TestMachineGroup(t *testing.T) {
 	// Test to retrieve a group by its name
 	name := groups[0].Name
 	t.Log("Getting machine group by name:" + name)
-	group, _, err := service.GetByName(name)
+	group, _, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting machine group by name: %v", err)
 		return
 	}
 	if group.Name != name {
-		t.Errorf("machine group name does not match: expected %s, got %s", name, group.Name)
+		t.Errorf("Machine group name does not match: expected %s, got %s", name, group.Name)
+		return
+	}
+
+	// Additional step: Use the ID of the first machine group to test the Get function
+	t.Log("Getting machine group by ID:" + groups[0].ID)
+	groupByID, _, err := Get(service, groups[0].ID)
+	if err != nil {
+		t.Errorf("Error getting machine group by ID: %v", err)
+		return
+	}
+	if groupByID.ID != groups[0].ID {
+		t.Errorf("Machine group ID does not match: expected %s, got %s", groups[0].ID, groupByID.ID)
 		return
 	}
 
 	// Negative Test: Try to retrieve a group with a non-existent name
 	nonExistentName := "ThisMachineGroupNameDoesNotExist"
-	_, _, err = service.GetByName(nonExistentName)
+	_, _, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
+
+	// Negative Test: Try to retrieve a group with a non-existent ID
+	nonExistentID := "non_existent_id"
+	_, _, err = Get(service, nonExistentID)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
 	}
 }
@@ -58,9 +79,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	groups, _, err := service.GetAll()
+	groups, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting machine groups: %v", err)
 		return
@@ -92,7 +113,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming a group with the name "BD-MGR01" exists
 	knownName := "BD-MGR01"
@@ -106,7 +127,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		group, _, err := service.GetByName(variation)
+		group, _, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name variation '%s': %v", variation, err)
 			continue
@@ -126,7 +147,7 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	// Assuming that there are groups with the following name variations
 	variations := []string{
@@ -136,7 +157,7 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name: %s", variation)
-		group, _, err := service.GetByName(variation)
+		group, _, err := GetByName(service, variation)
 		if err != nil {
 			t.Errorf("Error getting machine group with name '%s': %v", variation, err)
 			continue
@@ -154,10 +175,10 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
-		t.Error("Expected error retrieving resource by non_existent_name name, but got nil")
+		t.Error("Expected error retrieving resource by non-existent_name name, but got nil")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -52,18 +53,7 @@ type Versions struct {
 	VersionProfileGID        string `json:"version_profile_gid"`
 }
 
-func (service *Service) Get(versionID string) (*CustomerVersionProfile, *http.Response, error) {
-	v := new(CustomerVersionProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customerVersionProfileEndpoint, versionID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return v, resp, nil
-}
-
-func (service *Service) GetByName(versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
+func GetByName(service *services.Service, versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {
@@ -77,7 +67,7 @@ func (service *Service) GetByName(versionProfileName string) (*CustomerVersionPr
 	return nil, resp, fmt.Errorf("no version profile named '%s' was found", versionProfileName)
 }
 
-func (service *Service) GetAll() ([]CustomerVersionProfile, *http.Response, error) {
+func GetAll(service *services.Service) ([]CustomerVersionProfile, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {

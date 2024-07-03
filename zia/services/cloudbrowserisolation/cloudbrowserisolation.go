@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -24,20 +25,8 @@ type IsolationProfile struct {
 	DefaultProfile bool `json:"defaultProfile,omitempty"`
 }
 
-// Updated Get function
-func (service *Service) Get(profileID string) (*IsolationProfile, error) {
-	var cbiProfile IsolationProfile
-	err := service.Client.Read(fmt.Sprintf("%s/%s", cbiProfileEndpoint, profileID), &cbiProfile)
-	if err != nil {
-		return nil, checkNotSubscribedError(err)
-	}
-
-	service.Client.Logger.Printf("[DEBUG] Returning cloud browser isolation from Get: %s", cbiProfile.ID)
-	return &cbiProfile, nil
-}
-
 // Updated GetByName function
-func (service *Service) GetByName(profileName string) (*IsolationProfile, error) {
+func GetByName(service *services.Service, profileName string) (*IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
 	if err != nil {
@@ -52,7 +41,7 @@ func (service *Service) GetByName(profileName string) (*IsolationProfile, error)
 }
 
 // Updated GetAll function
-func (service *Service) GetAll() ([]IsolationProfile, error) {
+func GetAll(service *services.Service) ([]IsolationProfile, error) {
 	var cbiProfiles []IsolationProfile
 	err := common.ReadAllPages(service.Client, cbiProfileEndpoint, &cbiProfiles)
 	return cbiProfiles, checkNotSubscribedError(err)

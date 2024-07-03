@@ -1,12 +1,11 @@
 package locationgroups
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -110,7 +109,7 @@ type ManagedBy struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-func (service *Service) GetLocationGroup(groupID int) (*LocationGroup, error) {
+func GetLocationGroup(service *services.Service, groupID int) (*LocationGroup, error) {
 	var locationGroup LocationGroup
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
 	if err != nil {
@@ -121,7 +120,7 @@ func (service *Service) GetLocationGroup(groupID int) (*LocationGroup, error) {
 	return &locationGroup, nil
 }
 
-func (service *Service) GetLocationGroupByName(locationGroupName string) (*LocationGroup, error) {
+func GetLocationGroupByName(service *services.Service, locationGroupName string) (*LocationGroup, error) {
 	var locationGroups []LocationGroup
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
 	if err != nil {
@@ -135,42 +134,22 @@ func (service *Service) GetLocationGroupByName(locationGroupName string) (*Locat
 	return nil, fmt.Errorf("no location group found with name: %s", locationGroupName)
 }
 
-func (service *Service) CreateLocationGroup(locationGroups *LocationGroup) (*LocationGroup, error) {
-	resp, err := service.Client.Create(locationGroupEndpoint, *locationGroups)
+// GetGroupType queries the location group by its type
+func GetGroupType(service *services.Service, gType string) (*LocationGroup, error) {
+	var groupTypes []LocationGroup
+	err := service.Client.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
 	if err != nil {
 		return nil, err
 	}
-
-	createdLocationGroup, ok := resp.(*LocationGroup)
-	if !ok {
-		return nil, errors.New("object returned from api was not a location group pointer")
+	for _, locationGroup := range groupTypes {
+		if strings.EqualFold(locationGroup.GroupType, gType) {
+			return &locationGroup, nil
+		}
 	}
-
-	service.Client.Logger.Printf("[DEBUG]returning location group from create: %d", createdLocationGroup.ID)
-	return createdLocationGroup, nil
+	return nil, fmt.Errorf("no group type found with name: %s", gType)
 }
 
-func (service *Service) UpdateLocationGroup(groupID int, locationGroups *LocationGroup) (*LocationGroup, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), *locationGroups)
-	if err != nil {
-		return nil, nil, err
-	}
-	updatedLocationGroup, _ := resp.(*LocationGroup)
-
-	service.Client.Logger.Printf("[DEBUG]returning location group from update: %d", updatedLocationGroup.ID)
-	return updatedLocationGroup, nil, nil
-}
-
-func (service *Service) DeleteLocationGroup(groupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID))
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-func (service *Service) GetAll() ([]LocationGroup, error) {
+func GetAll(service *services.Service) ([]LocationGroup, error) {
 	var locationGroups []LocationGroup
 	err := common.ReadAllPages(service.Client, locationGroupEndpoint, &locationGroups)
 	return locationGroups, err

@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
-	mgmtConfig             = "/mgmtconfig/v2/admin/customers/"
+	mgmtConfigV1           = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2           = "/mgmtconfig/v2/admin/customers/"
 	trustedNetworkEndpoint = "/network"
 )
 
@@ -25,9 +27,9 @@ type TrustedNetwork struct {
 	ZscalerCloud     string `json:"zscalerCloud,omitempty"`
 }
 
-func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, error) {
+func Get(service *services.Service, networkID string) (*TrustedNetwork, *http.Response, error) {
 	v := new(TrustedNetwork)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+trustedNetworkEndpoint, networkID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+trustedNetworkEndpoint, networkID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -36,8 +38,8 @@ func (service *Service) Get(networkID string) (*TrustedNetwork, *http.Response, 
 	return v, resp, nil
 }
 
-func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint)
+func GetByNetID(service *services.Service, netID string) (*TrustedNetwork, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -50,9 +52,9 @@ func (service *Service) GetByNetID(netID string) (*TrustedNetwork, *http.Respons
 	return nil, resp, fmt.Errorf("no trusted network with NetworkID '%s' was found", netID)
 }
 
-func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
+func GetByName(service *services.Service, trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
 	adaptedtrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: adaptedtrustedNetworkName} // Using the adapted trusted Network Name for searching
@@ -72,27 +74,8 @@ func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *
 	return nil, resp, fmt.Errorf("no trusted network named '%s' was found", trustedNetworkName)
 }
 
-/*
-	func (service *Service) GetByName(trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
-		adaptedTrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
-		adaptedTrustedNetworkName = strings.ReplaceAll(adaptedTrustedNetworkName, "-", " ")
-		adaptedTrustedNetworkName = strings.TrimSpace(adaptedTrustedNetworkName)
-		adaptedTrustedNetworkName = strings.Split(adaptedTrustedNetworkName, " ")[0]
-		relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
-		list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, adaptedTrustedNetworkName)
-		if err != nil {
-			return nil, nil, err
-		}
-		for _, trustedNetwork := range list {
-			if strings.EqualFold(common.RemoveCloudSuffix(trustedNetwork.Name), common.RemoveCloudSuffix(trustedNetworkName)) {
-				return &trustedNetwork, resp, nil
-			}
-		}
-		return nil, resp, fmt.Errorf("no trusted network named '%s' was found", trustedNetworkName)
-	}
-*/
-func (service *Service) GetAll() ([]TrustedNetwork, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + trustedNetworkEndpoint
+func GetAll(service *services.Service) ([]TrustedNetwork, *http.Response, error) {
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

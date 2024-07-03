@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
 )
 
 func TestEnrollmentCert_Get(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
-	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert/123", func(w http.ResponseWriter, r *http.Request) {
+
+	service := services.New(client)
+
+	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/enrollmentCert/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Connector"}`))
 	})
-	service := &enrollmentcert.Service{
-		Client: client,
-	}
 
 	// Make the GET request
-	enrollmentCert, _, err := service.Get("123")
+	enrollmentCert, _, err := enrollmentcert.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -36,52 +37,54 @@ func TestEnrollmentCert_Get(t *testing.T) {
 	}
 }
 
-/*
-	func TestEnrollmentCert_GetByName(t *testing.T) {
-		client, mux, server := tests.NewZpaClientMock()
-		defer server.Close()
-		mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert", func(w http.ResponseWriter, r *http.Request) {
-			// Get the query parameter "name" from the request
-			query := r.URL.Query()
-			name := query.Get("search")
+func TestEnrollmentCert_GetByName(t *testing.T) {
+	client, mux, server := tests.NewZpaClientMock()
+	defer server.Close()
 
-			// Check if the name matches the expected value
-			if name == "Connector" {
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{
+	service := services.New(client)
+
+	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert", func(w http.ResponseWriter, r *http.Request) {
+		// Get the query parameter "name" from the request
+		query := r.URL.Query()
+		name := query.Get("search")
+
+		// Check if the name matches the expected value
+		if name == "Connector" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{
 					"list":[
 						{"id": "123", "name": "Connector"}
 					],
 					"totalPages":1
 					}`))
-			} else {
-				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(`{"error": "Connector Certificate not found"}`))
-			}
-		})
-		service := &enrollmentcert.Service{
-			Client: client,
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"error": "Connector Certificate not found"}`))
 		}
+	})
 
-		// Make the GetByName request
-		enrollmentCert, _, err := service.GetByName("Connector")
-		// Check if the request was successful
-		if err != nil {
-			t.Errorf("Error making GetByName request: %v", err)
-		}
-
-		// Check if the certificate ID and name match the expected values
-		if enrollmentCert.ID != "123" {
-			t.Errorf("Expected connector certificate ID '123', but got '%s'", enrollmentCert.ID)
-		}
-		if enrollmentCert.Name != "Connector" {
-			t.Errorf("Expected connector certificate name 'Connector', but got '%s'", enrollmentCert.Name)
-		}
+	// Make the GetByName request
+	enrollmentCert, _, err := enrollmentcert.GetByName(service, "Connector")
+	// Check if the request was successful
+	if err != nil {
+		t.Errorf("Error making GetByName request: %v", err)
 	}
-*/
+
+	// Check if the certificate ID and name match the expected values
+	if enrollmentCert.ID != "123" {
+		t.Errorf("Expected connector certificate ID '123', but got '%s'", enrollmentCert.ID)
+	}
+	if enrollmentCert.Name != "Connector" {
+		t.Errorf("Expected connector certificate name 'Connector', but got '%s'", enrollmentCert.Name)
+	}
+}
+
 func TestEnrollmentCert_GetAll(t *testing.T) {
 	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
+
+	service := services.New(client)
+
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/enrollmentCert", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
@@ -95,12 +98,8 @@ func TestEnrollmentCert_GetAll(t *testing.T) {
 			"totalPages":1
 			}`))
 	})
-	service := &enrollmentcert.Service{
-		Client: client,
-	}
-
 	// Make the GetAll request
-	enrollmentCerts, _, err := service.GetAll()
+	enrollmentCerts, _, err := enrollmentcert.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

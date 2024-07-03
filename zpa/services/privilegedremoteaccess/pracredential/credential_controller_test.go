@@ -1,34 +1,37 @@
 package pracredential
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/authdomain"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/microtenants"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	rPassword := acctest.RandString(60)
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	credController := Credential{
 		Name:           name,
 		Description:    name,
 		CredentialType: "USERNAME_PASSWORD",
 		UserName:       name,
-		Password:       rPassword,
+		Password:       tests.TestPassword(10), // Ensuring the password length is within constraints
 		UserDomain:     "acme.com",
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(&credController)
+	createdResource, _, err := Create(service, &credController)
 
 	// Check if the request was successful
 	if err != nil {
@@ -41,8 +44,9 @@ func TestCredentialController(t *testing.T) {
 	if createdResource.Name != name {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
+
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -50,15 +54,18 @@ func TestCredentialController(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
+
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	retrievedResource.Password = tests.TestPassword(10) // Ensure the password is not being reset during update
+
+	_, err = Update(service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -70,7 +77,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -80,15 +87,17 @@ func TestCredentialController(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
 	if len(resources) == 0 {
 		t.Error("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-	// check if the created resource is in the list
+
+	// Check if the created resource is in the list
 	found := false
 	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
@@ -99,19 +108,19 @@ func TestCredentialController(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
+
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = Delete(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
+	_, _, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
-
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
@@ -119,9 +128,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non_existent_id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -132,9 +141,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non_existent_id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -145,9 +154,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non_existent_id", &Credential{})
+	_, err = Update(service, "non_existent_id", &Credential{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -158,10 +167,84 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non_existent_name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}
+
+func TestPRACredentialMove(t *testing.T) {
+	// Generate base random strings
+	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+		return
+	}
+
+	service := services.New(client)
+
+	// Step 1: Create a new Microtenant
+	authDomainList, _, err := authdomain.GetAllAuthDomains(service)
+	if err != nil {
+		t.Errorf("Error getting auth domains: %v", err)
+		return
+	}
+	if len(authDomainList.AuthDomains) == 0 {
+		t.Error("Expected retrieved auth domains to be non-empty, but got empty slice")
+		return
+	}
+
+	// microtenantService := microtenants.New(client)
+	newMicrotenant := microtenants.MicroTenant{
+		Name:                       baseName + "-microtenant",
+		Description:                baseDescription + "-microtenant",
+		Enabled:                    true,
+		PrivilegedApprovalsEnabled: true,
+		CriteriaAttribute:          "AuthDomain",
+		CriteriaAttributeValues:    []string{authDomainList.AuthDomains[0]},
+	}
+	createdMicrotenant, _, err := microtenants.Create(service, newMicrotenant)
+	if err != nil {
+		t.Fatalf("Failed to create microtenant: %v", err)
+	}
+
+	// Ensure the microtenant is deleted at the end of the test
+	defer func() {
+		_, err := microtenants.Delete(service, createdMicrotenant.ID)
+		if err != nil {
+			t.Errorf("Error deleting microtenant: %v", err)
+		}
+	}()
+
+	microtenantID := createdMicrotenant.ID
+
+	// Step 2: Create a local credential
+	credentialService := services.New(client)
+	credController := Credential{
+		Name:           baseName + "-credential",
+		Description:    baseDescription + "-credential",
+		CredentialType: "USERNAME_PASSWORD",
+		UserName:       baseName + "-user",
+		Password:       tests.TestPassword(10), // Ensuring the password length is within constraints
+		UserDomain:     "acme.com",
+	}
+
+	createdCredential, _, err := Create(credentialService, &credController)
+	if err != nil {
+		t.Fatalf("Failed to create credential: %v", err)
+	}
+
+	// Step 3: Move the credential to the microtenant
+	resp, err := CredentialMove(credentialService, createdCredential.ID, microtenantID)
+	if err != nil {
+		t.Fatalf("Error moving credential to microtenant: %v", err)
+	}
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("Failed to move credential to microtenant, status code: %d", resp.StatusCode)
 	}
 }
