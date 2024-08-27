@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -16,26 +16,26 @@ const (
 )
 
 type InspectionCustomControl struct {
-	ID                               string                   `json:"id,omitempty"`
-	Action                           string                   `json:"action,omitempty"`
-	ActionValue                      string                   `json:"actionValue,omitempty"`
-	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
-	Rules                            []Rules                  `json:"rules,omitempty"`
-	ControlNumber                    string                   `json:"controlNumber,omitempty"`
-	ControlType                      string                   `json:"controlType,omitempty"`
-	ControlRuleJson                  string                   `json:"controlRuleJson,omitempty"`
-	CreationTime                     string                   `json:"creationTime,omitempty"`
-	DefaultAction                    string                   `json:"defaultAction,omitempty"`
-	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
-	Description                      string                   `json:"description,omitempty"`
-	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
-	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
-	Name                             string                   `json:"name,omitempty"`
-	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
-	ProtocolType                     string                   `json:"protocolType,omitempty"`
-	Severity                         string                   `json:"severity,omitempty"`
-	Type                             string                   `json:"type,omitempty"`
-	Version                          string                   `json:"version,omitempty"`
+	ID                               string                          `json:"id,omitempty"`
+	Action                           string                          `json:"action,omitempty"`
+	ActionValue                      string                          `json:"actionValue,omitempty"`
+	AssociatedInspectionProfileNames []common.AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
+	Rules                            []Rules                         `json:"rules,omitempty"`
+	ControlNumber                    string                          `json:"controlNumber,omitempty"`
+	ControlType                      string                          `json:"controlType,omitempty"`
+	ControlRuleJson                  string                          `json:"controlRuleJson,omitempty"`
+	CreationTime                     string                          `json:"creationTime,omitempty"`
+	DefaultAction                    string                          `json:"defaultAction,omitempty"`
+	DefaultActionValue               string                          `json:"defaultActionValue,omitempty"`
+	Description                      string                          `json:"description,omitempty"`
+	ModifiedBy                       string                          `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                          `json:"modifiedTime,omitempty"`
+	Name                             string                          `json:"name,omitempty"`
+	ParanoiaLevel                    string                          `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                          `json:"protocolType,omitempty"`
+	Severity                         string                          `json:"severity,omitempty"`
+	Type                             string                          `json:"type,omitempty"`
+	Version                          string                          `json:"version,omitempty"`
 }
 
 type Rules struct {
@@ -48,11 +48,6 @@ type Conditions struct {
 	LHS string `json:"lhs,omitempty"`
 	OP  string `json:"op,omitempty"`
 	RHS string `json:"rhs,omitempty"`
-}
-
-type AssociatedProfileNames struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
 }
 
 func unmarshalRulesJson(rulesJsonStr string) ([]Rules, error) {

@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
@@ -113,7 +113,9 @@ func GetAllByGroup(service *services.Service, version, groupName string) ([]Pred
 	queryParams.Set("version", version)
 
 	if groupName != "" {
-		search := fmt.Sprintf("controlGroup+EQ+%s", groupName)
+		// Properly encode the groupName component
+		encodedGroupName := url.QueryEscape(groupName)
+		search := fmt.Sprintf("controlGroup+EQ+%s", encodedGroupName)
 		queryParams.Set("search", search)
 	}
 

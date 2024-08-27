@@ -6,9 +6,9 @@ import (
 	"os"
 	"runtime"
 
-	client "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/activation"
+	client "github.com/zscaler/zscaler-sdk-go/v2/zia"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/activation"
 )
 
 func getEnvVarOrFail(k string) string {

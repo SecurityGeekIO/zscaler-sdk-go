@@ -8,10 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/groups"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/usermanagement/groups"
 )
 
 const (

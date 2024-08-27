@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
-	virtualipaddress "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
+	virtualipaddress "github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
 )
 
 const (

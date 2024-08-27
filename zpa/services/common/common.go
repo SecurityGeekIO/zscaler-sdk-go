@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 const (
@@ -57,6 +57,28 @@ type Conditions struct {
 	LHS string `json:"lhs,omitempty"`
 	OP  string `json:"op,omitempty"`
 	RHS string `json:"rhs,omitempty"`
+}
+
+type CustomCommonControls struct {
+	ID                               string                   `json:"id,omitempty"`
+	Name                             string                   `json:"name,omitempty"`
+	Action                           string                   `json:"action,omitempty"`
+	ActionValue                      string                   `json:"actionValue,omitempty"`
+	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
+	Attachment                       string                   `json:"attachment,omitempty"`
+	ControlGroup                     string                   `json:"controlGroup,omitempty"`
+	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
+	CreationTime                     string                   `json:"creationTime,omitempty"`
+	DefaultAction                    string                   `json:"defaultAction,omitempty"`
+	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
+	Description                      string                   `json:"description,omitempty"`
+	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
+	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                   `json:"protocolType,omitempty"`
+	Severity                         string                   `json:"severity,omitempty"`
+	Version                          string                   `json:"version,omitempty"`
 }
 
 type AssociatedProfileNames struct {

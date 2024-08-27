@@ -1,13 +1,11 @@
 package cbibannercontroller
 
-// TODO: Test is failing. Server is returning 500.
-
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestCBIBannerController(t *testing.T) {
@@ -79,7 +77,7 @@ func TestCBIBannerController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(service, updateName)
+	retrievedResource, _, err = GetByNameOrID(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}

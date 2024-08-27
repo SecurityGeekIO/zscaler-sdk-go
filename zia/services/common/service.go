@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia"
 )
 
 type Service struct {

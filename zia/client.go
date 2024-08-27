@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/google/uuid"
+	"github.com/zscaler/zscaler-sdk-go/v2/cache"
+	"github.com/zscaler/zscaler-sdk-go/v2/logger"
 )
 
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {

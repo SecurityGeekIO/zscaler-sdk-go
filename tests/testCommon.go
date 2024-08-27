@@ -12,12 +12,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v2/logger"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa"
 )
 
 const (

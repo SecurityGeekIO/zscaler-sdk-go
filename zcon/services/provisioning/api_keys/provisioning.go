@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/common"
 )
 
 const (

@@ -9,14 +9,14 @@ GOIMPORTS := goimports
 
 help:
 	@echo "$(COLOR_ZSCALER)"
-	@echo ":'######::'########::'######::'##::::'##:'########::'####:'########:'##:::'##::'######:::'########:'########:'##:::'##:'####::'#######::"
-	@echo "'##... ##: ##.....::'##... ##: ##:::: ##: ##.... ##:. ##::... ##..::. ##:'##::'##... ##:: ##.....:: ##.....:: ##::'##::. ##::'##.... ##:"
-	@echo " ##:::..:: ##::::::: ##:::..:: ##:::: ##: ##:::: ##:: ##::::: ##:::::. ####::: ##:::..::: ##::::::: ##::::::: ##:'##:::: ##:: ##:::: ##:"
-	@echo ". ######:: ######::: ##::::::: ##:::: ##: ########::: ##::::: ##::::::. ##:::: ##::'####: ######::: ######::: #####::::: ##:: ##:::: ##:"
-	@echo ":..... ##: ##...:::: ##::::::: ##:::: ##: ##.. ##:::: ##::::: ##::::::: ##:::: ##::: ##:: ##...:::: ##...:::: ##. ##:::: ##:: ##:::: ##:"
-	@echo "'##::: ##: ##::::::: ##::: ##: ##:::: ##: ##::. ##::: ##::::: ##::::::: ##:::: ##::: ##:: ##::::::: ##::::::: ##:. ##::: ##:: ##:::: ##:"
-	@echo ". ######:: ########:. ######::. #######:: ##:::. ##:'####:::: ##::::::: ##::::. ######::: ########: ########: ##::. ##:'####:. #######::"
-	@echo ":......:::........:::......::::.......:::..:::::..::....:::::..::::::::..::::::......::::........::........::..::::..::....:::.......:::"
+	@echo "  ______              _           "
+	@echo " |___  /             | |          "
+	@echo "    / / ___  ___ __ _| | ___ _ __ "
+	@echo "   / / / __|/ __/ _\` | |/ _ \ '__|"
+	@echo "  / /__\__ \ (_| (_| | |  __/ |   "
+	@echo " /_____|___/\___\__,_|_|\___|_|   "
+	@echo "                                  "
+	@echo "                                  "
 	@echo "$(COLOR_OK)Zscaler SDK for Golang$(COLOR_NONE)"
 	@echo ""
 	@echo "$(COLOR_WARNING)Usage:$(COLOR_NONE)"
@@ -26,6 +26,7 @@ help:
 	@echo "$(COLOR_OK)  build                 	Clean and build the Zscaler Golang SDK generated files$(COLOR_NONE)"
 	@echo "$(COLOR_WARNING)test$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:all              	Run all tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zcc        	Run only zcc integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zcon        	Run only zcon integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
@@ -77,10 +78,17 @@ sweep\:zia:
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
+	@make test:integration:zcc
 	@make test:integration:zcon
 	@make test:integration:zdx
 	@make test:integration:zpa
 	@make test:integration:zia
+
+test\:integration\:zcc:
+	@echo "$(COLOR_ZSCALER)Running zcc integration tests...$(COLOR_NONE)"
+	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zcc/... -parallel 1 -timeout 60m
+	go tool cover -html=zcccoverage.out -o zcccoverage.html
+
 
 test\:integration\:zcon:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
@@ -90,22 +98,28 @@ test\:integration\:zcon:
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
 	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
-	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	@go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	@go tool cover -func zdxcoverage.out | grep total:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zpa/... -parallel 20 -timeout 60m
+	@go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zpa/... -parallel 10 -timeout 60m
 	@go tool cover -html=zpacoverage.out -o zpacoverage.html
-
+	@go tool cover -func zpacoverage.out | grep total:
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... -parallel 10 -timeout 60m
+	@go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... ./zia/activation_cli/... -parallel 10 -timeout 60m
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
+	@go tool cover -func ziacoverage.out | grep total:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
 	go test -failfast -race ./tests/unit -test.v
+
+test\:unit\zcc:
+	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -failfast -race ./tests/unit/zcc -test.v
 
 test\:unit\zcon:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
@@ -125,6 +139,7 @@ test\:unit\:zpa:
 
 test\:unit\all:
 	@echo "$(COLOR_OK)Running unit tests...$(COLOR_NONE)"
+	go test -race ./tests/unit/zcc -test.v
 	go test -race ./tests/unit/zcon -test.v
 	go test -race ./tests/unit/zdx -test.v
 	go test -race ./tests/unit/zia -test.v
@@ -144,7 +159,6 @@ ziaActivator:
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
 	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
-	ziaActivator
 
 zconActivator: GOOS=$(shell go env GOOS)
 zconActivator: GOARCH=$(shell go env GOARCH)

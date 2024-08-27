@@ -12,10 +12,10 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/provisioningkey"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/provisioningkey"
 )
 
 const (

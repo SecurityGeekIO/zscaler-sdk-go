@@ -3,12 +3,12 @@ package virtualipaddress
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/region/datacenter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/region/datacenter"
+	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 )
 
 func TestVIPs(t *testing.T) {

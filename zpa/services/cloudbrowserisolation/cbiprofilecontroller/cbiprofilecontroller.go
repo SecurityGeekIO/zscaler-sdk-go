@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -109,17 +109,28 @@ func Get(service *services.Service, profileID string) (*IsolationProfile, *http.
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+func GetByNameOrID(service *services.Service, identifier string) (*IsolationProfile, *http.Response, error) {
+	// Retrieve all profiles
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Try to find by ID
 	for _, profile := range list {
-		if strings.EqualFold(profile.Name, profileName) {
-			return &profile, resp, nil
+		if profile.ID == identifier {
+			return Get(service, profile.ID)
 		}
 	}
-	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
+
+	// Try to find by name
+	for _, profile := range list {
+		if strings.EqualFold(profile.Name, identifier) {
+			return Get(service, profile.ID)
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation profile named or with ID '%s' was found", identifier)
 }
 
 func Create(service *services.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {

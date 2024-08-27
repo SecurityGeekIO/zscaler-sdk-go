@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -43,6 +43,27 @@ func GetByName(service *services.Service, certificateName string) (*CBICertifica
 		}
 	}
 	return nil, resp, fmt.Errorf("no certificate named '%s' was found", certificateName)
+}
+
+func GetByNameOrID(service *services.Service, identifier string) (*CBICertificate, *http.Response, error) {
+	// Retrieve all banners
+	list, resp, err := GetAll(service)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Try to find by ID
+	for _, certificate := range list {
+		if certificate.ID == identifier {
+			return Get(service, certificate.ID)
+		}
+	}
+	// Try to find by name
+	for _, certificate := range list {
+		if strings.EqualFold(certificate.Name, identifier) {
+			return Get(service, certificate.ID)
+		}
+	}
+	return nil, resp, fmt.Errorf("no isolation certificate named or with ID '%s' was found", identifier)
 }
 
 func Create(service *services.Service, cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {

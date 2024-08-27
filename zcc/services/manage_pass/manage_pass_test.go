@@ -4,8 +4,8 @@ package manage_pass
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
 )
 
 func TestUpdateManagePass(t *testing.T) {

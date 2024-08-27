@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/bacertificate"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praportal"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/bacertificate"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/praportal"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/segmentgroup"
 )
 
 func TestPRAConsole(t *testing.T) {

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/pracredential"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/samlattribute"
+	"github.com/zscaler/zscaler-sdk-go/v2/tests"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/idpcontroller"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/privilegedremoteaccess/pracredential"
+	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/samlattribute"
 )
 
 func TestAccessCredentialPolicy(t *testing.T) {
