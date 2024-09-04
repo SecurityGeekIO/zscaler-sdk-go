@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/applications"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/devices"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/applications"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/devices"
 )
 
 func TestDeepTraceSession(t *testing.T) {

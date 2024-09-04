@@ -4,8 +4,8 @@ package api_keys
 import (
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
 )
 
 func TestZConProvisioningAPIKey(t *testing.T) {

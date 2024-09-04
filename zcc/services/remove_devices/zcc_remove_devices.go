@@ -3,8 +3,8 @@ package remove_devices
 import (
 	"fmt"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services/common"
 )
 
 const (

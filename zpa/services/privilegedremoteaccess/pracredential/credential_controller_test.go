@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/authdomain"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/microtenants"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/authdomain"
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services/microtenants"
 )
 
 func TestCredentialController(t *testing.T) {

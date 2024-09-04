@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/activation"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services/activation"
 )
 
 func TestActivationCLI(t *testing.T) {

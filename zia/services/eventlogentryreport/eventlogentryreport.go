@@ -3,7 +3,7 @@ package eventlogentryreport
 import (
 	"errors"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 const (

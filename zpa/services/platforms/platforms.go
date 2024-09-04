@@ -3,7 +3,7 @@ package platforms
 import (
 	"net/http"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (

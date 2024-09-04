@@ -1,8 +1,8 @@
-[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/zscaler/zscaler-sdk-go/v2/blob/master/.go-version)
-[![Go Report Card](https://goreportcard.com/badge/github.com/zscaler/zscaler-sdk-go)](https://goreportcard.com/report/github.com/zscaler/zscaler-sdk-go)
+[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/.go-version)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
 [![codecov](https://codecov.io/github/zscaler/zscaler-sdk-go/graph/badge.svg?token=OVX3UWIWSK)](https://codecov.io/github/zscaler/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go/v2/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
 ## Support Disclaimer
@@ -30,9 +30,9 @@ To install the Zscaler GO SDK in your project:
 
   - Create a module file by running `go mod init`
   - You can skip this step if you already use `go mod`
-  - Run `go get github.com/zscaler/zscaler-sdk-go/v2@latest`. This will add
+  - Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"`.
+  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"`.
 
 ### You'll also need
 
@@ -76,9 +76,9 @@ You can provide credentials via the `ZIA_USERNAME`, `ZIA_PASSWORD`, `ZIA_API_KEY
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |    
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |
 | `password`       | _(String)_ A string that contains the password for the API admin.| `ZIA_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |   
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$zsapi.<Zscaler Cloud Name>/api/v1`.| `ZIA_CLOUD` |
 
 ### ZPA native authentication
@@ -101,9 +101,9 @@ You can provide credentials via the `ZPA_CLIENT_ID`, `ZPA_CLIENT_SECRET`, `ZPA_C
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |    
+| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |
 | `client_secret`       | _(String)_ The ZPA API client secret generated from the ZPA console.| `ZPA_CLIENT_SECRET` |
-| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |   
+| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |
 | `cloud`       | _(String)_ The Zscaler cloud for your tenancy.| `ZPA_CLOUD` |
 
 ### ZCC native authentication
@@ -130,8 +130,8 @@ You can provide credentials via the `ZCC_CLIENT_ID`, `ZCC_CLIENT_SECRET`, `ZCC_C
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |    
-| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` | 
+| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |
+| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` |
 | `cloudEnv`       | _(String)_ The host and basePath for the ZCC cloud services API is `$mobileadmin.<Zscaler Cloud Name>/papi`.| `ZCC_CLOUD` |
 
 ### ZCON native authentication
@@ -156,9 +156,9 @@ You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |    
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |
 | `password`       | _(String)_ A string that contains the password for the API admin.| `ZCON_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |   
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZCON_CLOUD` |
 
 ### ZDX native authentication
@@ -173,8 +173,8 @@ You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environme
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |    
-| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` | 
+| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |
+| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` |
 
 ## Initialize a Client
 
@@ -183,7 +183,7 @@ You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environme
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zpa"
 )
 
 func main() {
@@ -208,14 +208,14 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zia"
 )
 
 func main() {
 	username  := ""
 	password  := ""
 	apiKey    := ""
-	cloudEnv  := "" 
+	cloudEnv  := ""
 
 	client, err := zia.NewClient(username, password, apiKey, cloudEnv, userAgent)
 	if err != nil {
@@ -231,12 +231,12 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zcc"
 )
 
 func main() {
 
-	APIKey    :=  "" 
+	APIKey    :=  ""
 	SecretKey :=  ""
 	cloudEnv  :=  ""
 	userAgent :=  ""
@@ -256,7 +256,7 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zdx"
 )
 
 func main() {
@@ -281,15 +281,15 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zcon"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zcon"
 )
 
 func main() {
-	username    := ""  
-	password    := ""  
-	apiKey      := ""    
-	cloudEnv    := "" 
-	userAgent   := "" 
+	username    := ""
+	password    := ""
+	apiKey      := ""
+	cloudEnv    := ""
+	userAgent   := ""
 
 	client, err := zcon.NewClient(username, password, apiKey, cloudEnv, userAgent)
 	if err != nil {
@@ -324,7 +324,7 @@ In the default configuration the ZPA and ZIA client utilizes a memory cache that
 This helps to keep HTTP requests to the ZPA and ZIA API at a minimum. In the case where the client needs to be certain it is accessing recent data; for instance, list items, delete an item, then list items again; be sure to make use of the refresh next facility to clear the request cache. To completely disable the request
 memory cache configure the client with `WithCache(false)` or set the following environment variable ``ZSCALER_SDK_CACHE_DISABLED`` to `true`.
 
-The SDK supports caching for GET requests to improve performance and reduce the number of API calls. 
+The SDK supports caching for GET requests to improve performance and reduce the number of API calls.
 The cache can be configured and enabled/disabled using the following configuration parameters:
 
 - `cacheEnabled`: Enables or disables caching.
@@ -373,17 +373,17 @@ The retry mechanism for the ZIA API client works as follows:
 ## Contributing
 
 We're happy to accept contributions and PRs! Please see the [contribution
-guide](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
+guide](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
 structure a contribution.
 
-[sdkapiref]: https://pkg.go.dev/github.com/zscaler/zscaler-sdk-go/v2
-[github-issues]: https://github.com/zscaler/zscaler-sdk-go/issues
-[github-releases]: https://github.com/zscaler/zscaler-sdk-go/releases
+[sdkapiref]: https://pkg.go.dev/github.com/SecurityGeekIO/zscaler-sdk-go/v2
+[github-issues]: https://github.com/SecurityGeekIO/zscaler-sdk-go/issues
+[github-releases]: https://github.com/SecurityGeekIO/zscaler-sdk-go/releases
 
 MIT License
 =======
 
-Copyright (c) 2022 [Zscaler](https://github.com/zscaler)
+Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

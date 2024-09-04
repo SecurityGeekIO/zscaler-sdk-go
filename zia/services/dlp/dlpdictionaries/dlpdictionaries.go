@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
@@ -145,6 +145,21 @@ func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
 
+func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) ([]string, int, error) {
+	dictionary, err := GetByName(service, dictionaryName)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var predefinedIdentifiers []string
+	endpoint := fmt.Sprintf("%s/%d/predefinedIdentifiers", dlpDictionariesEndpoint, dictionary.ID)
+	err = service.Client.Read(endpoint, &predefinedIdentifiers)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return predefinedIdentifiers, dictionary.ID, nil
+}
 func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
 	resp, err := service.Client.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
 	if err != nil {

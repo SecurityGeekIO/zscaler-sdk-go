@@ -3,9 +3,9 @@ package activation
 import (
 	"testing"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/stretchr/testify/assert"
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestActivation(t *testing.T) {

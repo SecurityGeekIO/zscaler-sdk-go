@@ -1,7 +1,7 @@
 package devices
 
 import (
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services"
 )
 
 const (

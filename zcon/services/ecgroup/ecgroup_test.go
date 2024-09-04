@@ -3,8 +3,8 @@ package ecgroup
 import (
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
 )
 
 func TestECGroup(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services/devices"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services/devices"
 )
 
 func TestGetDevices(t *testing.T) {

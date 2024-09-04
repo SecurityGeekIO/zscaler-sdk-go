@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services/adminuserrolemgmt/adminroles"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/zscaler/zscaler-sdk-go/v2/tests"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services/adminuserrolemgmt/adminroles"
 )
 
 // Constants for conflict retries

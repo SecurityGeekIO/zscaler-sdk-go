@@ -3,7 +3,7 @@ package activation
 import (
 	"errors"
 
-	"github.com/zscaler/zscaler-sdk-go/v2/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
 )
 
 const (

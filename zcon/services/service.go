@@ -1,6 +1,6 @@
 package services
 
-import "github.com/zscaler/zscaler-sdk-go/v2/zcon"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
 
 type Service struct {
 	Client *zcon.Client
