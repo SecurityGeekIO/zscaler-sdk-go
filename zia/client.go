@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -50,16 +49,16 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		return resp, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return resp, err
 	}
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	// Fallback check for SESSION_NOT_VALID
 	if resp.StatusCode == http.StatusUnauthorized || strings.Contains(string(body), "SESSION_NOT_VALID") {
 		// Refresh session and retry
-		err := c.refreshSession()
+		err := c.checkSession()
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +112,11 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		if err != nil {
 			return nil, err
 		}
-		otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
+		if c.useOneAPI {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.AuthToken.AccessToken))
+		} else {
+			otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
+		}
 	}
 	reqID := uuid.New().String()
 	start := time.Now()
