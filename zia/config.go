@@ -44,7 +44,6 @@ const (
 )
 
 // Client ...
-// Client ...
 type Client struct {
 	sync.Mutex
 	userName          string

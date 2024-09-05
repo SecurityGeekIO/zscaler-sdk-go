@@ -189,6 +189,56 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 }
 
+func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to create with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to create with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
+func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to update with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to update with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "PUT", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // Read ...
 func (c *Client) Read(endpoint string, o interface{}) error {
 	contentType := c.GetContentType()
@@ -246,4 +296,32 @@ func (c *Client) Delete(endpoint string) error {
 		return err
 	}
 	return nil
+}
+
+// BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
+func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+	if payload == nil {
+		return nil, errors.New("tried to delete with a nil payload, expected a struct")
+	}
+
+	// Marshal the payload into JSON
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the POST request
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the status code (204 No Content expected)
+	if len(resp) == 0 {
+		c.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
+		return &http.Response{StatusCode: 204}, nil
+	}
+
+	// If the response is not empty, this might indicate an error or unexpected behavior
+	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }
