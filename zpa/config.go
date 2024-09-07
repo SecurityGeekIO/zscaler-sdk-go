@@ -94,8 +94,9 @@ type Config struct {
 	oauth2ProviderUrl string
 }
 
-func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUrl, userAgent string) (*Config, error) {
+func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, vanityDomain, userAgent string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
+
 	// if creds not provided in TF config, try loading from env vars
 	if clientID == "" || clientSecret == "" || customerID == "" || cloud == "" || userAgent == "" {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
@@ -103,9 +104,15 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		customerID = os.Getenv(ZPA_CUSTOMER_ID)
 		cloud = os.Getenv(ZPA_CLOUD)
 	}
-	if oauth2ProviderUrl == "" {
-		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
+
+	// Check for vanity domain and ensure proper formatting
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
 	}
+	if !strings.HasPrefix(vanityDomain, "https://") {
+		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	}
+
 	// last resort to configuration file:
 	if clientID == "" || clientSecret == "" || customerID == "" {
 		creds, err := loadCredentialsFromConfig(logger)
@@ -118,12 +125,11 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		cloud = creds.ZpaCloud
 	}
 
-	if cloud == "" {
-		cloud = os.Getenv(ZPA_CLOUD)
-	}
-
+	// Default to production if no ZPA_CLOUD is specified
 	var rawUrl string
-	if strings.EqualFold(cloud, "PRODUCTION") {
+	if cloud == "" {
+		rawUrl = "https://api.zsapi.net/zpa"
+	} else if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = "https://api.zsapi.net/zpa"
 	} else {
 		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
@@ -133,6 +139,7 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 	if err != nil {
 		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
 	}
+
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	return &Config{
 		BaseURL:           baseURL,
@@ -150,7 +157,7 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, cloud, oauth2ProviderUr
 		cacheCleanwindow:  time.Minute * 8,
 		cacheMaxSizeMB:    0,
 		useOneAPI:         true,
-		oauth2ProviderUrl: oauth2ProviderUrl,
+		oauth2ProviderUrl: vanityDomain,
 	}, err
 }
 

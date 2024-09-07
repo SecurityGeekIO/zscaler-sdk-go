@@ -115,7 +115,7 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 }
 
 // NewOneAPIClient Returns a Client from credentials passed as parameters.
-func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2ProviderUrl string) (*Client, error) {
+func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, vanityDomain string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
@@ -125,26 +125,39 @@ func NewOneAPIClient(clientID, clientSecret, ziaCloud, userAgent, oauth2Provider
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
 	}
 
+	// Check if ziaCloud is provided in the function call; if not, check the environment variable
 	if ziaCloud == "" {
 		ziaCloud = os.Getenv("ZIA_CLOUD")
 	}
 
-	if oauth2ProviderUrl == "" {
-		oauth2ProviderUrl = os.Getenv(zidentity.ZIDENTITY_OAUTH2_PROVIDER_URL)
-	}
-
+	// Default to production if no ZIA_CLOUD is specified
 	var url string
-	if strings.EqualFold(ziaCloud, "PRODUCTION") {
+	if ziaCloud == "" || strings.EqualFold(ziaCloud, "PRODUCTION") {
 		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
 	} else {
 		url = fmt.Sprintf("https://api.%s.zsapi.net/zia/%s", strings.ToLower(ziaCloud), ziaAPIVersion)
 	}
+
 	/*
-		TODO: handle this case
-			if ziaCloud == "zspreview" {
-				url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
-			}
+	   TODO: handle this case
+	       if ziaCloud == "zspreview" {
+	           url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+	       }
 	*/
+
+	// Construct the OAuth2 provider URL correctly based on ZIA_CLOUD
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
+	}
+
+	var oauth2ProviderUrl string
+	if ziaCloud == "" || strings.EqualFold(ziaCloud, "PRODUCTION") {
+		// Production uses the standard URL
+		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	} else {
+		// Non-production clouds append the cloud name to "zslogin"
+		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(ziaCloud))
+	}
 
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := &Client{
