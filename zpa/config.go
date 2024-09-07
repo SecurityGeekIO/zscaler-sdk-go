@@ -91,7 +91,7 @@ type Config struct {
 	cacheCleanwindow  time.Duration
 	cacheMaxSizeMB    int
 	useOneAPI         bool
-	oauth2ProviderUrl string
+	oauth2Credentials *zidentity.Credentials
 }
 
 // NewOneAPIConfig returns a Config from credentials passed as parameters.
@@ -122,15 +122,6 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, vanityDomain, userAgent
 	// Check for vanity domain and ensure proper formatting of the OAuth2 provider URL based on the cloud
 	if vanityDomain == "" {
 		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
-	}
-
-	var oauth2ProviderUrl string
-	if strings.EqualFold(cloud, "PRODUCTION") {
-		// For production, use the standard zslogin.net
-		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
-	} else {
-		// For non-production clouds, append the cloud type to zslogin
-		oauth2ProviderUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(cloud))
 	}
 
 	// Fallback to configuration file if credentials are not provided
@@ -164,22 +155,24 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, vanityDomain, userAgent
 
 	// Return the Config object
 	return &Config{
-		BaseURL:           baseURL,
-		Logger:            logger,
-		httpClient:        nil,
-		ClientID:          clientID,
-		ClientSecret:      clientSecret,
-		CustomerID:        customerID,
-		Cloud:             cloud,
-		BackoffConf:       defaultBackoffConf,
-		UserAgent:         userAgent,
-		rateLimiter:       rl.NewRateLimiter(20, 10, 10, 10),
-		cacheEnabled:      !cacheDisabled,
-		cacheTtl:          time.Minute * 10,
-		cacheCleanwindow:  time.Minute * 8,
-		cacheMaxSizeMB:    0,
-		useOneAPI:         true,
-		oauth2ProviderUrl: oauth2ProviderUrl, // Ensure the OAuth2 provider URL is set correctly
+		BaseURL:          baseURL,
+		Logger:           logger,
+		httpClient:       nil,
+		CustomerID:       customerID,
+		Cloud:            cloud,
+		BackoffConf:      defaultBackoffConf,
+		UserAgent:        userAgent,
+		rateLimiter:      rl.NewRateLimiter(20, 10, 10, 10),
+		cacheEnabled:     !cacheDisabled,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
+		useOneAPI:        true,
+		oauth2Credentials: &zidentity.Credentials{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			VanityDomain: vanityDomain,
+		},
 	}, err
 }
 

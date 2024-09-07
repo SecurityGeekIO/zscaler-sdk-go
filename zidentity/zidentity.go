@@ -22,20 +22,22 @@ type AuthToken struct {
 }
 
 type Credentials struct {
-	AuthToken         *AuthToken
-	ClientID          string
-	ClientSecret      string
-	Oauth2ProviderUrl string // This can still exist for backward compatibility
+	AuthToken    *AuthToken
+	ClientID     string
+	ClientSecret string
+	VanityDomain string
 }
 
-func Authenticate(clientID, clientSecret, vanityDomain, userAgent string, httpClient *http.Client) (*AuthToken, error) {
+func Authenticate(clientID, clientSecret, vanityDomain, cloud, userAgent string, httpClient *http.Client) (*AuthToken, error) {
 	if clientID == "" || clientSecret == "" {
 		return nil, errors.New("no client credentials were provided")
 	}
 
 	// Ensure the vanity domain is provided and does not include protocol
-	if !strings.HasPrefix(vanityDomain, "https://") && vanityDomain != "" {
+	if cloud == "PRODUCTION" || cloud == "" {
 		vanityDomain = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	} else {
+		vanityDomain = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(cloud))
 	}
 
 	data := url.Values{}
