@@ -112,14 +112,15 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 }
 
 // NewOneAPIClient Returns a Client from credentials passed as parameters.
-func NewOneAPIClient(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
+func NewOneAPIClient(clientID, clientSecret, privateKeyPath, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
 
-	if clientID == "" || clientSecret == "" {
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZIDENTITY_PRIVATE_KEY)
 	}
 
 	var zconCloud string
@@ -161,6 +162,9 @@ func NewOneAPIClient(clientID, clientSecret, vanityDomain, userAgent string, opt
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
 			VanityDomain: vanityDomain,
+			UserAgent:    userAgent,
+			Cloud:        zconCloud,
+			PrivateKey:   privateKeyPath,
 		},
 	}
 	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
@@ -321,11 +325,7 @@ func (c *Client) checkSession() error {
 	if c.useOneAPI {
 		if c.oauth2Credentials != nil && (c.oauth2Credentials.AuthToken == nil || c.oauth2Credentials.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.AuthToken.AccessToken)) {
 			a, err := zidentity.Authenticate(
-				c.oauth2Credentials.ClientID,
-				c.oauth2Credentials.ClientSecret,
-				c.oauth2Credentials.VanityDomain,
-				c.zconCloud,
-				c.UserAgent,
+				c.oauth2Credentials,
 				c.HTTPClient,
 			)
 			if err != nil {

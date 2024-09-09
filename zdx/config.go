@@ -73,12 +73,13 @@ type Config struct {
 	oauth2Credentials *zidentity.Credentials
 }
 
-func NewOneAPIConfig(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
+func NewOneAPIConfig(clientID, clientSecret, privateKeyPath, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 
-	if clientID == "" || clientSecret == "" {
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZIDENTITY_PRIVATE_KEY)
 	}
 
 	var cloud string
@@ -130,6 +131,9 @@ func NewOneAPIConfig(clientID, clientSecret, vanityDomain, userAgent string, opt
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
 			VanityDomain: vanityDomain,
+			UserAgent:    userAgent,
+			Cloud:        cloud,
+			PrivateKey:   privateKeyPath,
 		},
 	}, err
 }

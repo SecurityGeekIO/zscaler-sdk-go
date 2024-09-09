@@ -96,13 +96,14 @@ type Config struct {
 
 // NewOneAPIConfig returns a Config from credentials passed as parameters.
 // The cloud parameter is now optional using a variadic argument.
-func NewOneAPIConfig(clientID, clientSecret, customerID, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
+func NewOneAPIConfig(clientID, clientSecret, privateKeyPath, customerID, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
 	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
 
 	// Fallback to environment variables if clientID, clientSecret, customerID, or userAgent are not provided
-	if clientID == "" || clientSecret == "" || customerID == "" || userAgent == "" {
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") || customerID == "" || userAgent == "" {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZIDENTITY_PRIVATE_KEY)
 		customerID = os.Getenv(ZPA_CUSTOMER_ID)
 	}
 
@@ -172,6 +173,9 @@ func NewOneAPIConfig(clientID, clientSecret, customerID, vanityDomain, userAgent
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
 			VanityDomain: vanityDomain,
+			PrivateKey:   privateKeyPath,
+			UserAgent:    userAgent,
+			Cloud:        cloud,
 		},
 	}, err
 }

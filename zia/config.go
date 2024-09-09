@@ -116,15 +116,16 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 
 // NewOneAPIClient Returns a Client from credentials passed as parameters.
 // The ziaCloud parameter is now optional using a variadic argument.
-func NewOneAPIClient(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
+func NewOneAPIClient(clientID, clientSecret, privateKeyPath, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
 
 	// Fallback to environment variables if clientID or clientSecret are not provided
-	if clientID == "" || clientSecret == "" {
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZIDENTITY_PRIVATE_KEY)
 	}
 
 	// Handle the optional ziaCloud parameter
@@ -172,6 +173,9 @@ func NewOneAPIClient(clientID, clientSecret, vanityDomain, userAgent string, opt
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
 			VanityDomain: vanityDomain,
+			PrivateKey:   privateKeyPath,
+			UserAgent:    userAgent,
+			Cloud:        ziaCloud,
 		},
 	}
 
@@ -365,11 +369,7 @@ func (c *Client) checkSession() error {
 	if c.useOneAPI {
 		if c.oauth2Credentials != nil && (c.oauth2Credentials.AuthToken == nil || c.oauth2Credentials.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.AuthToken.AccessToken)) {
 			a, err := zidentity.Authenticate(
-				c.oauth2Credentials.ClientID,
-				c.oauth2Credentials.ClientSecret,
-				c.oauth2Credentials.VanityDomain,
-				c.cloud,
-				c.UserAgent,
+				c.oauth2Credentials,
 				c.HTTPClient,
 			)
 			if err != nil {

@@ -82,13 +82,14 @@ type Config struct {
 NewOneAPIConfig returns a default configuration for the client.
 By default it will try to read the access and te secret from the environment variable.
 */
-func NewOneAPIConfig(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
+func NewOneAPIConfig(clientID, clientSecret, privateKeyPath, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	logger.Printf("[DEBUG] Initializing new config")
 
-	if clientID == "" || clientSecret == "" {
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") {
 		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
 		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZIDENTITY_PRIVATE_KEY)
 	}
 
 	var cloud string
@@ -144,6 +145,9 @@ func NewOneAPIConfig(clientID, clientSecret, vanityDomain, userAgent string, opt
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
 			VanityDomain: vanityDomain,
+			UserAgent:    userAgent,
+			Cloud:        cloud,
+			PrivateKey:   privateKeyPath,
 		},
 	}, err
 }

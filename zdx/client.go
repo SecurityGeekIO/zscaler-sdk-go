@@ -61,11 +61,7 @@ func (client *Client) authenticate() error {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
 		if client.Config.useOneAPI {
 			a, err := zidentity.Authenticate(
-				client.Config.oauth2Credentials.ClientID,
-				client.Config.oauth2Credentials.ClientSecret,
-				client.Config.oauth2Credentials.VanityDomain,
-				client.Config.zdxCloud,
-				client.Config.UserAgent,
+				client.Config.oauth2Credentials,
 				client.Config.GetHTTPClient(),
 			)
 			if err != nil {

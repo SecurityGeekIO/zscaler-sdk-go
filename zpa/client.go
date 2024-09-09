@@ -33,7 +33,7 @@ func NewOneAPIClient(config *Config) (c *Client) {
 	// If config is nil, create a new one with default values
 	if config == nil {
 		// Empty strings for clientID, clientSecret, etc., will fallback to environment variables in NewOneAPIConfig
-		config, _ = NewOneAPIConfig("", "", "", "", "")
+		config, _ = NewOneAPIConfig("", "", "", "", "", "", "")
 	}
 
 	// Setup the cache
@@ -124,11 +124,7 @@ func (client *Client) authenticate() error {
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
 		if client.Config.useOneAPI {
 			a, err := zidentity.Authenticate(
-				client.Config.oauth2Credentials.ClientID,
-				client.Config.oauth2Credentials.ClientSecret,
-				client.Config.oauth2Credentials.VanityDomain,
-				client.Config.Cloud,
-				client.Config.UserAgent,
+				client.Config.oauth2Credentials,
 				client.Config.GetHTTPClient(),
 			)
 			if err != nil {
