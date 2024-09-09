@@ -16,10 +16,21 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 type Client struct {
 	Config *Config
+}
+
+// NewClient returns a new client for the specified apiKey.
+func NewOneAPIClient(config *Config) (c *Client) {
+	if config == nil {
+		config, _ = NewOneAPIConfig("", "", "", "", "")
+	}
+
+	c = &Client{Config: config}
+	return
 }
 
 // NewClient returns a new client for the specified apiKey.
@@ -42,6 +53,23 @@ func (client *Client) authenticate() error {
 	client.Config.Logger.Printf("[DEBUG] Authenticating client: clientID=%s", client.Config.ClientID)
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
 		client.Config.Logger.Printf("[DEBUG] No valid auth token found, performing authentication")
+		if client.Config.useOneAPI {
+			a, err := zidentity.Authenticate(
+				client.Config.oauth2Credentials.ClientID,
+				client.Config.oauth2Credentials.ClientSecret,
+				client.Config.oauth2Credentials.VanityDomain,
+				client.Config.Cloud,
+				client.Config.UserAgent,
+				client.Config.GetHTTPClient(),
+			)
+			if err != nil {
+				return err
+			}
+			client.Config.AuthToken = &AuthToken{
+				AccessToken: a.AccessToken,
+			}
+			return nil
+		}
 		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
 			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s and %s environment variables.\n", ZCC_CLIENT_ID, ZCC_CLIENT_SECRET)
 			return errors.New("no client credentials were provided")
@@ -174,8 +202,11 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Set("auth-token", client.Config.AuthToken.AccessToken)
+	if client.Config.useOneAPI {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.Config.AuthToken.AccessToken))
+	} else {
+		req.Header.Set("auth-token", client.Config.AuthToken.AccessToken)
+	}
 	req.Header.Add("Content-Type", "application/json")
 
 	if client.Config.UserAgent != "" {

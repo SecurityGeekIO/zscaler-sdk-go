@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -71,7 +73,79 @@ type Config struct {
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
 	sync.Mutex
-	UserAgent string
+	UserAgent         string
+	useOneAPI         bool
+	oauth2Credentials *zidentity.Credentials
+}
+
+/*
+NewOneAPIConfig returns a default configuration for the client.
+By default it will try to read the access and te secret from the environment variable.
+*/
+func NewOneAPIConfig(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
+	logger.Printf("[DEBUG] Initializing new config")
+
+	if clientID == "" || clientSecret == "" {
+		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+	}
+
+	var cloud string
+	if len(optionalCloud) > 0 && optionalCloud[0] != "" {
+		cloud = optionalCloud[0]
+	} else {
+		cloud = os.Getenv(ZCC_CLOUD)
+	}
+
+	if cloud == "" {
+		cloud = "PRODUCTION"
+	}
+
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
+	}
+
+	if clientID == "" || clientSecret == "" {
+		creds, err := loadCredentialsFromConfig(logger)
+		if err != nil || creds == nil {
+			return nil, err
+		}
+		clientID = creds.ClientID
+		clientSecret = creds.ClientSecret
+		cloud = creds.ZpaCloud
+	}
+
+	var rawUrl string
+	if strings.EqualFold(cloud, "PRODUCTION") {
+		rawUrl = "https://api.zsapi.net/zcc/papi"
+	} else {
+		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zcc/papi", strings.ToLower(cloud))
+	}
+
+	baseURL, err := url.Parse(rawUrl)
+	if err != nil {
+		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
+		return nil, err
+	}
+
+	logger.Printf("[DEBUG] Config initialized successfully with baseURL: %s", baseURL.String())
+	return &Config{
+		BaseURL:      baseURL,
+		Logger:       logger,
+		httpClient:   nil,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Cloud:        cloud,
+		BackoffConf:  defaultBackoffConf,
+		UserAgent:    userAgent,
+		useOneAPI:    true,
+		oauth2Credentials: &zidentity.Credentials{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			VanityDomain: vanityDomain,
+		},
+	}, err
 }
 
 /*

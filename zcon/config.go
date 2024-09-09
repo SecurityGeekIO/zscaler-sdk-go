@@ -21,6 +21,8 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
@@ -44,23 +46,26 @@ const (
 // Client ...
 type Client struct {
 	sync.Mutex
-	userName         string
-	password         string
-	apiKey           string
-	session          *Session
-	sessionRefreshed time.Time     // Also indicates last usage
-	sessionTimeout   time.Duration // in minutes
-	URL              string
-	HTTPClient       *http.Client
-	Logger           logger.Logger
-	UserAgent        string
-	freshCache       bool
-	cacheEnabled     bool
-	cache            cache.Cache
-	cacheTtl         time.Duration
-	cacheCleanwindow time.Duration
-	cacheMaxSizeMB   int
-	rateLimiter      *rl.RateLimiter
+	userName          string
+	password          string
+	apiKey            string
+	session           *Session
+	sessionRefreshed  time.Time     // Also indicates last usage
+	sessionTimeout    time.Duration // in minutes
+	URL               string
+	HTTPClient        *http.Client
+	Logger            logger.Logger
+	UserAgent         string
+	freshCache        bool
+	cacheEnabled      bool
+	cache             cache.Cache
+	cacheTtl          time.Duration
+	cacheCleanwindow  time.Duration
+	cacheMaxSizeMB    int
+	rateLimiter       *rl.RateLimiter
+	zconCloud         string
+	useOneAPI         bool
+	oauth2Credentials *zidentity.Credentials
 }
 
 // Session ...
@@ -106,6 +111,66 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	return key, nil
 }
 
+// NewOneAPIClient Returns a Client from credentials passed as parameters.
+func NewOneAPIClient(clientID, clientSecret, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
+	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
+	httpClient := getHTTPClient(logger, rateLimiter)
+
+	if clientID == "" || clientSecret == "" {
+		clientID = os.Getenv(zidentity.ZIDENTITY_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZIDENTITY_CLIENT_SECRET)
+	}
+
+	var zconCloud string
+	if len(optionalCloud) > 0 && optionalCloud[0] != "" {
+		zconCloud = optionalCloud[0] // Use provided cloud value
+	} else {
+		zconCloud = os.Getenv("ZCON_CLOUD") // Fallback to environment variable
+	}
+
+	if zconCloud == "" {
+		zconCloud = "PRODUCTION"
+	}
+
+	var url string
+	if strings.EqualFold(zconCloud, "PRODUCTION") {
+		url = "https://api.zsapi.net/zcon/" + zconAPIVersion
+	} else {
+		url = fmt.Sprintf("https://api.%s.zsapi.net/zcon/%s", strings.ToLower(zconCloud), zconAPIVersion)
+	}
+
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZIDENTITY_VANITY_DOMAIN)
+	}
+
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	cli := Client{
+		HTTPClient:       httpClient,
+		URL:              url,
+		Logger:           logger,
+		UserAgent:        userAgent,
+		cacheEnabled:     !cacheDisabled,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
+		rateLimiter:      rateLimiter,
+		zconCloud:        zconCloud,
+		useOneAPI:        true,
+		oauth2Credentials: &zidentity.Credentials{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			VanityDomain: vanityDomain,
+		},
+	}
+	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	cli.cache = cche
+	return &cli, nil
+}
+
 // NewClient Returns a Client from credentials passed as parameters.
 func NewClient(username, password, apiKey, zconCloud, userAgent string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
@@ -127,6 +192,7 @@ func NewClient(username, password, apiKey, zconCloud, userAgent string) (*Client
 		cacheCleanwindow: time.Minute * 8,
 		cacheMaxSizeMB:   0,
 		rateLimiter:      rateLimiter,
+		zconCloud:        zconCloud,
 	}
 	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
 	if err != nil {
@@ -252,6 +318,24 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
+	if c.useOneAPI {
+		if c.oauth2Credentials != nil && (c.oauth2Credentials.AuthToken == nil || c.oauth2Credentials.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.AuthToken.AccessToken)) {
+			a, err := zidentity.Authenticate(
+				c.oauth2Credentials.ClientID,
+				c.oauth2Credentials.ClientSecret,
+				c.oauth2Credentials.VanityDomain,
+				c.zconCloud,
+				c.UserAgent,
+				c.HTTPClient,
+			)
+			if err != nil {
+				return err
+			}
+			c.oauth2Credentials.AuthToken = a
+			return nil
+		}
+		return nil
+	}
 	// One call to this function is allowed at a time caller must call lock.
 	if c.session == nil {
 		err := c.refreshSession()

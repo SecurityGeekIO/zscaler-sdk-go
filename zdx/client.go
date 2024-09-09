@@ -17,6 +17,7 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 )
@@ -29,6 +30,16 @@ type AuthRequest struct {
 	APIKeyID     string `json:"key_id"`
 	APIKeySecret string `json:"key_secret"`
 	Timestamp    int64  `json:"timestamp"`
+}
+
+// NewClient returns a new client for the specified apiKey.
+func NewOneAPIClient(config *Config) (c *Client) {
+	if config == nil {
+		config, _ = NewOneAPIConfig("", "", "", "", "")
+	}
+
+	c = &Client{Config: config}
+	return
 }
 
 // NewClient returns a new client for the specified apiKey.
@@ -48,6 +59,23 @@ func (client *Client) authenticate() error {
 	client.Config.Lock()
 	defer client.Config.Unlock()
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
+		if client.Config.useOneAPI {
+			a, err := zidentity.Authenticate(
+				client.Config.oauth2Credentials.ClientID,
+				client.Config.oauth2Credentials.ClientSecret,
+				client.Config.oauth2Credentials.VanityDomain,
+				client.Config.zdxCloud,
+				client.Config.UserAgent,
+				client.Config.GetHTTPClient(),
+			)
+			if err != nil {
+				return err
+			}
+			client.Config.AuthToken = &AuthToken{
+				AccessToken: a.AccessToken,
+			}
+			return nil
+		}
 		if client.Config.APIKeyID == "" || client.Config.APISecret == "" {
 			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s environment variables.\n", ZDX_API_KEY_ID, ZDX_API_SECRET)
 			return errors.New("no client credentials were provided")

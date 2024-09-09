@@ -76,8 +76,14 @@ func (c *Client) Request(endpoint, method string, data []byte, contentType strin
 	reqID := uuid.New().String()
 	start := time.Now()
 	logRequestBody := true // or false, based on your requirements
+	var otherHeaders map[string]string
+	if c.useOneAPI {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.AuthToken.AccessToken))
+	} else {
+		otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
+	}
 
-	logger.LogRequest(c.Logger, req, reqID, map[string]string{"JSessionID": c.session.JSessionID}, logRequestBody)
+	logger.LogRequest(c.Logger, req, reqID, otherHeaders, logRequestBody)
 
 	for retry := 1; retry <= 5; retry++ {
 		err = c.checkSession()
