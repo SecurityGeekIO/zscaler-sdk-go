@@ -196,6 +196,21 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
+	if username == "" || password == "" || apiKey == "" {
+		username = os.Getenv("ZIA_USERNAME")
+		password = os.Getenv("ZIA_PASSWORD")
+		apiKey = os.Getenv("ZIA_API_KEY")
+	}
+
+	if username == "" || password == "" || apiKey == "" {
+		return nil, fmt.Errorf("username, password, and apiKey cannot be empty")
+	}
+	if ziaCloud == "" {
+		ziaCloud = os.Getenv("ZIA_CLOUD")
+	}
+	if ziaCloud == "" {
+		ziaCloud = "PRODUCTION"
+	}
 	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
 	if ziaCloud == "zspreview" {
 		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
