@@ -121,7 +121,7 @@ type AppServerGroups struct {
 
 func Get(service *services.Service, id string) (*AppSegmentInspection, *http.Response, error) {
 	v := new(AppSegmentInspection)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentInspectionEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -130,7 +130,7 @@ func Get(service *services.Service, id string) (*AppSegmentInspection, *http.Res
 }
 
 func GetByName(service *services.Service, appSegmentName string) (*AppSegmentInspection, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentInspectionEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentInspection](service.Client, relativeURL, common.Filter{Search: appSegmentName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -145,7 +145,7 @@ func GetByName(service *services.Service, appSegmentName string) (*AppSegmentIns
 
 func Create(service *services.Service, appSegmentInspection AppSegmentInspection) (*AppSegmentInspection, *http.Response, error) {
 	v := new(AppSegmentInspection)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentInspection, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+appSegmentInspectionEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentInspection, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -201,7 +201,7 @@ func Update(service *services.Service, id string, appSegmentInspection *AppSegme
 	removedApps := difference(existingApps, appSegmentInspection.CommonAppsDto.AppsConfig)
 	appSegmentInspection.CommonAppsDto.AppsConfig = newApps
 	appSegmentInspection.CommonAppsDto.DeletedInspectApps = appToListStringIDs(removedApps)
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentInspectionEndpoint, id)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentInspection, nil)
 	if err != nil {
 		return nil, err
@@ -210,7 +210,7 @@ func Update(service *services.Service, id string, appSegmentInspection *AppSegme
 }
 
 func Delete(service *services.Service, id string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentInspectionEndpoint, id)
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentInspectionEndpoint, id)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func Delete(service *services.Service, id string) (*http.Response, error) {
 }
 
 func GetAll(service *services.Service) ([]AppSegmentInspection, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentInspectionEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentInspectionEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentInspection](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

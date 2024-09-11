@@ -17,7 +17,7 @@ type AuthDomain struct {
 
 func GetAllAuthDomains(service *services.Service) (*AuthDomain, *http.Response, error) {
 	v := new(AuthDomain)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + authDomainEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + authDomainEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err

@@ -25,7 +25,7 @@ func AppSegmentMicrotenantShare(service *services.Service, applicationID string,
 		microTenantID = *service.MicroTenantID()
 	}
 
-	relativeURL := fmt.Sprintf("%s%s%s/%s/share", mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
+	relativeURL := fmt.Sprintf("%s%s%s/%s/share", mgmtConfig, service.Client.GetCustomerID(), appSegmentEndpoint, applicationID)
 
 	// Add microTenantID to the filter if it's provided
 	filter := common.Filter{}

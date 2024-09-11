@@ -33,7 +33,7 @@ func GetByName(service *services.Service, cbiRegionName string) (*CBIRegions, *h
 }
 
 func GetAll(service *services.Service) ([]CBIRegions, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiRegionsEndpoint
 	var list []CBIRegions
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

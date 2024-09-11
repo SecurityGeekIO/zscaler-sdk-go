@@ -26,7 +26,7 @@ type ClientTypes struct {
 
 func GetAllClientTypes(service *services.Service) (*ClientTypes, *http.Response, error) {
 	v := new(ClientTypes)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + clientTypesEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + clientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err

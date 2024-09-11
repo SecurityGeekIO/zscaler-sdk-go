@@ -28,7 +28,7 @@ func AppSegmentMicrotenantMove(service *services.Service, applicationID string, 
 		microTenantID = *service.MicroTenantID()
 	}
 	// Corrected URL format to include the applicationID before /move
-	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
+	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.GetCustomerID(), appSegmentEndpoint, applicationID)
 	// Add microTenantID to the filter if it's provided
 	filter := common.Filter{}
 	if microTenantID != "" {

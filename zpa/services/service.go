@@ -5,11 +5,11 @@ import (
 )
 
 type Service struct {
-	Client        *zpa.Client
+	Client        zpa.ClientI
 	microTenantID *string
 }
 
-func New(c *zpa.Client) *Service {
+func New(c zpa.ClientI) *Service {
 	return &Service{Client: c}
 }
 

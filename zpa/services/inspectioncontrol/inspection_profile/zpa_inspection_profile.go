@@ -136,7 +136,7 @@ type ThreatLabzControls struct {
 
 func Get(service *services.Service, profileID string) (*InspectionProfile, *http.Response, error) {
 	v := new(InspectionProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -163,7 +163,7 @@ func setVersion(inspectionProfile *InspectionProfile) {
 }
 
 func GetByName(service *services.Service, profileName string) (*InspectionProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + inspectionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -179,7 +179,7 @@ func GetByName(service *services.Service, profileName string) (*InspectionProfil
 func Create(service *services.Service, inspectionProfile InspectionProfile) (*InspectionProfile, *http.Response, error) {
 	setVersion(&inspectionProfile)
 	v := new(InspectionProfile)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, nil, inspectionProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, nil, inspectionProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -189,7 +189,7 @@ func Create(service *services.Service, inspectionProfile InspectionProfile) (*In
 
 func Update(service *services.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func Update(service *services.Service, profileID string, inspectionProfile *Insp
 
 func PutAssociate(service *services.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID+"/associateAllPredefinedControls")
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID+"/associateAllPredefinedControls")
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func PutAssociate(service *services.Service, profileID string, inspectionProfile
 
 func PutDeassociate(service *services.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID+"/deAssociateAllPredefinedControls")
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID+"/deAssociateAllPredefinedControls")
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
@@ -222,7 +222,7 @@ func PutDeassociate(service *services.Service, profileID string, inspectionProfi
 
 func Patch(service *services.Service, profileID string, inspectionProfile *InspectionProfile) (*http.Response, error) {
 	setVersion(inspectionProfile)
-	relativeURL := fmt.Sprintf("%s/%s/patch", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
+	relativeURL := fmt.Sprintf("%s/%s/patch", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("PATCH", relativeURL, PatchQuery{Version: inspectionProfile.PredefinedControlsVersion}, inspectionProfile, nil)
 	if err != nil {
 		return nil, err
@@ -231,7 +231,7 @@ func Patch(service *services.Service, profileID string, inspectionProfile *Inspe
 }
 
 func Delete(service *services.Service, profileID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+inspectionProfileEndpoint, profileID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+inspectionProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -241,7 +241,7 @@ func Delete(service *services.Service, profileID string) (*http.Response, error)
 }
 
 func GetAll(service *services.Service) ([]InspectionProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + inspectionProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + inspectionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[InspectionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

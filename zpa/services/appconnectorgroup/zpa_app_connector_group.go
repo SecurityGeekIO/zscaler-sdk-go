@@ -101,7 +101,7 @@ type AppServerGroup struct {
 
 func Get(service *services.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
 	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -110,7 +110,7 @@ func Get(service *services.Service, appConnectorGroupID string) (*AppConnectorGr
 }
 
 func GetByName(service *services.Service, appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{Search: appConnectorGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -125,7 +125,7 @@ func GetByName(service *services.Service, appConnectorGroupName string) (*AppCon
 
 func Create(service *services.Service, appConnectorGroup AppConnectorGroup) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -134,7 +134,7 @@ func Create(service *services.Service, appConnectorGroup AppConnectorGroup) (*Ap
 }
 
 func Update(service *services.Service, appConnectorGroupID string, appConnectorGroup *AppConnectorGroup) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, nil)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func Update(service *services.Service, appConnectorGroupID string, appConnectorG
 }
 
 func Delete(service *services.Service, appConnectorGroupID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appConnectorGroupEndpoint, appConnectorGroupID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func Delete(service *services.Service, appConnectorGroupID string) (*http.Respon
 }
 
 func GetAll(service *services.Service) ([]AppConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

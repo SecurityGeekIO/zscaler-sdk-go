@@ -59,7 +59,7 @@ func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *ht
 }
 
 func GetAll(service *services.Service) ([]ZPAProfiles, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + zpaProfileEndpoint
 	var list []ZPAProfiles
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

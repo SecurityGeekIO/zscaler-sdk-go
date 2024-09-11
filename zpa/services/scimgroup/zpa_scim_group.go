@@ -27,7 +27,7 @@ type ScimGroup struct {
 
 func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {
 	v := new(ScimGroup)
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint, scimGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint, scimGroupID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -38,7 +38,7 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 
 func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Response, error) {
 	// Construct the API endpoint URL with query parameters
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
 	// Fetch the pages
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
 		Search:    scimName,
@@ -60,7 +60,7 @@ func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Res
 }
 
 func (service *Service) GetAllByIdpId(idpId string) ([]ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
 		SortBy:    string(service.sortBy),
 		SortOrder: string(service.sortOrder),

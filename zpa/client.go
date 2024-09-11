@@ -23,9 +23,18 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
+type ClientI interface {
+	NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error)
+	GetCustomerID() string
+}
+
 type Client struct {
 	Config *Config
 	cache  cache.Cache
+}
+
+func (client *Client) GetCustomerID() string {
+	return client.Config.CustomerID
 }
 
 // The cloud parameter is optional and is handled in the Config object.

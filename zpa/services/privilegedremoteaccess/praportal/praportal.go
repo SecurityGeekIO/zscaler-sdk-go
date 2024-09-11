@@ -62,7 +62,7 @@ type PRAPortal struct {
 
 func Get(service *services.Service, portalID string) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -71,7 +71,7 @@ func Get(service *services.Service, portalID string) (*PRAPortal, *http.Response
 }
 
 func GetByName(service *services.Service, portalName string) (*PRAPortal, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praPortalEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praPortalEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{Search: portalName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -86,7 +86,7 @@ func GetByName(service *services.Service, portalName string) (*PRAPortal, *http.
 
 func Create(service *services.Service, sraPortal *PRAPortal) (*PRAPortal, *http.Response, error) {
 	v := new(PRAPortal)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,7 +94,7 @@ func Create(service *services.Service, sraPortal *PRAPortal) (*PRAPortal, *http.
 }
 
 func Update(service *services.Service, portalID string, sraPortal *PRAPortal) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, sraPortal, nil)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func Update(service *services.Service, portalID string, sraPortal *PRAPortal) (*
 }
 
 func Delete(service *services.Service, portalID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+praPortalEndpoint, portalID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+praPortalEndpoint, portalID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func Delete(service *services.Service, portalID string) (*http.Response, error) 
 }
 
 func GetAll(service *services.Service) ([]PRAPortal, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + praPortalEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + praPortalEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PRAPortal](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

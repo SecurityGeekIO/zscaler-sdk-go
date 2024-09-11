@@ -28,7 +28,7 @@ type IsolationProfile struct {
 }
 
 func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: profileName} // We only have the Search filter as per your example. You can add more filters if required.
@@ -49,7 +49,7 @@ func GetByName(service *services.Service, profileName string) (*IsolationProfile
 }
 
 func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

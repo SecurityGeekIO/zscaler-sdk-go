@@ -54,7 +54,7 @@ type ControlsRequestFilters struct {
 // https://help.zscaler.com/zpa/api-reference#/inspection-control-controller/getPredefinedControlById
 func Get(service *services.Service, controlID string) (*PredefinedControls, *http.Response, error) {
 	v := new(PredefinedControls)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+predControlsEndpoint, controlID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+predControlsEndpoint, controlID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -65,7 +65,7 @@ func Get(service *services.Service, controlID string) (*PredefinedControls, *htt
 
 func GetAll(service *services.Service, version string) ([]PredefinedControls, error) {
 	v := []ControlGroupItem{}
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + predControlsEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + predControlsEndpoint)
 	_, err := service.Client.NewRequestDo("GET", relativeURL, struct {
 		Version string `url:"version"`
 	}{Version: version}, nil, &v)
@@ -88,7 +88,7 @@ func GetByName(service *services.Service, name, version string) (*PredefinedCont
 		queryParams.Set("search", search)
 	}
 
-	relativeURL := fmt.Sprintf("%s%s%s?%s", mgmtConfig, service.Client.Config.CustomerID, predControlsEndpoint, queryParams.Encode())
+	relativeURL := fmt.Sprintf("%s%s%s?%s", mgmtConfig, service.Client.GetCustomerID(), predControlsEndpoint, queryParams.Encode())
 
 	var v []ControlGroupItem
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -117,7 +117,7 @@ func GetAllByGroup(service *services.Service, version, groupName string) ([]Pred
 		queryParams.Set("search", search)
 	}
 
-	relativeURL := fmt.Sprintf("%s%s%s?%s", mgmtConfig, service.Client.Config.CustomerID, predControlsEndpoint, queryParams.Encode())
+	relativeURL := fmt.Sprintf("%s%s%s?%s", mgmtConfig, service.Client.GetCustomerID(), predControlsEndpoint, queryParams.Encode())
 
 	var v []ControlGroupItem
 	_, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

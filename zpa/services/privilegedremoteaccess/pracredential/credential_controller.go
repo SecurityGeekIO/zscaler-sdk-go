@@ -71,7 +71,7 @@ type Credential struct {
 
 func Get(service *services.Service, credentialID string) (*Credential, *http.Response, error) {
 	v := new(Credential)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+credentialEndpoint, credentialID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -81,7 +81,7 @@ func Get(service *services.Service, credentialID string) (*Credential, *http.Res
 }
 
 func GetByName(service *services.Service, credentialName string) (*Credential, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + credentialEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + credentialEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](service.Client, relativeURL, common.Filter{Search: credentialName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -96,7 +96,7 @@ func GetByName(service *services.Service, credentialName string) (*Credential, *
 
 func Create(service *services.Service, credential *Credential) (*Credential, *http.Response, error) {
 	v := new(Credential)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, credential, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -105,7 +105,7 @@ func Create(service *services.Service, credential *Credential) (*Credential, *ht
 }
 
 func Update(service *services.Service, credentialID string, credentialRequest *Credential) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+credentialEndpoint, credentialID)
+	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, credentialRequest, nil)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func Update(service *services.Service, credentialID string, credentialRequest *C
 }
 
 func Delete(service *services.Service, credentialID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+credentialEndpoint, credentialID)
+	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+credentialEndpoint, credentialID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func Delete(service *services.Service, credentialID string) (*http.Response, err
 
 func CredentialMove(service *services.Service, credentialID string, targetMicrotenantId string) (*http.Response, error) {
 	// Construct the URL using the credentialEndpoint const and append "/move"
-	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.Config.CustomerID, credentialEndpoint, credentialID)
+	relativeURL := fmt.Sprintf("%s%s%s/%s/move", mgmtConfig, service.Client.GetCustomerID(), credentialEndpoint, credentialID)
 
 	// Append the targetMicrotenantId as a query parameter
 	if targetMicrotenantId != "" {
@@ -142,7 +142,7 @@ func CredentialMove(service *services.Service, credentialID string, targetMicrot
 }
 
 func GetAll(service *services.Service) ([]Credential, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + credentialEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + credentialEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[Credential](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
