@@ -174,12 +174,12 @@ type ZPAApplicationSegmentGroups struct {
 
 func Get(service *services.Service, ruleID int) (*ForwardingRules, error) {
 	var rule ForwardingRules
-	err := service.Client.Read(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), &rule)
+	err := service.Read(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning forwarding rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning forwarding rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -198,7 +198,7 @@ func GetByName(service *services.Service, ruleName string) (*ForwardingRules, er
 }
 
 func Create(service *services.Service, rule *ForwardingRules) (*ForwardingRules, error) {
-	resp, err := service.Client.Create(forwardingRulesEndpoint, *rule)
+	resp, err := service.Create(forwardingRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
@@ -208,22 +208,22 @@ func Create(service *services.Service, rule *ForwardingRules) (*ForwardingRules,
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
 func Update(service *services.Service, ruleID int, rules *ForwardingRules) (*ForwardingRules, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), *rules)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
 	updatedRules, _ := resp.(*ForwardingRules)
-	service.Client.Logger.Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func Delete(service *services.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID))
+	err := service.Delete(fmt.Sprintf("%s/%d", forwardingRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}

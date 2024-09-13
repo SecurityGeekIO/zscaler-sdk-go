@@ -47,7 +47,7 @@ func GetAll(service *services.Service, username, osType string) ([]GetDevices, e
 		Username: username,
 		OsType:   osType,
 	}
-	_, err := service.Client.NewRequestDo("GET", getDevicesEndpoint, queryParams, nil, &devices)
+	_, err := service.NewRequestDo("GET", getDevicesEndpoint, queryParams, nil, &devices)
 	if err != nil {
 		return nil, err
 	}

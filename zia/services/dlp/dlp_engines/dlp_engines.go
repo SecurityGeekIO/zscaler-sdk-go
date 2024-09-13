@@ -37,12 +37,12 @@ type DLPEngines struct {
 
 func Get(service *services.Service, engineID int) (*DLPEngines, error) {
 	var dlpEngines DLPEngines
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), &dlpEngines)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), &dlpEngines)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp engine from Get: %d", dlpEngines.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp engine from Get: %d", dlpEngines.ID)
 	return &dlpEngines, nil
 }
 
@@ -60,7 +60,7 @@ func GetByName(service *services.Service, engineName string) (*DLPEngines, error
 }
 
 func Create(service *services.Service, engineID *DLPEngines) (*DLPEngines, *http.Response, error) {
-	resp, err := service.Client.Create(dlpEnginesEndpoint, *engineID)
+	resp, err := service.Create(dlpEnginesEndpoint, *engineID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -70,23 +70,23 @@ func Create(service *services.Service, engineID *DLPEngines) (*DLPEngines, *http
 		return nil, nil, errors.New("object returned from api was not a dlp engine pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new dlp engine from create: %d", createdDlpEngine.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new dlp engine from create: %d", createdDlpEngine.ID)
 	return createdDlpEngine, nil, nil
 }
 
 func Update(service *services.Service, engineID int, engines *DLPEngines) (*DLPEngines, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), *engines)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID), *engines)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedDlpEngine, _ := resp.(*DLPEngines)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates dlp engine from update: %d", updatedDlpEngine.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates dlp engine from update: %d", updatedDlpEngine.ID)
 	return updatedDlpEngine, nil, nil
 }
 
 func Delete(service *services.Service, engineID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
+	err := service.Delete(fmt.Sprintf("%s/%d", dlpEnginesEndpoint, engineID))
 	if err != nil {
 		return nil, err
 	}

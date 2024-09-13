@@ -43,8 +43,8 @@ type EnrollmentCert struct {
 
 func Get(service *services.Service, id string) (*EnrollmentCert, *http.Response, error) {
 	v := new(EnrollmentCert)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+enrollmentCertEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint, id)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,7 +53,7 @@ func Get(service *services.Service, id string) (*EnrollmentCert, *http.Response,
 }
 
 func GetByName(service *services.Service, certName string) (*EnrollmentCert, *http.Response, error) {
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + enrollmentCertEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{Search: certName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -67,7 +67,7 @@ func GetByName(service *services.Service, certName string) (*EnrollmentCert, *ht
 }
 
 func GetAll(service *services.Service) ([]EnrollmentCert, *http.Response, error) {
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + enrollmentCertEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

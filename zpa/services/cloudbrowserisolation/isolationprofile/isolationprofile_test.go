@@ -54,14 +54,14 @@ func TestIsolationProfile(t *testing.T) {
 	}
 
 	// Cover the GetAll function error
-	service.Client.Config.CustomerID = "invalid_id"
+	service.Client.SetCustomerID("invalid_id")
 	_, _, err = GetAll(service)
 	if err == nil {
 		t.Errorf("Expected error when getting all profiles with invalid CustomerID, got nil")
 		return
 	}
 	// Restore valid CustomerID for further tests
-	service.Client.Config.CustomerID = client.Config.CustomerID
+	service.Client.SetCustomerID(client.Config.CustomerID)
 }
 
 func TestResponseFormatValidation(t *testing.T) {

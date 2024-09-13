@@ -46,8 +46,8 @@ type Machines struct {
 
 func Get(service *services.Service, machineGroupID string) (*MachineGroup, *http.Response, error) {
 	v := new(MachineGroup)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+machineGroupEndpoint, machineGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+machineGroupEndpoint, machineGroupID)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,7 +55,7 @@ func Get(service *services.Service, machineGroupID string) (*MachineGroup, *http
 }
 
 func GetByName(service *services.Service, machineGroupName string) (*MachineGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + machineGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[MachineGroup](service.Client, relativeURL, common.Filter{Search: machineGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -69,7 +69,7 @@ func GetByName(service *services.Service, machineGroupName string) (*MachineGrou
 }
 
 func GetAll(service *services.Service) ([]MachineGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + machineGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[MachineGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

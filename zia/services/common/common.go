@@ -1,11 +1,17 @@
 package common
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/common"
 )
 
 const pageSize = 1000
@@ -93,7 +99,7 @@ func GetPageSize() int {
 	return pageSize
 }
 
-func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
+func ReadAllPages[T any](client common.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -104,7 +110,7 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 
 	for {
 		pageItems := []T{}
-		err := client.Read(fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
+		err := Read(client, fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
 		if err != nil {
 			return err
 		}
@@ -117,7 +123,7 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	return nil
 }
 
-func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](client common.Client, endpoint string, page int, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -138,7 +144,7 @@ func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) e
 
 	// Convert the URL back to a string and read the page.
 	pageItems := []T{}
-	err = client.Read(u.String(), &pageItems)
+	err = Read(client, u.String(), &pageItems)
 	if err != nil {
 		return err
 	}
@@ -172,4 +178,199 @@ func GetSortParams(sortBy SortField, sortOrder SortOrder) string {
 		params += "sortOrder=" + string(sortOrder)
 	}
 	return params
+}
+
+func Read(client common.Client, endpoint string, o interface{}) error {
+	contentType := "application/json"
+	resp, err := Request(client, endpoint, "GET", nil, contentType)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(resp, o)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Create sends an HTTP POST request.
+func Create(client common.Client, endpoint string, o interface{}) (interface{}, error) {
+	if o == nil {
+		return nil, errors.New("tried to create with a nil payload not a Struct")
+	}
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
+	}
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Request(client, endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 {
+		// Check if the response is an array of strings
+		var stringArrayResponse []string
+		if json.Unmarshal(resp, &stringArrayResponse) == nil {
+			return stringArrayResponse, nil
+		}
+
+		// Otherwise, handle as usual
+		responseObject := reflect.New(t).Interface()
+		err = json.Unmarshal(resp, &responseObject)
+		if err != nil {
+			return nil, err
+		}
+		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
+
+		client.GetLogger().Printf("Created Object with ID %v", id)
+		return responseObject, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
+func CreateWithSlicePayload(client common.Client, endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to create with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to create with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Request(client, endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
+func UpdateWithSlicePayload(client common.Client, endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to update with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to update with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Request(client, endpoint, "PUT", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// Update ...
+func UpdateWithPut(client common.Client, endpoint string, o interface{}) (interface{}, error) {
+	return updateGeneric(client, endpoint, o, "PUT", "application/json")
+}
+
+// Update ...
+func Update(client common.Client, endpoint string, o interface{}) (interface{}, error) {
+	return updateGeneric(client, endpoint, o, "PATCH", "application/merge-patch+json")
+}
+
+// Update ...
+func updateGeneric(client common.Client, endpoint string, o interface{}, method, contentType string) (interface{}, error) {
+	if o == nil {
+		return nil, errors.New("tried to update with a nil payload not a Struct")
+	}
+	t := reflect.TypeOf(o)
+	if t.Kind() != reflect.Struct {
+		return nil, errors.New("tried to update with a " + t.Kind().String() + " not a Struct")
+	}
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Request(client, endpoint, method, data, contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	responseObject := reflect.New(t).Interface()
+	err = json.Unmarshal(resp, &responseObject)
+	return responseObject, err
+}
+
+// Delete ...
+func Delete(client common.Client, endpoint string) error {
+	_, err := Request(client, endpoint, "DELETE", nil, "application/json")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
+func BulkDelete(client common.Client, endpoint string, payload interface{}) (*http.Response, error) {
+	if payload == nil {
+		return nil, errors.New("tried to delete with a nil payload, expected a struct")
+	}
+
+	// Marshal the payload into JSON
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the POST request
+	resp, err := Request(client, endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the status code (204 No Content expected)
+	if len(resp) == 0 {
+		client.GetLogger().Printf("[DEBUG] Bulk delete successful with 204 No Content")
+		return &http.Response{StatusCode: 204}, nil
+	}
+
+	// If the response is not empty, this might indicate an error or unexpected behavior
+	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
+}
+
+// Request ... // Needs to review this function.
+func GenericRequest(client common.Client, baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+	bodyData, err := io.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+	var respData interface{}
+	_, err = client.NewRequestDoGeneric(baseUrl, endpoint, method, urlParams, bodyData, &respData, contentType, common.Option{Name: common.ZscalerInfraOption, Value: "zia"})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(respData)
+}
+
+func Request(client common.Client, endpoint, method string, data []byte, contentType string) ([]byte, error) {
+	return GenericRequest(client, client.GetBaseURL(), endpoint, method, bytes.NewReader(data), nil, contentType)
 }

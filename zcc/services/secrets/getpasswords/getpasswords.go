@@ -42,7 +42,7 @@ func GetPasswords(service *services.Service, username, osType string) (*Password
 	}
 
 	var passwords Passwords
-	_, err := service.Client.NewRequestDo("GET", fullURL, nil, nil, &passwords)
+	_, err := service.NewRequestDo("GET", fullURL, nil, nil, &passwords)
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ type App struct {
 func GetDeviceApp(service *services.Service, deviceID, appID string, filters common.GetFromToFilters) (*App, *http.Response, error) {
 	v := new(App)
 	path := fmt.Sprintf("%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -33,7 +33,7 @@ func GetDeviceApp(service *services.Service, deviceID, appID string, filters com
 func GetDeviceAllApps(service *services.Service, deviceID string, filters common.GetFromToFilters) ([]App, *http.Response, error) {
 	var v []App
 	relativeURL := devicesEndpoint + "/" + deviceID + "/" + deviceAppsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", relativeURL, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

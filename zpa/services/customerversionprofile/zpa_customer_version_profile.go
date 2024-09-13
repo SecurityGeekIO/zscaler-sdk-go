@@ -54,7 +54,7 @@ type Versions struct {
 }
 
 func GetByName(service *services.Service, versionProfileName string) (*CustomerVersionProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customerVersionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -68,7 +68,7 @@ func GetByName(service *services.Service, versionProfileName string) (*CustomerV
 }
 
 func GetAll(service *services.Service) ([]CustomerVersionProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customerVersionProfileEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customerVersionProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CustomerVersionProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

@@ -28,8 +28,8 @@ type SamlAttribute struct {
 
 func Get(service *services.Service, samlAttributeID string) (*SamlAttribute, *http.Response, error) {
 	v := new(SamlAttribute)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+samlAttributeEndpoint, samlAttributeID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+samlAttributeEndpoint, samlAttributeID)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +38,7 @@ func Get(service *services.Service, samlAttributeID string) (*SamlAttribute, *ht
 }
 
 func GetByName(service *services.Service, samlAttrName string) (*SamlAttribute, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + samlAttributeEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -52,7 +52,7 @@ func GetByName(service *services.Service, samlAttrName string) (*SamlAttribute, 
 }
 
 func GetAll(service *services.Service) ([]SamlAttribute, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + samlAttributeEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + samlAttributeEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[SamlAttribute](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

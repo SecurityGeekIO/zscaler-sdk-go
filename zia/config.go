@@ -133,6 +133,22 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		"zspreview":    false, // Treat zspreview differently
 	}
 
+	if username == "" || password == "" || apiKey == "" {
+		username = os.Getenv("ZIA_USERNAME")
+		password = os.Getenv("ZIA_PASSWORD")
+		apiKey = os.Getenv("ZIA_API_KEY")
+	}
+
+	if username == "" || password == "" || apiKey == "" {
+		return nil, fmt.Errorf("username, password, and apiKey cannot be empty")
+	}
+	if ziaCloud == "" {
+		ziaCloud = os.Getenv("ZIA_CLOUD")
+	}
+	if ziaCloud == "" {
+		ziaCloud = "PRODUCTION"
+	}
+
 	// Check if ziaCloud is one of the predefined ones or arbitrary
 	if _, exists := predefinedClouds[ziaCloud]; exists {
 		if ziaCloud == "zspreview" {
@@ -532,11 +548,11 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-func (c *Client) GetSandboxURL() string {
-	return "https://csbapi." + c.cloud + ".net"
+func GetSandboxURL(cloud string) string {
+	return "https://csbapi." + cloud + ".net"
 }
 
-func (c *Client) GetSandboxToken() string {
+func GetSandboxToken() string {
 	return os.Getenv("ZIA_SANDBOX_TOKEN")
 }
 

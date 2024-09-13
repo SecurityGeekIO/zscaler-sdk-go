@@ -42,7 +42,7 @@ type Stats struct {
 func GetAllApps(service *services.Service, filters common.GetFromToFilters) ([]Apps, *http.Response, error) {
 	var apps []Apps
 	path := appsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &apps)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &apps)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,7 +52,7 @@ func GetAllApps(service *services.Service, filters common.GetFromToFilters) ([]A
 func GetApp(service *services.Service, appID string, filters common.GetFromToFilters) (*Apps, *http.Response, error) {
 	var app Apps
 	path := appsEndpoint + "/" + appID
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &app)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &app)
 	if err != nil {
 		return nil, nil, err
 	}

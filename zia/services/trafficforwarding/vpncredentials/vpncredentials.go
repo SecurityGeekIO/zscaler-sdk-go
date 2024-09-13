@@ -58,12 +58,12 @@ type ManagedBy struct {
 
 func Get(service *services.Service, vpnCredentialID int) (*VPNCredentials, error) {
 	var vpnCredentials VPNCredentials
-	err := service.Client.Read(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), &vpnCredentials)
+	err := service.Read(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), &vpnCredentials)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning VPN Credentials from Get: %d", vpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning VPN Credentials from Get: %d", vpnCredentials.ID)
 	return &vpnCredentials, nil
 }
 
@@ -112,7 +112,7 @@ func GetByIP(service *services.Service, vpnCredentialIP string) (*VPNCredentials
 }
 
 func Create(service *services.Service, vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
-	resp, err := service.Client.Create(vpnCredentialsEndpoint, *vpnCredentials)
+	resp, err := service.Create(vpnCredentialsEndpoint, *vpnCredentials)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -122,23 +122,23 @@ func Create(service *services.Service, vpnCredentials *VPNCredentials) (*VPNCred
 		return nil, nil, errors.New("object returned from api was not a vpn credential pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning vpn credential from create: %d", createdVpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning vpn credential from create: %d", createdVpnCredentials.ID)
 	return createdVpnCredentials, nil, nil
 }
 
 func Update(service *services.Service, vpnCredentialID int, vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), *vpnCredentials)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), *vpnCredentials)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedVpnCredentials, _ := resp.(*VPNCredentials)
 
-	service.Client.Logger.Printf("[DEBUG]returning vpn credential from Update: %d", updatedVpnCredentials.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning vpn credential from Update: %d", updatedVpnCredentials.ID)
 	return updatedVpnCredentials, nil, nil
 }
 
 func Delete(service *services.Service, vpnCredentialID int) error {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID))
+	err := service.Delete(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID))
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
-		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+		service.Client.GetLogger().Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
 	}
 
 	// Define the payload
@@ -160,7 +160,7 @@ func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
 	}
 
 	// Call the generalized BulkDelete function from the client
-	return service.Client.BulkDelete(vpnCredentialsEndpoint+"/bulkDelete", payload)
+	return service.BulkDelete(vpnCredentialsEndpoint+"/bulkDelete", payload)
 }
 
 func GetAll(service *services.Service) ([]VPNCredentials, error) {

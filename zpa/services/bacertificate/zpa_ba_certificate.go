@@ -40,8 +40,8 @@ type BaCertificate struct {
 
 func Get(service *services.Service, baCertificateID string) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
-	relativeURL := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, baCertificateID)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -50,7 +50,7 @@ func Get(service *services.Service, baCertificateID string) (*BaCertificate, *ht
 }
 
 func GetIssuedByName(service *services.Service, CertName string) (*BaCertificate, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{Search: CertName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -65,7 +65,7 @@ func GetIssuedByName(service *services.Service, CertName string) (*BaCertificate
 
 func Create(service *services.Service, baCertificate BaCertificate) (*BaCertificate, *http.Response, error) {
 	v := new(BaCertificate)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, baCertificate, &v)
+	resp, err := service.NewRequestDo("POST", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, baCertificate, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,8 +74,8 @@ func Create(service *services.Service, baCertificate BaCertificate) (*BaCertific
 }
 
 func Delete(service *services.Service, baCertificateID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+baCertificateEndpoint, baCertificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+baCertificateEndpoint, baCertificateID)
+	resp, err := service.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func Delete(service *services.Service, baCertificateID string) (*http.Response, 
 }
 
 func GetAll(service *services.Service) ([]BaCertificate, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + baCertificateIssuedEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + baCertificateIssuedEndpoint)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BaCertificate](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

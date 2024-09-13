@@ -39,12 +39,12 @@ type DlpNotificationTemplates struct {
 
 func Get(service *services.Service, dlpTemplateID int) (*DlpNotificationTemplates, error) {
 	var dlpTemplates DlpNotificationTemplates
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), &dlpTemplates)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), &dlpTemplates)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp notification template from Get: %d", dlpTemplates.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp notification template from Get: %d", dlpTemplates.ID)
 	return &dlpTemplates, nil
 }
 
@@ -63,7 +63,7 @@ func GetByName(service *services.Service, templateName string) (*DlpNotification
 }
 
 func Create(service *services.Service, dlpTemplateID *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
-	resp, err := service.Client.Create(dlpNotificationTemplatesEndpoint, *dlpTemplateID)
+	resp, err := service.Create(dlpNotificationTemplatesEndpoint, *dlpTemplateID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,23 +73,23 @@ func Create(service *services.Service, dlpTemplateID *DlpNotificationTemplates) 
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new dlp notification template from create: %d", createdDlpTemplate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new dlp notification template from create: %d", createdDlpTemplate.ID)
 	return createdDlpTemplate, nil, nil
 }
 
 func Update(service *services.Service, dlpTemplateID int, dlpTemplates *DlpNotificationTemplates) (*DlpNotificationTemplates, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), *dlpTemplates)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID), *dlpTemplates)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedDlpTemplate, _ := resp.(*DlpNotificationTemplates)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates from dlp notification template from update: %d", updatedDlpTemplate.ID)
 	return updatedDlpTemplate, nil, nil
 }
 
 func Delete(service *services.Service, dlpTemplateID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID))
+	err := service.Delete(fmt.Sprintf("%s/%d", dlpNotificationTemplatesEndpoint, dlpTemplateID))
 	if err != nil {
 		return nil, err
 	}

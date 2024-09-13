@@ -87,12 +87,12 @@ type SystemSummaryDetail struct {
 
 func GetRatingQuota(service *services.Service) ([]RatingQuota, error) {
 	var quotas []RatingQuota
-	err := service.Client.Read(reportQuotaEndpoint, &quotas)
+	err := service.Read(reportQuotaEndpoint, &quotas)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning quota for retrieving Sandbox Detail Reports from Get: %v", quotas)
+	service.Client.GetLogger().Printf("[DEBUG] Returning quota for retrieving Sandbox Detail Reports from Get: %v", quotas)
 	return quotas, nil
 }
 
@@ -107,7 +107,7 @@ func GetReportMD5Hash(service *services.Service, md5Hash, details string) (*Repo
 	endpoint := fmt.Sprintf("%s%s?details=%s", reportMD5Endpoint, md5Hash, details)
 
 	var resp map[string]interface{}
-	err := service.Client.Read(endpoint, &resp)
+	err := service.Read(endpoint, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +135,6 @@ func GetReportMD5Hash(service *services.Service, md5Hash, details string) (*Repo
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
+	service.Client.GetLogger().Printf("[DEBUG] Returning report for MD5 hash '%s' with details '%s': %+v", md5Hash, details, report)
 	return &report, nil
 }

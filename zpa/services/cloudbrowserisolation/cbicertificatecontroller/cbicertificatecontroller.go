@@ -23,8 +23,8 @@ type CBICertificate struct {
 
 func Get(service *services.Service, certificateID string) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -68,7 +68,7 @@ func GetByNameOrID(service *services.Service, identifier string) (*CBICertificat
 
 func Create(service *services.Service, cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, nil, cbiProfile, &v)
+	resp, err := service.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiCertificateEndpoint, nil, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -76,8 +76,8 @@ func Create(service *services.Service, cbiProfile *CBICertificate) (*CBICertific
 }
 
 func Update(service *services.Service, certificateID string, certificateRequest *CBICertificate) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, certificateRequest, nil)
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
+	resp, err := service.NewRequestDo("PUT", path, nil, certificateRequest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +85,8 @@ func Update(service *services.Service, certificateID string, certificateRequest 
 }
 
 func Delete(service *services.Service, certificateID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
+	resp, err := service.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +94,9 @@ func Delete(service *services.Service, certificateID string) (*http.Response, er
 }
 
 func GetAll(service *services.Service) ([]CBICertificate, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificatesEndpoint
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiCertificatesEndpoint
 	var list []CBICertificate
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, resp, err
 	}

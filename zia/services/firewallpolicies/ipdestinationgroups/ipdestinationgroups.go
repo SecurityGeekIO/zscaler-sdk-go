@@ -42,12 +42,12 @@ type IPDestinationGroups struct {
 
 func Get(service *services.Service, ipGroupID int) (*IPDestinationGroups, error) {
 	var ipDestinationGroups IPDestinationGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), &ipDestinationGroups)
+	err := service.Read(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), &ipDestinationGroups)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning ip destination group from Get: %d", ipDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning ip destination group from Get: %d", ipDestinationGroups.ID)
 	return &ipDestinationGroups, nil
 }
 
@@ -66,7 +66,7 @@ func GetByName(service *services.Service, ipDestinationGroupsName string) (*IPDe
 }
 
 func Create(service *services.Service, ipGroupID *IPDestinationGroups) (*IPDestinationGroups, error) {
-	resp, err := service.Client.Create(ipDestinationGroupsEndpoint, *ipGroupID)
+	resp, err := service.Create(ipDestinationGroupsEndpoint, *ipGroupID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,23 +76,23 @@ func Create(service *services.Service, ipGroupID *IPDestinationGroups) (*IPDesti
 		return nil, errors.New("object returned from api was not an ip destination group pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning ip destination group from create: %d", createdIPDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip destination group from create: %d", createdIPDestinationGroups.ID)
 	return createdIPDestinationGroups, nil
 }
 
 func Update(service *services.Service, ipGroupID int, ipGroup *IPDestinationGroups) (*IPDestinationGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedIPDestinationGroups, _ := resp.(*IPDestinationGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip destination group from update: %d", updatedIPDestinationGroups.ID)
 	return updatedIPDestinationGroups, nil, nil
 }
 
 func Delete(service *services.Service, ipGroupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID))
+	err := service.Delete(fmt.Sprintf("%s/%d", ipDestinationGroupsEndpoint, ipGroupID))
 	if err != nil {
 		return nil, err
 	}

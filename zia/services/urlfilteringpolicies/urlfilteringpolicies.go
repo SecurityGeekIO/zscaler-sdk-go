@@ -148,12 +148,12 @@ type CBIProfile struct {
 
 func Get(service *services.Service, ruleID int) (*URLFilteringRule, error) {
 	var urlFilteringPolicies URLFilteringRule
-	err := service.Client.Read(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
+	err := service.Read(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", urlFilteringPolicies.ID)
 	return &urlFilteringPolicies, nil
 }
 
@@ -172,7 +172,7 @@ func GetByName(service *services.Service, urlFilteringPolicyName string) (*URLFi
 }
 
 func Create(service *services.Service, ruleID *URLFilteringRule) (*URLFilteringRule, error) {
-	resp, err := service.Client.Create(urlFilteringPoliciesEndpoint, *ruleID)
+	resp, err := service.Create(urlFilteringPoliciesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
 	}
@@ -182,13 +182,13 @@ func Create(service *services.Service, ruleID *URLFilteringRule) (*URLFilteringR
 		return nil, errors.New("object returned from api was not a url filtering rule pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning url filtering rule from create: %d", createdURLFilteringRule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning url filtering rule from create: %d", createdURLFilteringRule.ID)
 	return createdURLFilteringRule, nil
 }
 
 func Update(service *services.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
-	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
+	service.Client.GetLogger().Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
 	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
 		// If CBIProfile object is empty, fetch it using GetByName as Get by ID is not currently returnign the full CBIProfile object with the uuid ID
 		var urlFilteringPolicies []URLFilteringRule
@@ -203,18 +203,18 @@ func Update(service *services.Service, ruleID int, rule *URLFilteringRule) (*URL
 			}
 		}
 	}
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
 
-	service.Client.Logger.Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
 	return updatedURLFilteringRule, nil, nil
 }
 
 func Delete(service *services.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
+	err := service.Delete(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}

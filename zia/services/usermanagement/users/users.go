@@ -63,18 +63,18 @@ type EnrollUserRequest struct {
 
 func (service *Service) Get(userID int) (*Users, error) {
 	var user Users
-	err := service.Client.Read(fmt.Sprintf("%s/%d", usersEndpoint, userID), &user)
+	err := service.read(fmt.Sprintf("%s/%d", usersEndpoint, userID), &user)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning user from Get: %d", user.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from Get: %d", user.ID)
 	return &user, nil
 }
 
 func (service *Service) GetUserByName(userName string) (*Users, error) {
 	var users []Users
-	err := service.Client.Read(fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(service.sortBy, service.sortOrder)), &users)
+	err := service.read(fmt.Sprintf("%s?name=%s&%s", usersEndpoint, url.QueryEscape(userName), common.GetSortParams(service.sortBy, service.sortOrder)), &users)
 	if err != nil {
 		return nil, err
 	}
@@ -89,17 +89,17 @@ func (service *Service) GetUserByName(userName string) (*Users, error) {
 func (service *Service) EnrollUser(userID int, request EnrollUserRequest) (*EnrollResult, error) {
 	if len(request.AuthMethods) == 0 {
 		err := errors.New("authMethods is required")
-		service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+		service.Client.GetLogger().Printf("[ERROR] enroll user failed: %v", err)
 	}
 	for _, method := range request.AuthMethods {
 		// method most be one of the following: BASIC, DIGEST
 		if method != "BASIC" && method != "DIGEST" {
 			err := fmt.Errorf("authMethods must be one of the following: BASIC, DIGEST. Found: %s", method)
-			service.Client.Logger.Printf("[ERROR] enroll user failed: %v", err)
+			service.Client.GetLogger().Printf("[ERROR] enroll user failed: %v", err)
 			return nil, err
 		}
 	}
-	_, err := service.Client.Create(fmt.Sprintf("%s/%d%s", usersEndpoint, userID, enrollEndpoint), request)
+	_, err := service.create(fmt.Sprintf("%s/%d%s", usersEndpoint, userID, enrollEndpoint), request)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (service *Service) EnrollUser(userID int, request EnrollUserRequest) (*Enro
 }
 
 func (service *Service) Create(user *Users) (*Users, error) {
-	resp, err := service.Client.Create(usersEndpoint, *user)
+	resp, err := service.create(usersEndpoint, *user)
 	if err != nil {
 		return nil, err
 	}
@@ -117,22 +117,22 @@ func (service *Service) Create(user *Users) (*Users, error) {
 		return nil, errors.New("object returned from api was not a user pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning user from create: %v", createdUsers.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from create: %v", createdUsers.ID)
 	return createdUsers, nil
 }
 
 func (service *Service) Update(userID int, users *Users) (*Users, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", usersEndpoint, userID), *users)
+	resp, err := service.updateWithPut(fmt.Sprintf("%s/%d", usersEndpoint, userID), *users)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedUser, _ := resp.(*Users)
-	service.Client.Logger.Printf("[DEBUG]returning user from update: %d", updatedUser.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning user from update: %d", updatedUser.ID)
 	return updatedUser, nil, nil
 }
 
 func (service *Service) Delete(userID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", usersEndpoint, userID))
+	err := service.delete(fmt.Sprintf("%s/%d", usersEndpoint, userID))
 	if err != nil {
 		return nil, err
 	}

@@ -72,7 +72,7 @@ type Devices struct {
 
 func GetDeviceGroupByName(service *services.Service, deviceGroupName string) (*DeviceGroups, error) {
 	var deviceGroups []DeviceGroups
-	err := service.Client.Read(deviceGroupEndpoint, &deviceGroups)
+	err := service.Read(deviceGroupEndpoint, &deviceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func GetIncludeDeviceInfo(service *services.Service, includeDeviceInfo, includeP
 
 	endpoint := fmt.Sprintf("%s?%s", deviceGroupEndpoint, queryParams.Encode())
 	var deviceInfos []DeviceGroups
-	err := service.Client.Read(endpoint, &deviceInfos)
+	err := service.Read(endpoint, &deviceInfos)
 	if err != nil {
 		return nil, err
 	}

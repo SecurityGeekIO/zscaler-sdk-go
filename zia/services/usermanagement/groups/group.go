@@ -28,12 +28,12 @@ type Groups struct {
 
 func (service *Service) GetGroups(groupID int) (*Groups, error) {
 	var groups Groups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", groupsEndpoint, groupID), &groups)
+	err := common.Read(service.Client, fmt.Sprintf("%s/%d", groupsEndpoint, groupID), &groups)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning Groups from Get: %d", groups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning Groups from Get: %d", groups.ID)
 	return &groups, nil
 }
 

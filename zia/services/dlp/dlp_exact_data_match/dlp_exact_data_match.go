@@ -105,12 +105,12 @@ type Schedule struct {
 
 func GetDLPEDMSchemaID(service *services.Service, edmSchemaID int) (*DLPEDMSchema, error) {
 	var edmSchema DLPEDMSchema
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpEDMSchemaEndpoint, edmSchemaID), &edmSchema)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpEDMSchemaEndpoint, edmSchemaID), &edmSchema)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning edm schema from Get: %d", edmSchema.SchemaID)
+	service.Client.GetLogger().Printf("[DEBUG]returning edm schema from Get: %d", edmSchema.SchemaID)
 	return &edmSchema, nil
 }
 

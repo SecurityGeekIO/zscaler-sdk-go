@@ -47,7 +47,7 @@ func GetByGeoCoordinates(service *services.Service, latitude, longitude float64)
 	queryParams := fmt.Sprintf("latitude=%f&longitude=%f", latitude, longitude)
 	fullEndpoint := fmt.Sprintf("%s?%s", geoCoordinatesEndpoint, queryParams)
 
-	err := service.Client.Read(fullEndpoint, &region)
+	err := service.Read(fullEndpoint, &region)
 	if err != nil {
 		return nil, err
 	}

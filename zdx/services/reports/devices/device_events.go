@@ -30,7 +30,7 @@ type Events struct {
 func GetEvents(service *services.Service, deviceID int, filters common.GetFromToFilters) ([]DeviceEvents, *http.Response, error) {
 	var v []DeviceEvents
 	path := fmt.Sprintf("%v/%v/%v", devicesEndpoint, deviceID, deviceEventsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

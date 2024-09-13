@@ -28,7 +28,7 @@ type Instances struct {
 func GetHealthMetrics(service *services.Service, deviceID int, filters common.GetFromToFilters) ([]HealthMetrics, *http.Response, error) {
 	var v []HealthMetrics
 	path := fmt.Sprintf("%v/%v/%v", devicesEndpoint, deviceID, deviceHealthMetricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

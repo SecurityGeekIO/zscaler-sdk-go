@@ -29,7 +29,7 @@ type Children struct {
 func GetGeoLocations(service *services.Service, filters GeoLocationFilter) ([]GeoLocation, *http.Response, error) {
 	var v []GeoLocation
 	path := geoLocationsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

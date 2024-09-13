@@ -32,8 +32,8 @@ type EmergencyAccess struct {
 
 func Get(service *services.Service, userID string) (*EmergencyAccess, *http.Response, error) {
 	v := new(EmergencyAccess)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+emergencyAccessEndpoint, userID)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,9 +59,9 @@ func GetByEmailID(service *services.Service, emailID string) (*EmergencyAccess, 
 
 func Create(service *services.Service, emergencyAccess *EmergencyAccess) (*EmergencyAccess, *http.Response, error) {
 	emergencyAccess.ActivateNow = false
-	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", mgmtConfig, service.Client.GetCustomerID(), emergencyAccessEndpoint)
 	v := new(EmergencyAccess)
-	resp, err := service.Client.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, v)
+	resp, err := service.NewRequestDo("POST", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -70,8 +70,8 @@ func Create(service *services.Service, emergencyAccess *EmergencyAccess) (*Emerg
 }
 
 func Update(service *services.Service, userID string, emergencyAccess *EmergencyAccess) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, nil)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+emergencyAccessEndpoint, userID)
+	resp, err := service.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, emergencyAccess, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +80,8 @@ func Update(service *services.Service, userID string, emergencyAccess *Emergency
 
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/activate
 func Activate(service *services.Service, userID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s/activate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf("%s/%s/activate", mgmtConfig+service.Client.GetCustomerID()+emergencyAccessEndpoint, userID)
+	resp, err := service.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +90,8 @@ func Activate(service *services.Service, userID string) (*http.Response, error) 
 
 // PUT - /mgmtconfig/v1/admin/customers/{customerId}/emergencyAccess/user/{userId}/deactivate
 func Deactivate(service *services.Service, userID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s/deactivate", mgmtConfig+service.Client.Config.CustomerID+emergencyAccessEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf("%s/%s/deactivate", mgmtConfig+service.Client.GetCustomerID()+emergencyAccessEndpoint, userID)
+	resp, err := service.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -99,15 +99,15 @@ func Deactivate(service *services.Service, userID string) (*http.Response, error
 }
 
 func GetAll(service *services.Service) ([]EmergencyAccess, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s%ss", mgmtConfig, service.Client.Config.CustomerID, emergencyAccessEndpoint) // Correct endpoint
-	pageSize := 500                                                                                              // Define the pageSize as needed
-	initialPageId := ""                                                                                          // Start without a pageId or as required
+	relativeURL := fmt.Sprintf("%s%s%ss", mgmtConfig, service.Client.GetCustomerID(), emergencyAccessEndpoint) // Correct endpoint
+	pageSize := 500                                                                                            // Define the pageSize as needed
+	initialPageId := ""                                                                                        // Start without a pageId or as required
 
 	return GetAllEmergencyAccessUsers(service, relativeURL, pageSize, initialPageId)
 }
 
 func fetchEmergencyAccessUsersPage(service *services.Service, fullURL string) (*http.Response, error) {
-	return service.Client.NewRequestDo("GET", fullURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	return service.NewRequestDo("GET", fullURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 }
 
 func GetAllEmergencyAccessUsers(service *services.Service, baseRelativeURL string, pageSize int, initialPageId string) ([]EmergencyAccess, *http.Response, error) {

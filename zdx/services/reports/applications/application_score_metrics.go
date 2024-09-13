@@ -18,13 +18,13 @@ func GetAppScores(service *services.Service, appID int, filters common.GetFromTo
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, scoreEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.NewRequestDo("GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil
@@ -45,13 +45,13 @@ func GetAppMetrics(service *services.Service, appID int, filters common.GetFromT
 	var v []common.Metric
 	var single common.Metric
 	path := fmt.Sprintf("%s/%d%s", appsEndpoint, appID, metricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.NewRequestDo("GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil

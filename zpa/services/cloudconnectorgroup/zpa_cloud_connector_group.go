@@ -46,8 +46,8 @@ type CloudConnectors struct {
 
 func Get(service *services.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
 	v := new(CloudConnectorGroup)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,7 +56,7 @@ func Get(service *services.Service, cloudConnectorGroupID string) (*CloudConnect
 }
 
 func GetByName(service *services.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -70,7 +70,7 @@ func GetByName(service *services.Service, cloudConnectorGroupName string) (*Clou
 }
 
 func GetAll(service *services.Service) ([]CloudConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

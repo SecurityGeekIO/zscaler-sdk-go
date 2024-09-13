@@ -77,12 +77,12 @@ type City struct {
 
 func Get(service *services.Service, staticIpID int) (*StaticIP, error) {
 	var staticIP StaticIP
-	err := service.Client.Read(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), &staticIP)
+	err := service.Read(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), &staticIP)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning static ip from Get: %d", staticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning static ip from Get: %d", staticIP.ID)
 	return &staticIP, nil
 }
 
@@ -101,7 +101,7 @@ func GetByIPAddress(service *services.Service, address string) (*StaticIP, error
 }
 
 func Create(service *services.Service, staticIpID *StaticIP) (*StaticIP, *http.Response, error) {
-	resp, err := service.Client.Create(staticIPEndpoint, *staticIpID)
+	resp, err := service.Create(staticIPEndpoint, *staticIpID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -111,23 +111,23 @@ func Create(service *services.Service, staticIpID *StaticIP) (*StaticIP, *http.R
 		return nil, nil, errors.New("object returned from api was not a static ip pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning static ip from create: %d", createdStaticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning static ip from create: %d", createdStaticIP.ID)
 	return createdStaticIP, nil, nil
 }
 
 func Update(service *services.Service, staticIpID int, staticIP *StaticIP) (*StaticIP, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), *staticIP)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), *staticIP)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedStaticIP, _ := resp.(*StaticIP)
 
-	service.Client.Logger.Printf("[DEBUG]returning static ip from update: %d", updatedStaticIP.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning static ip from update: %d", updatedStaticIP.ID)
 	return updatedStaticIP, nil, nil
 }
 
 func Delete(service *services.Service, staticIpID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID))
+	err := service.Delete(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID))
 	if err != nil {
 		return nil, err
 	}

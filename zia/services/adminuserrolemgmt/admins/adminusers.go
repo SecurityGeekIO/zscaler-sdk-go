@@ -102,7 +102,7 @@ type ExecMobileAppTokens struct {
 func GetAdminUsers(service *services.Service, adminUserId int) (*AdminUsers, error) {
 	v := new(AdminUsers)
 	relativeURL := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserId)
-	err := service.Client.Read(relativeURL, v)
+	err := service.Read(relativeURL, v)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func GetAdminByUsername(service *services.Service, adminUsername string) (*Admin
 }
 
 func CreateAdminUser(service *services.Service, adminUser AdminUsers) (*AdminUsers, error) {
-	resp, err := service.Client.Create(adminUsersEndpoint, adminUser)
+	resp, err := service.Create(adminUsersEndpoint, adminUser)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func CreateAdminUser(service *services.Service, adminUser AdminUsers) (*AdminUse
 
 func UpdateAdminUser(service *services.Service, adminUserID int, adminUser AdminUsers) (*AdminUsers, error) {
 	path := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID)
-	resp, err := service.Client.UpdateWithPut(path, adminUser)
+	resp, err := service.UpdateWithPut(path, adminUser)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func UpdateAdminUser(service *services.Service, adminUserID int, adminUser Admin
 }
 
 func DeleteAdminUser(service *services.Service, adminUserID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID))
+	err := service.Delete(fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID))
 	if err != nil {
 		return nil, err
 	}

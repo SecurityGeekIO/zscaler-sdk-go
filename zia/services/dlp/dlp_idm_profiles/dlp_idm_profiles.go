@@ -79,12 +79,12 @@ type DLPIDMProfile struct {
 
 func Get(service *services.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	var idmpProfile DLPIDMProfile
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp icap server from Get: %d", idmpProfile.ProfileID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp icap server from Get: %d", idmpProfile.ProfileID)
 	return &idmpProfile, nil
 }
 

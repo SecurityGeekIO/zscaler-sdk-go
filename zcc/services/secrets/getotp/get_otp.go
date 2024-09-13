@@ -42,7 +42,7 @@ func GetOtp(service *services.Service, udid string) (*OtpResponse, error) {
 	}
 
 	var otpResponse OtpResponse
-	_, err := service.Client.NewRequestDo("GET", fullURL, nil, nil, &otpResponse)
+	_, err := service.NewRequestDo("GET", fullURL, nil, nil, &otpResponse)
 	if err != nil {
 		return nil, err
 	}

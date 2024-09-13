@@ -79,12 +79,12 @@ type LocationLite struct {
 
 func GetLocationLiteID(service *services.Service, locationID int) (*LocationLite, error) {
 	var locationLite LocationLite
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationLiteEndpoint, locationID), &locationLite)
+	err := service.Read(fmt.Sprintf("%s/%d", locationLiteEndpoint, locationID), &locationLite)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning location group from Get: %d", locationLite.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning location group from Get: %d", locationLite.ID)
 	return &locationLite, nil
 }
 

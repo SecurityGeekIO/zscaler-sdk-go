@@ -23,12 +23,12 @@ type NetworkApplicationGroups struct {
 
 func GetNetworkApplicationGroups(service *services.Service, groupID int) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups NetworkApplicationGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), &networkApplicationGroups)
+	err := service.Read(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), &networkApplicationGroups)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning network application groups from Get: %d", networkApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning network application groups from Get: %d", networkApplicationGroups.ID)
 	return &networkApplicationGroups, nil
 }
 
@@ -47,7 +47,7 @@ func GetNetworkApplicationGroupsByName(service *services.Service, appGroupsName 
 }
 
 func Create(service *services.Service, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, error) {
-	resp, err := service.Client.Create(networkAppGroupsEndpoint, *applicationGroup)
+	resp, err := service.Create(networkAppGroupsEndpoint, *applicationGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -57,23 +57,23 @@ func Create(service *services.Service, applicationGroup *NetworkApplicationGroup
 		return nil, errors.New("object returned from api was not a network application groups pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning network application groups from create: %d", createdApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network application groups from create: %d", createdApplicationGroups.ID)
 	return createdApplicationGroups, nil
 }
 
 func Update(service *services.Service, groupID int, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), *applicationGroup)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), *applicationGroup)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedApplicationGroups, _ := resp.(*NetworkApplicationGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning network application groups from Update: %d", updatedApplicationGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network application groups from Update: %d", updatedApplicationGroups.ID)
 	return updatedApplicationGroups, nil, nil
 }
 
 func Delete(service *services.Service, groupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID))
+	err := service.Delete(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID))
 	if err != nil {
 		return nil, err
 	}

@@ -251,6 +251,6 @@ func GetFirstPage(service *services.Service, locale string) ([]NetworkApplicatio
 	if locale != "" {
 		endpoint = fmt.Sprintf("%s?locale=%s", networkApplicationsEndpoint, url.QueryEscape(locale))
 	}
-	err := service.Client.Read(endpoint, &networkApplications)
+	err := service.Read(endpoint, &networkApplications)
 	return networkApplications, err
 }

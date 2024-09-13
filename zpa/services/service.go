@@ -1,16 +1,22 @@
 package services
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"net/http"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/common"
 )
 
 type Service struct {
-	Client        *zpa.Client
+	Client        common.Client
 	microTenantID *string
 }
 
-func New(c *zpa.Client) *Service {
+func New(c common.Client) *Service {
 	return &Service{Client: c}
+}
+
+func (service *Service) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
+	return service.Client.NewRequestDo(method, url, options, body, v, common.Option{Name: common.ZscalerInfraOption, Value: "zpa"})
 }
 
 func (service *Service) WithMicroTenant(microTenantID string) *Service {

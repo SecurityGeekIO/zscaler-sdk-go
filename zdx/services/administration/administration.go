@@ -38,7 +38,7 @@ type GetLocationsFilters struct {
 func GetDepartments(service *services.Service, filters GetDepartmentsFilters) ([]Department, *http.Response, error) {
 	var departments []Department
 	path := departmentsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &departments)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &departments)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +49,7 @@ func GetDepartments(service *services.Service, filters GetDepartmentsFilters) ([
 func GetLocations(service *services.Service, filters GetLocationsFilters) ([]Location, *http.Response, error) {
 	var locations []Location
 	path := locationsEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &locations)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &locations)
 	if err != nil {
 		return nil, nil, err
 	}

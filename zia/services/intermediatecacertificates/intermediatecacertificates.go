@@ -111,12 +111,12 @@ type CertSigningRequest struct {
 
 func GetCertificate(service *services.Service, certID int) (*IntermediateCACertificate, error) {
 	var intermediateCACertificate IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), &intermediateCACertificate)
+	err := service.Read(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), &intermediateCACertificate)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning intermediate ca certificate from Get: %d", intermediateCACertificate.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning intermediate ca certificate from Get: %d", intermediateCACertificate.ID)
 	return &intermediateCACertificate, nil
 }
 
@@ -136,67 +136,67 @@ func GetByName(service *services.Service, certName string) (*IntermediateCACerti
 
 func GetDownloadAttestation(service *services.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadAttestation IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadAttestationEndpoint, certID), &downloadAttestation)
+	err := service.Read(fmt.Sprintf("%s/%d", intCADownloadAttestationEndpoint, certID), &downloadAttestation)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded attestation from Get: %d", downloadAttestation.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded attestation from Get: %d", downloadAttestation.ID)
 	return &downloadAttestation, nil
 }
 
 func GetDownloadCSR(service *services.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadCSR IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadCSREndpoint, certID), &downloadCSR)
+	err := service.Read(fmt.Sprintf("%s/%d", intCADownloadCSREndpoint, certID), &downloadCSR)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded csr from Get: %d", downloadCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded csr from Get: %d", downloadCSR.ID)
 	return &downloadCSR, nil
 }
 
 func GetDownloadPublicKey(service *services.Service, certID int) (*IntermediateCACertificate, error) {
 	var downloadPublicKey IntermediateCACertificate
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCADownloadPublicKeyEndpoint, certID), &downloadPublicKey)
+	err := service.Read(fmt.Sprintf("%s/%d", intCADownloadPublicKeyEndpoint, certID), &downloadPublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %d", downloadPublicKey.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded public key from Get: %d", downloadPublicKey.ID)
 	return &downloadPublicKey, nil
 }
 
 func GetIntCAReadyToUse(service *services.Service) ([]IntermediateCACertificate, error) {
 	var readyToUse []IntermediateCACertificate
-	err := service.Client.Read(intCAReadyToUseEndpoint, &readyToUse)
+	err := service.Read(intCAReadyToUseEndpoint, &readyToUse)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning downloaded public key from Get: %v", readyToUse)
+	service.Client.GetLogger().Printf("[DEBUG]Returning downloaded public key from Get: %v", readyToUse)
 	return readyToUse, nil
 }
 
 func GetShowCert(service *services.Service, certID int) (*CertSigningRequest, error) {
 	var showCert CertSigningRequest
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCAShowCertEndpoint, certID), &showCert)
+	err := service.Read(fmt.Sprintf("%s/%d", intCAShowCertEndpoint, certID), &showCert)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning info about signed intrermediate CA certificates from Get: %d", showCert.CertID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning info about signed intrermediate CA certificates from Get: %d", showCert.CertID)
 	return &showCert, nil
 }
 
 func GetShowCSR(service *services.Service, certID int) (*CertSigningRequest, error) {
 	var showCSR CertSigningRequest
-	err := service.Client.Read(fmt.Sprintf("%s/%d", intCAShowCSREndpoint, certID), &showCSR)
+	err := service.Read(fmt.Sprintf("%s/%d", intCAShowCSREndpoint, certID), &showCSR)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning info about signed intermediate CA certificates from Get: %d", showCSR.CertID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning info about signed intermediate CA certificates from Get: %d", showCSR.CertID)
 	return &showCSR, nil
 }
 
@@ -207,7 +207,7 @@ func GetAll(service *services.Service) ([]IntermediateCACertificate, error) {
 }
 
 func CreateIntCACertificate(service *services.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intermediateCaCertificatesEndpoint, *cert)
+	resp, err := service.Create(intermediateCaCertificatesEndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -217,12 +217,12 @@ func CreateIntCACertificate(service *services.Service, cert *IntermediateCACerti
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntermediateCACert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntermediateCACert.ID)
 	return createdIntermediateCACert, nil
 }
 
 func CreateIntCAGenerateCSR(service *services.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAGenerateCSREndpoint, *cert)
+	resp, err := service.Create(intCAGenerateCSREndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -232,12 +232,12 @@ func CreateIntCAGenerateCSR(service *services.Service, cert *IntermediateCACerti
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAGenerateCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAGenerateCSR.ID)
 	return createdIntCAGenerateCSR, nil
 }
 
 func CreateIntCAFinalizeCert(service *services.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAFinalizeCSREndpoint, *cert)
+	resp, err := service.Create(intCAFinalizeCSREndpoint, *cert)
 	if err != nil {
 		return nil, err
 	}
@@ -247,12 +247,12 @@ func CreateIntCAFinalizeCert(service *services.Service, cert *IntermediateCACert
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAFinalizeCSR.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAFinalizeCSR.ID)
 	return createdIntCAFinalizeCSR, nil
 }
 
 func CreateIntCAKeyPair(service *services.Service, keyPair *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAKeyPairEndpoint, *keyPair)
+	resp, err := service.Create(intCAKeyPairEndpoint, *keyPair)
 	if err != nil {
 		return nil, err
 	}
@@ -262,12 +262,12 @@ func CreateIntCAKeyPair(service *services.Service, keyPair *IntermediateCACertif
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAKeyPair.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from create: %d", createdIntCAKeyPair.ID)
 	return createdIntCAKeyPair, nil
 }
 
 func CreateUploadCert(service *services.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAUploadCert, *certID)
+	resp, err := service.Create(intCAUploadCert, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -277,12 +277,12 @@ func CreateUploadCert(service *services.Service, certID *IntermediateCACertifica
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning uploaded customer intermediate ca certificate from create: %d", createdIntCAUploadCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning uploaded customer intermediate ca certificate from create: %d", createdIntCAUploadCert.ID)
 	return createdIntCAUploadCert, nil
 }
 
 func CreateUploadCertChain(service *services.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAUploadCertChain, *certID)
+	resp, err := service.Create(intCAUploadCertChain, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -292,12 +292,12 @@ func CreateUploadCertChain(service *services.Service, certID *IntermediateCACert
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning uploaded certificate chain from create: %d", createdIntCAUploadChain.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning uploaded certificate chain from create: %d", createdIntCAUploadChain.ID)
 	return createdIntCAUploadChain, nil
 }
 
 func CreateVerifyKeyAttestation(service *services.Service, certID *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.Create(intCAVerifyKeyAttestation, *certID)
+	resp, err := service.Create(intCAVerifyKeyAttestation, *certID)
 	if err != nil {
 		return nil, err
 	}
@@ -307,32 +307,32 @@ func CreateVerifyKeyAttestation(service *services.Service, certID *IntermediateC
 		return nil, errors.New("object returned from api was not an intermediate ca certificate Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning key attestation from create: %d", createdVerifyKeyAttestation.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning key attestation from create: %d", createdVerifyKeyAttestation.ID)
 	return createdVerifyKeyAttestation, nil
 }
 
 func Update(service *services.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), *certificates)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID), *certificates)
 	if err != nil {
 		return nil, err
 	}
 	updatedIntermediateCaCert, _ := resp.(*IntermediateCACertificate)
-	service.Client.Logger.Printf("[DEBUG]returning intermediate ca certificate from update: %d", updatedIntermediateCaCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning intermediate ca certificate from update: %d", updatedIntermediateCaCert.ID)
 	return updatedIntermediateCaCert, nil
 }
 
 func UpdateMakeDefault(service *services.Service, certID int, certificates *IntermediateCACertificate) (*IntermediateCACertificate, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", intCACertMakeDefaultEndpoint, certID), *certificates)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", intCACertMakeDefaultEndpoint, certID), *certificates)
 	if err != nil {
 		return nil, err
 	}
 	updatedIntermediateCaCert, _ := resp.(*IntermediateCACertificate)
-	service.Client.Logger.Printf("[DEBUG]returning default certificate from update: %d", updatedIntermediateCaCert.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning default certificate from update: %d", updatedIntermediateCaCert.ID)
 	return updatedIntermediateCaCert, nil
 }
 
 func Delete(service *services.Service, certID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID))
+	err := service.Delete(fmt.Sprintf("%s/%d", intermediateCaCertificatesEndpoint, certID))
 	if err != nil {
 		return nil, err
 	}

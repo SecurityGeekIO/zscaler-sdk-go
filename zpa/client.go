@@ -18,6 +18,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
 )
@@ -40,12 +41,32 @@ func NewClient(config *Config) (c *Client) {
 	return
 }
 
+func (client *Client) GetLogger() logger.Logger {
+	return client.Config.Logger
+}
+
+func (client *Client) GetCustomerID() string {
+	return client.Config.CustomerID
+}
+
+func (client *Client) GetCloud() string {
+	return client.Config.Cloud
+}
+
+func (client *Client) SetCustomerID(customerID string) {
+	client.Config.CustomerID = customerID
+}
+
 func (client *Client) WithFreshCache() {
 	client.Config.freshCache = true
 }
 
-func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
-	req, err := client.getRequest(method, url, options, body)
+func (client *Client) GetBaseURL() string {
+	return client.Config.BaseURL.String()
+}
+
+func (client *Client) NewRequestDoGeneric(_, path, method string, options, body, v interface{}, contentType string, infraOptions ...common.Option) (*http.Response, error) {
+	req, err := client.getRequest(method, path, options, body)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +101,7 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 			return resp, nil
 		}
 	}
-	resp, err := client.newRequestDoCustom(method, url, options, body, v)
+	resp, err := client.newRequestDoCustom(method, path, options, body, v)
 	if err != nil {
 		return resp, err
 	}
@@ -95,6 +116,10 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 		}
 	}
 	return resp, nil
+}
+
+func (client *Client) NewRequestDo(method, path string, options, body, v interface{}, infraOptions ...common.Option) (*http.Response, error) {
+	return client.NewRequestDoGeneric(client.Config.BaseURL.String(), path, method, options, body, v, "", infraOptions...)
 }
 
 func (client *Client) authenticate() error {

@@ -165,24 +165,24 @@ func TestBACertificates(t *testing.T) {
 
 	// Test for Create to cover the missed branch
 	t.Run("TestCreateWithError", func(t *testing.T) {
-		service.Client.Config.CustomerID = "invalid_customer_id" // Force an error
+		service.Client.SetCustomerID("invalid_customer_id") // Force an error
 		_, _, err := Create(service, baCertificate)
 		if err == nil {
 			t.Errorf("Expected error while creating certificate with invalid customer ID, got nil")
 		}
 		// Reset the customer ID to avoid affecting other tests
-		service.Client.Config.CustomerID = client.Config.CustomerID
+		service.Client.SetCustomerID(client.Config.CustomerID)
 	})
 
 	// Test for Delete to cover the missed branch
 	t.Run("TestDeleteWithError", func(t *testing.T) {
-		service.Client.Config.CustomerID = "invalid_customer_id" // Force an error
+		service.Client.SetCustomerID("invalid_customer_id") // Force an error
 		_, err := Delete(service, createdCert.ID)
 		if err == nil {
 			t.Errorf("Expected error while deleting certificate with invalid customer ID, got nil")
 		}
 		// Reset the customer ID to avoid affecting other tests
-		service.Client.Config.CustomerID = client.Config.CustomerID
+		service.Client.SetCustomerID(client.Config.CustomerID)
 	})
 }
 

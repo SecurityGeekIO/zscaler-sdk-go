@@ -43,14 +43,14 @@ func GetDLPProfileLiteID(service *services.Service, ProfileLiteID int, activeOnl
 	}
 
 	var profiles []DLPIDMProfileLite
-	err := service.Client.Read(endpoint, &profiles)
+	err := service.Read(endpoint, &profiles)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, profile := range profiles {
 		if profile.ProfileID == ProfileLiteID {
-			service.Client.Logger.Printf("[DEBUG]returning idm profile template from Get: %d", profile.ProfileID)
+			service.Client.GetLogger().Printf("[DEBUG]returning idm profile template from Get: %d", profile.ProfileID)
 			return &profile, nil
 		}
 	}

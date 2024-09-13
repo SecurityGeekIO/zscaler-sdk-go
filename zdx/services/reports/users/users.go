@@ -44,7 +44,7 @@ type ZSLocation struct {
 func GetUser(service *services.Service, userID string) (*User, *http.Response, error) {
 	v := new(User)
 	path := fmt.Sprintf("%v/%v", usersEndpoint, userID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,7 +59,7 @@ func GetAllUsers(service *services.Service, filters GetUsersFilters) ([]User, *h
 	}
 
 	relativeURL := usersEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", relativeURL, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

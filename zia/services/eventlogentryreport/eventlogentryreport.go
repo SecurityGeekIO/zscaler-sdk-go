@@ -55,12 +55,12 @@ type EventLogEntryReport struct {
 
 func GetAll(service *services.Service) ([]EventLogEntryReportTaskInfo, error) {
 	var eventLogEntryReport []EventLogEntryReportTaskInfo
-	err := service.Client.Read(eventlogEntryReportEndpoint, &eventLogEntryReport)
+	err := service.Read(eventlogEntryReportEndpoint, &eventLogEntryReport)
 	return eventLogEntryReport, err
 }
 
 func Create(service *services.Service, eventLog *EventLogEntryReport) (*EventLogEntryReport, error) {
-	resp, err := service.Client.Create(eventlogEntryReportEndpoint, eventLog)
+	resp, err := service.Create(eventlogEntryReportEndpoint, eventLog)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +70,6 @@ func Create(service *services.Service, eventLog *EventLogEntryReport) (*EventLog
 		return nil, errors.New("object returned from api was not an event log entry report pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning event log entry report from create: %d", createdEventLogReport)
+	service.Client.GetLogger().Printf("[DEBUG]returning event log entry report from create: %d", createdEventLogReport)
 	return createdEventLogReport, nil
 }

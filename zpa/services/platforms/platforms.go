@@ -21,8 +21,8 @@ type Platforms struct {
 
 func GetAllPlatforms(service *services.Service) (*Platforms, *http.Response, error) {
 	v := new(Platforms)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + platformEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + platformEndpoint
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

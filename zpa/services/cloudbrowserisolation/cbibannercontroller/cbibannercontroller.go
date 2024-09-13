@@ -29,8 +29,8 @@ type CBIBannerController struct {
 
 func Get(service *services.Service, bannerID string) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, bannerID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, bannerID)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -64,7 +64,7 @@ func GetByNameOrID(service *services.Service, identifier string) (*CBIBannerCont
 
 func Create(service *services.Service, cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {
 	v := new(CBIBannerController)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiBannerEndpoint, nil, cbiBanner, &v)
+	resp, err := service.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiBannerEndpoint, nil, cbiBanner, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,8 +72,8 @@ func Create(service *services.Service, cbiBanner *CBIBannerController) (*CBIBann
 }
 
 func Update(service *services.Service, cbiBannerID string, cbiBanner *CBIBannerController) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
-	resp, err := service.Client.NewRequestDo("PUT", path, nil, cbiBanner, nil)
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, cbiBannerID)
+	resp, err := service.NewRequestDo("PUT", path, nil, cbiBanner, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +81,8 @@ func Update(service *services.Service, cbiBannerID string, cbiBanner *CBIBannerC
 }
 
 func Delete(service *services.Service, cbiBannerID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiBannersEndpoint, cbiBannerID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiBannersEndpoint, cbiBannerID)
+	resp, err := service.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +90,9 @@ func Delete(service *services.Service, cbiBannerID string) (*http.Response, erro
 }
 
 func GetAll(service *services.Service) ([]CBIBannerController, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiBannersEndpoint
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiBannersEndpoint
 	var list []CBIBannerController
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

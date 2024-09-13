@@ -24,7 +24,7 @@ type CallQualityMetrics struct {
 func GetQualityMetrics(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]CallQualityMetrics, *http.Response, error) {
 	var v []CallQualityMetrics
 	path := fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceQualityMetricsEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -40,7 +40,7 @@ func GetByApplicationType(service *services.Service, appName, applicationType st
 		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'INSPECT', 'SECURE_REMOTE_ACCESS'", applicationType)
 	}
 
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + applicationTypeEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + applicationTypeEndpoint
 
 	// Construct the URL with expandAll and applicationType parameters
 	query := url.Values{}

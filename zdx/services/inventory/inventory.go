@@ -49,7 +49,7 @@ type SoftwareUserList struct {
 func GetSoftware(service *services.Service, filters GetSoftwareFilters) ([]SoftwareOverview, string, *http.Response, error) {
 	var response SoftwareOverviewResponse
 	path := softwareEndpoint
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -59,7 +59,7 @@ func GetSoftware(service *services.Service, filters GetSoftwareFilters) ([]Softw
 func GetSoftwareKey(service *services.Service, softwareKey string, filters GetSoftwareFilters) ([]SoftwareUserList, string, *http.Response, error) {
 	var response SoftwareKeyResponse
 	path := fmt.Sprintf("%v/%v", softwareKeyEndpoint, softwareKey)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, "", nil, err
 	}

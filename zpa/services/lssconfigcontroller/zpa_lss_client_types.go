@@ -22,7 +22,7 @@ type LSSClientTypes struct {
 func GetClientTypes(service *services.Service) (*LSSClientTypes, *http.Response, error) {
 	v := new(LSSClientTypes)
 	relativeURL := mgmtConfigTypesAndFormats + lssClientTypesEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

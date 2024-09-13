@@ -68,7 +68,7 @@ type Hops struct {
 func GetAllCloudPathProbes(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceCloudPathProbe, *http.Response, error) {
 	var v []DeviceCloudPathProbe
 	path := fmt.Sprintf("%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}
@@ -80,7 +80,7 @@ func GetAllCloudPathProbes(service *services.Service, deviceID, appID int, filte
 func GetDeviceAppCloudPathProbe(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]NetworkStats, *http.Response, error) {
 	var v []NetworkStats
 	path := fmt.Sprintf("%v/%v/%v/%v/%v/%v", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint, probeID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,7 +94,7 @@ func GetDeviceAppCloudPathProbe(service *services.Service, deviceID, appID, prob
 func GetCloudPathAppDevice(service *services.Service, deviceID, appID, probeID int, filters common.GetFromToFilters) ([]CloudPathProbe, *http.Response, error) {
 	var v []CloudPathProbe
 	path := fmt.Sprintf("%v/%v/%v/%v/%v/%v/%s", devicesEndpoint, deviceID, deviceAppsEndpoint, appID, deviceCloudPathProbesEndpoint, probeID, "/cloudpath")
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}

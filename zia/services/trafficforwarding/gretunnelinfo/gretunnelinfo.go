@@ -26,7 +26,7 @@ type GRETunnelInfo struct {
 // Gets a list of IP addresses with GRE tunnel details.
 func GetGRETunnelInfo(service *services.Service, ipAddress string) (*GRETunnelInfo, error) {
 	var greTunnelInfo []GRETunnelInfo
-	err := service.Client.Read(fmt.Sprintf("%s?ipAddress=%s", ipGreTunnelInfoEndpoint, url.QueryEscape(ipAddress)), &greTunnelInfo)
+	err := service.Read(fmt.Sprintf("%s?ipAddress=%s", ipGreTunnelInfoEndpoint, url.QueryEscape(ipAddress)), &greTunnelInfo)
 	if err != nil {
 		return nil, err
 	}

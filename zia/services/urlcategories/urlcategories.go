@@ -128,12 +128,12 @@ type URLReview struct {
 
 func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
-	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
+	err := service.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning custom url category from Get: %s", urlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning custom url category from Get: %s", urlCategory.ID)
 	return &urlCategory, nil
 }
 
@@ -148,7 +148,7 @@ func GetCustomURLCategories(service *services.Service, customName string, includ
 		queryParams.Set("customOnly", "true")
 	}
 
-	err := service.Client.Read(fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
+	err := service.Read(fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func GetCustomURLCategories(service *services.Service, customName string, includ
 }
 
 func CreateURLCategories(service *services.Service, category *URLCategory) (*URLCategory, error) {
-	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
+	resp, err := service.Create(urlCategoriesEndpoint, *category)
 	if err != nil {
 		return nil, err
 	}
@@ -172,22 +172,22 @@ func CreateURLCategories(service *services.Service, category *URLCategory) (*URL
 		return nil, errors.New("object returned from API was not a url category Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning url category from Create: %v", createdUrlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url category from Create: %v", createdUrlCategory.ID)
 	return createdUrlCategory, nil
 }
 
 func UpdateURLCategories(service *services.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedUrlCategory, _ := resp.(*URLCategory)
-	service.Client.Logger.Printf("[DEBUG]Returning url category from Update: %s", updatedUrlCategory.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning url category from Update: %s", updatedUrlCategory.ID)
 	return updatedUrlCategory, nil, nil
 }
 
 func DeleteURLCategories(service *services.Service, categoryID string) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
+	err := service.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func DeleteURLCategories(service *services.Service, categoryID string) (*http.Re
 func GetURLQuota(service *services.Service) (*URLQuota, error) {
 	url := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, urlQuotaHandler)
 	var quota URLQuota
-	err := service.Client.Read(url, &quota)
+	err := service.Read(url, &quota)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func GetURLQuota(service *services.Service) (*URLQuota, error) {
 }
 
 func GetURLLookup(service *services.Service, urls []string) ([]URLClassification, error) {
-	resp, err := service.Client.CreateWithSlicePayload(urlLookupEndpoint, urls)
+	resp, err := service.CreateWithSlicePayload(urlLookupEndpoint, urls)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func GetURLLookup(service *services.Service, urls []string) ([]URLClassification
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
 	return lookupResults, nil
 }
 
@@ -231,14 +231,14 @@ func GetAllLite(service *services.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
 	if err != nil {
-		service.Client.Logger.Printf("[ERROR] Error fetching URL categories: %v", err)
+		service.Client.GetLogger().Printf("[ERROR] Error fetching URL categories: %v", err)
 		return nil, err
 	}
 	return urlCategories, nil
 }
 
 func CreateURLReview(service *services.Service, domains []string) ([]URLReview, error) {
-	resp, err := service.Client.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
+	resp, err := service.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
 	if err != nil {
 		return nil, err
 	}
@@ -249,12 +249,12 @@ func CreateURLReview(service *services.Service, domains []string) ([]URLReview, 
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning URL review results: %+v", reviewResults)
+	service.Client.GetLogger().Printf("[DEBUG] returning URL review results: %+v", reviewResults)
 	return reviewResults, nil
 }
 
 func UpdateURLReview(service *services.Service, reviews []URLReview) error {
-	resp, err := service.Client.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
+	resp, err := service.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
 	if err != nil {
 		return err
 	}
@@ -263,6 +263,6 @@ func UpdateURLReview(service *services.Service, reviews []URLReview) error {
 		return errors.New("unexpected response format")
 	}
 
-	service.Client.Logger.Printf("[DEBUG] successfully updated URL review")
+	service.Client.GetLogger().Printf("[DEBUG] successfully updated URL review")
 	return nil
 }

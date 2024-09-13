@@ -70,12 +70,12 @@ type Tags struct {
 
 func Get(service *services.Service, workloadID int) (*WorkloadGroup, error) {
 	var workloadGroup WorkloadGroup
-	err := service.Client.Read(fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadID), &workloadGroup)
+	err := service.Read(fmt.Sprintf("%s/%d", workloadGroupsEndpoint, workloadID), &workloadGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning workload group from Get: %d", workloadGroup.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning workload group from Get: %d", workloadGroup.ID)
 	return &workloadGroup, nil
 }
 

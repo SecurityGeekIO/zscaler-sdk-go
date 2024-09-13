@@ -36,13 +36,13 @@ func GetWebProbes(service *services.Service, deviceID, appID, probeID int, filte
 	var v []common.Metric
 	var single common.Metric
 	path := generateWebProbePath(deviceID, appID, probeID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err == nil {
 		return v, resp, nil
 	}
 
 	// If unmarshalling to an array fails, try unmarshalling to a single object
-	resp, err = service.Client.NewRequestDo("GET", path, filters, nil, &single)
+	resp, err = service.NewRequestDo("GET", path, filters, nil, &single)
 	if err == nil {
 		v = append(v, single)
 		return v, resp, nil
@@ -55,7 +55,7 @@ func GetWebProbes(service *services.Service, deviceID, appID, probeID int, filte
 func GetAllWebProbes(service *services.Service, deviceID, appID int, filters common.GetFromToFilters) ([]DeviceWebProbe, *http.Response, error) {
 	var v []DeviceWebProbe
 	path := generateWebProbesPath(deviceID, appID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v) // Pass the address of v
 	if err != nil {
 		return nil, nil, err
 	}

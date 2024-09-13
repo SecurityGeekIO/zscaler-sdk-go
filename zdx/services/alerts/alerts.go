@@ -82,7 +82,7 @@ type AffectedDevicesResponse struct {
 // GetOngoingAlerts retrieves ongoing alerts with optional filters
 func GetOngoingAlerts(service *services.Service, filters common.GetFromToFilters) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
-	resp, err := service.Client.NewRequestDo("GET", ongoingEndpoint, filters, nil, &response)
+	resp, err := service.NewRequestDo("GET", ongoingEndpoint, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -97,7 +97,7 @@ func GetOngoingAlerts(service *services.Service, filters common.GetFromToFilters
 // Cannot exceed the 14-day time range limit for alert rules.
 func GetHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) (*AlertsResponse, *http.Response, error) {
 	var response AlertsResponse
-	resp, err := service.Client.NewRequestDo("GET", historicalEndpoint, filters, nil, &response)
+	resp, err := service.NewRequestDo("GET", historicalEndpoint, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,7 +108,7 @@ func GetHistoricalAlerts(service *services.Service, filters common.GetFromToFilt
 func GetAlert(service *services.Service, alertID string) (*Alert, *http.Response, error) {
 	var response Alert
 	path := fmt.Sprintf(alertEndpoint, alertID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -119,7 +119,7 @@ func GetAlert(service *services.Service, alertID string) (*Alert, *http.Response
 func GetAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) (*AffectedDevicesResponse, *http.Response, error) {
 	var response AffectedDevicesResponse
 	path := fmt.Sprintf(affectedDevicesEndpoint, alertID)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}

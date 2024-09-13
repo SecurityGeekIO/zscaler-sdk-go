@@ -28,12 +28,12 @@ type DLPICAPServers struct {
 
 func Get(service *services.Service, icapServerID int) (*DLPICAPServers, error) {
 	var icapServers DLPICAPServers
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIcapServersEndpoint, icapServerID), &icapServers)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpIcapServersEndpoint, icapServerID), &icapServers)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp icap server from Get: %d", icapServers.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp icap server from Get: %d", icapServers.ID)
 	return &icapServers, nil
 }
 

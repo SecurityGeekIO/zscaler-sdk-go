@@ -57,7 +57,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 
 	// Simulate network error by using an invalid URL
 	t.Run("Network error case for GetAll", func(t *testing.T) {
-		service.Client.Config.CustomerID = "invalid-customer-id"
+		service.Client.SetCustomerID("invalid-customer-id")
 		_, _, err := GetAll(service)
 		if err == nil {
 			t.Errorf("Expected network error when calling GetAll with invalid customer ID, but got none")
@@ -65,7 +65,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 	})
 
 	// Reset the customer ID after the test
-	service.Client.Config.CustomerID = client.Config.CustomerID
+	service.Client.SetCustomerID(client.Config.CustomerID)
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {

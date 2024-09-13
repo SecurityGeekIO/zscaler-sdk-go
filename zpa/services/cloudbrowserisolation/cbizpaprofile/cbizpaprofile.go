@@ -66,7 +66,7 @@ func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *ht
 
 // GetAll retrieves all profiles, with optional parameters to show disabled profiles and filter by scopeId.
 func GetAll(service *services.Service, showDisabled *bool, scopeId *int) ([]ZPAProfiles, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s%s", cbiConfig, service.Client.Config.CustomerID, zpaProfileEndpoint)
+	relativeURL := fmt.Sprintf("%s%s%s", cbiConfig, service.Client.GetCustomerID(), zpaProfileEndpoint)
 
 	// Prepare query parameters using a struct
 	params := QueryParams{}
@@ -78,7 +78,7 @@ func GetAll(service *services.Service, showDisabled *bool, scopeId *int) ([]ZPAP
 	}
 
 	var list []ZPAProfiles
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, params, nil, &list)
+	resp, err := service.NewRequestDo("GET", relativeURL, params, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

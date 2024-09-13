@@ -1,6 +1,9 @@
 package scimgroup
 
 import (
+	"net/http"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
 
@@ -22,6 +25,10 @@ type Service struct {
 	Client    *zpa.Client
 	sortOrder SortOrder
 	sortBy    SortField
+}
+
+func (service *Service) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
+	return service.Client.NewRequestDo(method, url, options, body, v, common.Option{Name: common.ZscalerInfraOption, Value: "zpa"})
 }
 
 func New(c *zpa.Client) *Service {

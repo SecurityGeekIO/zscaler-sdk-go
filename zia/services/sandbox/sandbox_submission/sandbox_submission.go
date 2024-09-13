@@ -9,7 +9,9 @@ import (
 	"net/url"
 	"path/filepath"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
@@ -47,7 +49,7 @@ func Discan(service *services.Service, filename string, file io.Reader) (*ScanRe
 func scanFile(service *services.Service, filename string, file io.Reader, force, endpoint string) (*ScanResult, error) {
 	// Add the API token and force parameter to the request URL query
 	urlParams := url.Values{}
-	urlParams.Set("api_token", service.Client.GetSandboxToken())
+	urlParams.Set("api_token", zia.GetSandboxToken())
 	if force != "" {
 		urlParams.Set("force", force)
 	}
@@ -67,7 +69,7 @@ func scanFile(service *services.Service, filename string, file io.Reader, force,
 		return nil, err
 	}
 
-	data, err := service.Client.GenericRequest(service.Client.GetSandboxURL(), endpoint, "POST", &gzippedFile, urlParams, contentType)
+	data, err := common.GenericRequest(service.Client, zia.GetSandboxURL(service.Client.GetCloud()), endpoint, "POST", &gzippedFile, urlParams, contentType)
 	if err != nil {
 		return nil, err
 	}

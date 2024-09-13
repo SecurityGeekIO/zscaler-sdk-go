@@ -31,7 +31,7 @@ type Processes struct {
 func GetDeviceTopProcesses(service *services.Service, deviceID int, traceID string, filters common.GetFromToFilters) ([]DeviceTopProcesses, *http.Response, error) {
 	var v []DeviceTopProcesses
 	path := fmt.Sprintf("%v/%v/deeptraces/%v/%v", devicesEndpoint, deviceID, traceID, deviceTopProcessEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", path, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", path, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

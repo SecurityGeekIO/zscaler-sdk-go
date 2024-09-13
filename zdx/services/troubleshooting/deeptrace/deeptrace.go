@@ -49,7 +49,7 @@ type DeepTraceSessionPayload struct {
 func GetDeepTraces(service *services.Service, deviceID int) ([]DeepTraceSession, *http.Response, error) {
 	var response []DeepTraceSession
 	path := fmt.Sprintf("%s/%d/deeptraces", deepTracesEndpoint, deviceID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,7 +58,7 @@ func GetDeepTraces(service *services.Service, deviceID int) ([]DeepTraceSession,
 
 func GetDeepTraceSession(service *services.Service, deviceID int, traceID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%d/deeptraces/%s", deepTracesEndpoint, deviceID, traceID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, nil)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func GetDeepTraceSession(service *services.Service, deviceID int, traceID string
 func CreateDeepTraceSession(service *services.Service, deviceID int, payload DeepTraceSessionPayload) (*DeepTraceSession, *http.Response, error) {
 	var response DeepTraceSession
 	path := fmt.Sprintf("%s/%d/deeptraces", deepTracesEndpoint, deviceID)
-	resp, err := service.Client.NewRequestDo("POST", path, nil, payload, &response)
+	resp, err := service.NewRequestDo("POST", path, nil, payload, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -77,7 +77,7 @@ func CreateDeepTraceSession(service *services.Service, deviceID int, payload Dee
 
 func DeleteDeepTraceSession(service *services.Service, deviceID int, traceID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%d/deeptraces/%s", deepTracesEndpoint, deviceID, traceID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}

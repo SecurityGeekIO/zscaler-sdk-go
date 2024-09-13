@@ -225,12 +225,12 @@ type DynamiclocationGroups struct {
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
 func GetLocation(service *services.Service, locationID int) (*Locations, error) {
 	var location Locations
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
+	err := service.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning Location from Get: %d", location.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning Location from Get: %d", location.ID)
 	return &location, nil
 }
 
@@ -322,7 +322,7 @@ func GetSubLocationByName(service *services.Service, subLocatioName string) (*Lo
 }
 
 func Create(service *services.Service, locations *Locations) (*Locations, error) {
-	resp, err := service.Client.Create(locationsEndpoint, *locations)
+	resp, err := service.Create(locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
 	}
@@ -332,23 +332,23 @@ func Create(service *services.Service, locations *Locations) (*Locations, error)
 		return nil, errors.New("object returned from api was not a location pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning locations from create: %d", createdLocations.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning locations from create: %d", createdLocations.ID)
 	return createdLocations, nil
 }
 
 func Update(service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedLocations, _ := resp.(*Locations)
 
-	service.Client.Logger.Printf("[DEBUG]returning locations from Update: %d", updatedLocations.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning locations from Update: %d", updatedLocations.ID)
 	return updatedLocations, nil, nil
 }
 
 func Delete(service *services.Service, locationID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
+	err := service.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
 	}
@@ -360,14 +360,14 @@ func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
-		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+		service.Client.GetLogger().Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
 	}
 
 	// Define the payload
 	payload := map[string][]int{
 		"ids": ids,
 	}
-	return service.Client.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
+	return service.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
 }
 
 func GetAll(service *services.Service) ([]Locations, error) {

@@ -132,12 +132,12 @@ type LastModifiedBy struct {
 // Gets specific provisioned GRE tunnel information.
 func GetGreTunnels(service *services.Service, greTunnelID int) (*GreTunnels, error) {
 	var greTunnels GreTunnels
-	err := service.Client.Read(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), &greTunnels)
+	err := service.Read(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), &greTunnels)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnel from get: %d", greTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnel from get: %d", greTunnels.ID)
 	return &greTunnels, nil
 }
 
@@ -158,7 +158,7 @@ func GetByIPAddress(service *services.Service, sourceIP string) (*GreTunnels, er
 
 // Adds a GRE tunnel configuration.
 func CreateGreTunnels(service *services.Service, greTunnelID *GreTunnels) (*GreTunnels, *http.Response, error) {
-	resp, err := service.Client.Create(greTunnelsEndpoint, *greTunnelID)
+	resp, err := service.Create(greTunnelsEndpoint, *greTunnelID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -168,23 +168,23 @@ func CreateGreTunnels(service *services.Service, greTunnelID *GreTunnels) (*GreT
 		return nil, nil, errors.New("object returned from api was not a gre tunnel pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from create: %d", createdGreTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnels from create: %d", createdGreTunnels.ID)
 	return createdGreTunnels, nil, nil
 }
 
 func UpdateGreTunnels(service *services.Service, greTunnelID int, greTunnels *GreTunnels) (*GreTunnels, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), *greTunnels)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), *greTunnels)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedGreTunnels, _ := resp.(*GreTunnels)
 
-	service.Client.Logger.Printf("[DEBUG]returning gre tunnels from update: %d", updatedGreTunnels.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning gre tunnels from update: %d", updatedGreTunnels.ID)
 	return updatedGreTunnels, nil, nil
 }
 
 func DeleteGreTunnels(service *services.Service, greTunnelID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID))
+	err := service.Delete(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID))
 	if err != nil {
 		return nil, err
 	}

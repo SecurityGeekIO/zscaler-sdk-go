@@ -37,7 +37,7 @@ func UpdateManagePass(service *services.Service, managePass *ManagePass) (*Manag
 		return nil, fmt.Errorf("failed to marshal manage pass request: %w", err)
 	}
 
-	resp, err := service.Client.NewRequestDo("POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
+	resp, err := service.NewRequestDo("POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update manage pass: %w", err)
 	}

@@ -157,12 +157,12 @@ type SubRule struct {
 
 func Get(service *services.Service, ruleID int) (*WebDLPRules, error) {
 	var webDlpRules WebDLPRules
-	err := service.Client.Read(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), &webDlpRules)
+	err := service.Read(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), &webDlpRules)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning web dlp rule from Get: %d", webDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning web dlp rule from Get: %d", webDlpRules.ID)
 	return &webDlpRules, nil
 }
 
@@ -181,7 +181,7 @@ func GetByName(service *services.Service, ruleName string) (*WebDLPRules, error)
 }
 
 func Create(service *services.Service, ruleID *WebDLPRules) (*WebDLPRules, error) {
-	resp, err := service.Client.Create(webDlpRulesEndpoint, *ruleID)
+	resp, err := service.Create(webDlpRulesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
 	}
@@ -191,23 +191,23 @@ func Create(service *services.Service, ruleID *WebDLPRules) (*WebDLPRules, error
 		return nil, errors.New("object returned from api was not a web dlp rule pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new web dlp rule from create: %d", createdWebDlpRules.ID)
 	return createdWebDlpRules, nil
 }
 
 func Update(service *services.Service, ruleID int, webDlpRules *WebDLPRules) (*WebDLPRules, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), *webDlpRules)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID), *webDlpRules)
 	if err != nil {
 		return nil, err
 	}
 	updatedWebDlpRules, _ := resp.(*WebDLPRules)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates from web dlp rule from update: %d", updatedWebDlpRules.ID)
 	return updatedWebDlpRules, nil
 }
 
 func Delete(service *services.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID))
+	err := service.Delete(fmt.Sprintf("%s/%d", webDlpRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}

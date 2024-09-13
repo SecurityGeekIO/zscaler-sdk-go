@@ -31,8 +31,8 @@ type ApplicationServer struct {
 
 func Get(service *services.Service, id string) (*ApplicationServer, *http.Response, error) {
 	v := new(ApplicationServer)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appServerControllerEndpoint, id)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,7 +40,7 @@ func Get(service *services.Service, id string) (*ApplicationServer, *http.Respon
 }
 
 func GetByName(service *services.Service, appServerName string) (*ApplicationServer, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appServerControllerEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{Search: appServerName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -55,7 +55,7 @@ func GetByName(service *services.Service, appServerName string) (*ApplicationSer
 
 func Create(service *services.Service, server ApplicationServer) (*ApplicationServer, *http.Response, error) {
 	v := new(ApplicationServer)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, server, &v)
+	resp, err := service.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+appServerControllerEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, server, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -63,8 +63,8 @@ func Create(service *services.Service, server ApplicationServer) (*ApplicationSe
 }
 
 func Update(service *services.Service, id string, appServer ApplicationServer) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appServer, nil)
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appServerControllerEndpoint, id)
+	resp, err := service.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appServer, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func Update(service *services.Service, id string, appServer ApplicationServer) (
 }
 
 func Delete(service *services.Service, id string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appServerControllerEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appServerControllerEndpoint, id)
+	resp, err := service.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func Delete(service *services.Service, id string) (*http.Response, error) {
 }
 
 func GetAll(service *services.Service) ([]ApplicationServer, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appServerControllerEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appServerControllerEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationServer](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

@@ -35,12 +35,12 @@ type NetworkPorts struct {
 
 func Get(service *services.Service, serviceID int) (*NetworkServices, error) {
 	var networkServices NetworkServices
-	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
+	err := service.Read(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning network services from Get: %d", networkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning network services from Get: %d", networkServices.ID)
 	return &networkServices, nil
 }
 
@@ -59,7 +59,7 @@ func GetByName(service *services.Service, networkServiceName string) (*NetworkSe
 }
 
 func Create(service *services.Service, networkService *NetworkServices) (*NetworkServices, error) {
-	resp, err := service.Client.Create(networkServicesEndpoint, *networkService)
+	resp, err := service.Create(networkServicesEndpoint, *networkService)
 	if err != nil {
 		return nil, err
 	}
@@ -69,23 +69,23 @@ func Create(service *services.Service, networkService *NetworkServices) (*Networ
 		return nil, errors.New("object returned from api was not a network service pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning network service from create: %d", createdNetworkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network service from create: %d", createdNetworkServices.ID)
 	return createdNetworkServices, nil
 }
 
 func Update(service *services.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedNetworkServices, _ := resp.(*NetworkServices)
 
-	service.Client.Logger.Printf("[DEBUG]returning network service from Update: %d", updatedNetworkServices.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning network service from Update: %d", updatedNetworkServices.ID)
 	return updatedNetworkServices, nil, nil
 }
 
 func Delete(service *services.Service, serviceID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
+	err := service.Delete(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
 	if err != nil {
 		return nil, err
 	}

@@ -18,32 +18,32 @@ type FileHashCount struct {
 
 func Get(service *services.Service) (*BaAdvancedSettings, error) {
 	var hashes BaAdvancedSettings
-	err := service.Client.Read(advancedSettingsEndpoint, &hashes)
+	err := service.Read(advancedSettingsEndpoint, &hashes)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning custom list of MD5 hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning custom list of MD5 hashes from Get: %v", hashes)
 	return &hashes, nil
 }
 
 func Update(service *services.Service, hashes BaAdvancedSettings) (*BaAdvancedSettings, error) {
-	_, err := service.Client.UpdateWithPut(advancedSettingsEndpoint, hashes)
+	_, err := service.UpdateWithPut(advancedSettingsEndpoint, hashes)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning updated custom list of MD5 hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning updated custom list of MD5 hashes from Get: %v", hashes)
 	return &hashes, nil
 }
 
 func GetFileHashCount(service *services.Service) (*FileHashCount, error) {
 	var hashes FileHashCount
-	err := service.Client.Read(advancedSettingsEndpoint+fileHashCountEndpoint, &hashes)
+	err := service.Read(advancedSettingsEndpoint+fileHashCountEndpoint, &hashes)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG] Returning used andd unused quota for blocking MD5 file hashes from Get: %v", hashes)
+	service.Client.GetLogger().Printf("[DEBUG] Returning used andd unused quota for blocking MD5 file hashes from Get: %v", hashes)
 	return &hashes, nil
 }

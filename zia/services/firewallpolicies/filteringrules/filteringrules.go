@@ -129,12 +129,12 @@ type FirewallFilteringRules struct {
 
 func Get(service *services.Service, ruleID int) (*FirewallFilteringRules, error) {
 	var rule FirewallFilteringRules
-	err := service.Client.Read(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
+	err := service.Read(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning firewall rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning firewall rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -153,7 +153,7 @@ func GetByName(service *services.Service, ruleName string) (*FirewallFilteringRu
 }
 
 func Create(service *services.Service, rule *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.Create(firewallRulesEndpoint, *rule)
+	resp, err := service.Create(firewallRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
@@ -163,22 +163,22 @@ func Create(service *services.Service, rule *FirewallFilteringRules) (*FirewallF
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
 func Update(service *services.Service, ruleID int, rules *FirewallFilteringRules) (*FirewallFilteringRules, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), *rules)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
 	updatedRules, _ := resp.(*FirewallFilteringRules)
-	service.Client.Logger.Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func Delete(service *services.Service, ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID))
+	err := service.Delete(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}

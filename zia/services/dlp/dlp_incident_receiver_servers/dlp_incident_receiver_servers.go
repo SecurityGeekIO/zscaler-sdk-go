@@ -31,12 +31,12 @@ type IncidentReceiverServers struct {
 
 func Get(service *services.Service, receiverID int) (*IncidentReceiverServers, error) {
 	var incidentReceiver IncidentReceiverServers
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIncidentReceiverEndpoint, receiverID), &incidentReceiver)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpIncidentReceiverEndpoint, receiverID), &incidentReceiver)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dlp incident receiver from Get: %d", incidentReceiver.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dlp incident receiver from Get: %d", incidentReceiver.ID)
 	return &incidentReceiver, nil
 }
 

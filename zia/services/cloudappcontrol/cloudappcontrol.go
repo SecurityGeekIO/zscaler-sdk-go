@@ -146,28 +146,28 @@ type AvailableActionsResponse []string
 
 func GetByRuleID(service *services.Service, ruleType string, ruleID int) (*WebApplicationRules, error) {
 	var rule WebApplicationRules
-	err := service.Client.Read(fmt.Sprintf("%s/%s/%d", webApplicationRulesEndpoint, ruleType, ruleID), &rule)
+	err := service.Read(fmt.Sprintf("%s/%s/%d", webApplicationRulesEndpoint, ruleType, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
-	service.Client.Logger.Printf("[DEBUG]Returning web application rule from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning web application rule from Get: %d", rule.ID)
 	return &rule, nil
 }
 
 func GetByRuleType(service *services.Service, ruleType string) ([]WebApplicationRules, error) {
 	var rules []WebApplicationRules
 	url := fmt.Sprintf("%s/%s", webApplicationRulesEndpoint, ruleType)
-	err := service.Client.Read(url, &rules)
+	err := service.Read(url, &rules)
 	if err != nil {
 		return nil, err
 	}
-	service.Client.Logger.Printf("[DEBUG] Returning web application rules from GetByRuleType: %+v", rules)
+	service.Client.GetLogger().Printf("[DEBUG] Returning web application rules from GetByRuleType: %+v", rules)
 	return rules, nil
 }
 
 func Create(service *services.Service, ruleType string, rule *WebApplicationRules) (*WebApplicationRules, error) {
 	url := fmt.Sprintf("%s/%s", webApplicationRulesEndpoint, ruleType)
-	resp, err := service.Client.Create(url, *rule)
+	resp, err := service.Create(url, *rule)
 	if err != nil {
 		return nil, err
 	}
@@ -176,24 +176,24 @@ func Create(service *services.Service, ruleType string, rule *WebApplicationRule
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning rule from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
 func Update(service *services.Service, ruleType string, ruleID int, rules *WebApplicationRules) (*WebApplicationRules, error) {
 	url := fmt.Sprintf("%s/%s/%d", webApplicationRulesEndpoint, ruleType, ruleID)
-	resp, err := service.Client.UpdateWithPut(url, *rules)
+	resp, err := service.UpdateWithPut(url, *rules)
 	if err != nil {
 		return nil, err
 	}
 	updatedRules, _ := resp.(*WebApplicationRules)
-	service.Client.Logger.Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning forwarding rule from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func Delete(service *services.Service, ruleType string, ruleID int) (*http.Response, error) {
 	url := fmt.Sprintf("%s/%s/%d", webApplicationRulesEndpoint, ruleType, ruleID)
-	err := service.Client.Delete(url)
+	err := service.Delete(url)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func Delete(service *services.Service, ruleType string, ruleID int) (*http.Respo
 
 func CreateDuplicate(service *services.Service, ruleType string, ruleID int, newName string) (*WebApplicationRules, error) {
 	url := fmt.Sprintf("%s/%s/duplicate/%d?name=%s", webApplicationRulesEndpoint, ruleType, ruleID, newName)
-	resp, err := service.Client.Create(url, nil) // Assuming the body is nil for duplication
+	resp, err := service.Create(url, nil) // Assuming the body is nil for duplication
 	if err != nil {
 		return nil, err
 	}
@@ -212,28 +212,28 @@ func CreateDuplicate(service *services.Service, ruleType string, ruleID int, new
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning rule from create duplicate: %d", createdRule.ID)
+	service.Client.GetLogger().Printf("[DEBUG] returning rule from create duplicate: %d", createdRule.ID)
 	return createdRule, nil
 }
 
 func AllAvailableActions(service *services.Service, ruleType string, payload AvailableActionsRequest) ([]string, error) {
-	service.Client.Logger.Printf("[DEBUG] AllAvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
+	service.Client.GetLogger().Printf("[DEBUG] AllAvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
 
 	url := fmt.Sprintf("%s/%s/availableActions", webApplicationRulesEndpoint, ruleType)
-	resp, err := service.Client.Create(url, payload)
+	resp, err := service.Create(url, payload)
 	if err != nil {
-		service.Client.Logger.Printf("[DEBUG] error creating request: %v", err)
+		service.Client.GetLogger().Printf("[DEBUG] error creating request: %v", err)
 		return nil, err
 	}
 
 	// Ensure resp is a slice of strings
 	availableActions, ok := resp.([]string)
 	if !ok {
-		service.Client.Logger.Printf("[DEBUG] expected response type []string but got %T", resp)
+		service.Client.GetLogger().Printf("[DEBUG] expected response type []string but got %T", resp)
 		return nil, fmt.Errorf("expected response type []string but got %T", resp)
 	}
 
-	service.Client.Logger.Printf("[DEBUG] returning available actions: %+v", availableActions)
+	service.Client.GetLogger().Printf("[DEBUG] returning available actions: %+v", availableActions)
 	return availableActions, nil
 }
 
@@ -243,13 +243,13 @@ func GetRuleTypeMapping(service *services.Service) (map[string]string, error) {
 	var ruleTypeMapping map[string]string
 
 	// Perform the GET request
-	err := service.Client.Read(webApplicationRulesEndpoint+"/ruleTypeMapping", &ruleTypeMapping)
+	err := service.Read(webApplicationRulesEndpoint+"/ruleTypeMapping", &ruleTypeMapping)
 	if err != nil {
 		return nil, err
 	}
 
 	// Log the retrieved data
-	service.Client.Logger.Printf("[DEBUG] Returning web application rule type mapping: %+v", ruleTypeMapping)
+	service.Client.GetLogger().Printf("[DEBUG] Returning web application rule type mapping: %+v", ruleTypeMapping)
 
 	return ruleTypeMapping, nil
 }

@@ -46,8 +46,8 @@ type ProvisioningKey struct {
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
 func Get(service *services.Service, associationType, provisioningKeyID string) (*ProvisioningKey, *http.Response, error) {
 	v := new(ProvisioningKey)
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
-	resp, err := service.Client.NewRequestDo("GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	url := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
+	resp, err := service.NewRequestDo("GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,7 +57,7 @@ func Get(service *services.Service, associationType, provisioningKeyID string) (
 
 // GET --> mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
 func GetByName(service *services.Service, associationType, name string) (*ProvisioningKey, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey", associationType)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ProvisioningKey](service.Client, relativeURL, common.Filter{Search: name, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -74,8 +74,8 @@ func GetByName(service *services.Service, associationType, name string) (*Provis
 // POST --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey
 func Create(service *services.Service, associationType string, provisioningKey *ProvisioningKey) (*ProvisioningKey, *http.Response, error) {
 	v := new(ProvisioningKey)
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
-	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.MicroTenantID()}, provisioningKey, v)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey", associationType)
+	resp, err := service.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.MicroTenantID()}, provisioningKey, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,8 +84,8 @@ func Create(service *services.Service, associationType string, provisioningKey *
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}
 func Update(service *services.Service, associationType, provisioningKeyID string, provisioningKey *ProvisioningKey) (*http.Response, error) {
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, provisioningKey, nil)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
+	resp, err := service.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, provisioningKey, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +94,8 @@ func Update(service *services.Service, associationType, provisioningKeyID string
 
 // DELETE --> /mgmtconfig/v1/admin/customers/{customerId}/associationType/{associationType}/provisioningKey/{provisioningKeyId}
 func Delete(service *services.Service, associationType, provisioningKeyID string) (*http.Response, error) {
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey/%s", associationType, provisioningKeyID)
+	resp, err := service.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func GetByIDAllAssociations(service *services.Service, id string) (p *Provisioni
 }
 
 func GetAllByAssociationType(service *services.Service, associationType string) ([]ProvisioningKey, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/associationType/%s/provisioningKey", associationType)
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/associationType/%s/provisioningKey", associationType)
 	list, _, err := common.GetAllPagesGenericWithCustomFilters[ProvisioningKey](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, err

@@ -59,7 +59,7 @@ type AdminRoles struct {
 // func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {
 // 	v := new(AdminRoles)
 // 	relativeURL := fmt.Sprintf("%s/%d", adminRolesEndpoint, adminRoleId)
-// 	err := service.Client.Read(relativeURL, v)
+// 	err := service.Read(relativeURL, v)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -68,7 +68,7 @@ type AdminRoles struct {
 
 func GetByName(service *services.Service, adminRoleName string) (*AdminRoles, error) {
 	var adminRoles []AdminRoles
-	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
+	err := service.Read(adminRolesEndpoint, &adminRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func GetByName(service *services.Service, adminRoleName string) (*AdminRoles, er
 
 func GetAPIRole(service *services.Service, apiRole, includeApiRole string) (*AdminRoles, error) {
 	var apiRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includeApiRole=%s", adminRolesEndpoint, url.QueryEscape(includeApiRole)), &apiRoles)
+	err := service.Read(fmt.Sprintf("%s?includeApiRole=%s", adminRolesEndpoint, url.QueryEscape(includeApiRole)), &apiRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func GetAPIRole(service *services.Service, apiRole, includeApiRole string) (*Adm
 
 func GetAuditorRole(service *services.Service, auditorRole, includeAuditorRole string) (*AdminRoles, error) {
 	var auditorRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includeAuditorRole=%s", adminRolesEndpoint, url.QueryEscape(includeAuditorRole)), &auditorRoles)
+	err := service.Read(fmt.Sprintf("%s?includeAuditorRole=%s", adminRolesEndpoint, url.QueryEscape(includeAuditorRole)), &auditorRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func GetAuditorRole(service *services.Service, auditorRole, includeAuditorRole s
 
 func GetPartnerRole(service *services.Service, partnerRole, includePartnerRole string) (*AdminRoles, error) {
 	var partnerRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includePartnerRole=%s", adminRolesEndpoint, url.QueryEscape(includePartnerRole)), &partnerRoles)
+	err := service.Read(fmt.Sprintf("%s?includePartnerRole=%s", adminRolesEndpoint, url.QueryEscape(includePartnerRole)), &partnerRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +124,6 @@ func GetPartnerRole(service *services.Service, partnerRole, includePartnerRole s
 
 func GetAllAdminRoles(service *services.Service) ([]AdminRoles, error) {
 	var adminRoles []AdminRoles
-	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
+	err := service.Read(adminRolesEndpoint, &adminRoles)
 	return adminRoles, err
 }

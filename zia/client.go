@@ -3,18 +3,19 @@ package zia
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	cmmon "github.com/SecurityGeekIO/zscaler-sdk-go/v2/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 )
 
@@ -79,8 +80,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	return resp, nil
 }
 
-// Request ... // Needs to review this function.
-func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+func (c *Client) NewRequestDoGeneric(baseUrl, endpoint, method string, options, body, v interface{}, contentType string, infraOptions ...cmmon.Option) (*http.Response, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -88,18 +88,40 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 	var req *http.Request
 	var resp *http.Response
 	var err error
-	params := ""
-	if urlParams != nil {
-		params = urlParams.Encode()
+	// Handle query parameters from options and any additional logic
+	if options == nil {
+		options = struct{}{}
 	}
+	var params string
+	if options != nil {
+		switch opt := options.(type) {
+		case url.Values:
+			params = opt.Encode()
+		default:
+			q, err := query.Values(options)
+			if err != nil {
+				return nil, err
+			}
+			params = q.Encode()
+		}
+	}
+
 	if strings.Contains(endpoint, "?") && params != "" {
 		endpoint += "&" + params
 	} else if params != "" {
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
-	isSandboxRequest := baseUrl == c.GetSandboxURL()
-	req, err = http.NewRequest(method, fullURL, body)
+	isSandboxRequest := baseUrl == GetSandboxURL(c.cloud)
+	var buf io.ReadWriter
+	if body != nil {
+		buf = new(bytes.Buffer)
+		err := json.NewEncoder(buf).Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+	req, err = http.NewRequest(method, fullURL, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +157,26 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		}
 	}
 
-	bodyResp, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	respData, err := io.ReadAll(resp.Body)
+	if err == nil {
+		resp.Body = io.NopCloser(bytes.NewBuffer(respData))
 	}
 
-	return bodyResp, nil
+	if v != nil {
+		if err := json.NewDecoder(bytes.NewBuffer(respData)).Decode(&v); err != nil {
+			return resp, err
+		}
+	}
+	return resp, nil
+}
+
+func (client *Client) NewRequestDo(method, path string, options, body, v interface{}, infraOptions ...cmmon.Option) (*http.Response, error) {
+	return client.NewRequestDoGeneric(client.URL, path, method, options, body, v, contentTypeJSON, infraOptions...)
+}
+
+// Request ... // Needs to review this function.
+func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+	return common.GenericRequest(c, baseUrl, endpoint, method, body, urlParams, contentType)
 }
 
 // Request ... // Needs to review this function.
@@ -152,180 +188,21 @@ func (client *Client) WithFreshCache() {
 	client.freshCache = true
 }
 
-// Create sends an HTTP POST request.
-func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
-	if o == nil {
-		return nil, errors.New("tried to create with a nil payload not a Struct")
-	}
-	t := reflect.TypeOf(o)
-	if t.Kind() != reflect.Struct {
-		return nil, errors.New("tried to create with a " + t.Kind().String() + " not a Struct")
-	}
-	data, err := json.Marshal(o)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
-	if err != nil {
-		return nil, err
-	}
-	if len(resp) > 0 {
-		// Check if the response is an array of strings
-		var stringArrayResponse []string
-		if json.Unmarshal(resp, &stringArrayResponse) == nil {
-			return stringArrayResponse, nil
-		}
-
-		// Otherwise, handle as usual
-		responseObject := reflect.New(t).Interface()
-		err = json.Unmarshal(resp, &responseObject)
-		if err != nil {
-			return nil, err
-		}
-		id := reflect.Indirect(reflect.ValueOf(responseObject)).FieldByName("ID")
-
-		c.Logger.Printf("Created Object with ID %v", id)
-		return responseObject, nil
-	} else {
-		// in case of 204 no content
-		return nil, nil
-	}
+func (client *Client) GetBaseURL() string {
+	return client.URL
 }
 
-func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
-	if slice == nil {
-		return nil, errors.New("tried to create with a nil payload not a Slice")
-	}
-
-	v := reflect.ValueOf(slice)
-	if v.Kind() != reflect.Slice {
-		return nil, errors.New("tried to create with a " + v.Kind().String() + " not a Slice")
-	}
-
-	data, err := json.Marshal(slice)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
-	if err != nil {
-		return nil, err
-	}
-	if len(resp) > 0 {
-		return resp, nil
-	} else {
-		// in case of 204 no content
-		return nil, nil
-	}
+func (client *Client) GetLogger() logger.Logger {
+	return client.Logger
 }
 
-func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
-	if slice == nil {
-		return nil, errors.New("tried to update with a nil payload not a Slice")
-	}
-
-	v := reflect.ValueOf(slice)
-	if v.Kind() != reflect.Slice {
-		return nil, errors.New("tried to update with a " + v.Kind().String() + " not a Slice")
-	}
-
-	data, err := json.Marshal(slice)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Request(endpoint, "PUT", data, "application/json")
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+func (client *Client) GetCustomerID() string {
+	return ""
 }
 
-// Read ...
-func (c *Client) Read(endpoint string, o interface{}) error {
-	contentType := c.GetContentType()
-	resp, err := c.Request(endpoint, "GET", nil, contentType)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(resp, o)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (client *Client) SetCustomerID(_ string) {
 }
 
-// Update ...
-func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", "application/json")
-}
-
-// Update ...
-func (c *Client) Update(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PATCH", "application/merge-patch+json")
-}
-
-// Update ...
-func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentType string) (interface{}, error) {
-	if o == nil {
-		return nil, errors.New("tried to update with a nil payload not a Struct")
-	}
-	t := reflect.TypeOf(o)
-	if t.Kind() != reflect.Struct {
-		return nil, errors.New("tried to update with a " + t.Kind().String() + " not a Struct")
-	}
-	data, err := json.Marshal(o)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Request(endpoint, method, data, contentType)
-	if err != nil {
-		return nil, err
-	}
-
-	responseObject := reflect.New(t).Interface()
-	err = json.Unmarshal(resp, &responseObject)
-	return responseObject, err
-}
-
-// Delete ...
-func (c *Client) Delete(endpoint string) error {
-	_, err := c.Request(endpoint, "DELETE", nil, "application/json")
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
-func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
-	if payload == nil {
-		return nil, errors.New("tried to delete with a nil payload, expected a struct")
-	}
-
-	// Marshal the payload into JSON
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Send the POST request
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
-	if err != nil {
-		return nil, err
-	}
-
-	// Check the status code (204 No Content expected)
-	if len(resp) == 0 {
-		c.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
-		return &http.Response{StatusCode: 204}, nil
-	}
-
-	// If the response is not empty, this might indicate an error or unexpected behavior
-	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
+func (client *Client) GetCloud() string {
+	return client.cloud
 }

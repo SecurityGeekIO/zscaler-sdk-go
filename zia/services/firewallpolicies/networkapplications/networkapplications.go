@@ -25,7 +25,7 @@ func GetNetworkApplication(service *services.Service, id, locale string) (*Netwo
 	if locale != "" {
 		url = fmt.Sprintf("%s?locale=%s", url, locale)
 	}
-	err := service.Client.Read(url, &networkApplications)
+	err := service.Read(url, &networkApplications)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func GetByName(service *services.Service, nwApplicationName, locale string) (*Ne
 	// Construct the URL with search and locale query parameters
 	url := fmt.Sprintf("%s?search=%s&locale=%s", networkApplicationsEndpoint, url.QueryEscape(nwApplicationName), url.QueryEscape(locale))
 
-	err := service.Client.Read(url, &networkApplications)
+	err := service.Read(url, &networkApplications)
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ type LSSStatusCodes struct {
 func GetStatusCodes(service *services.Service) (*LSSStatusCodes, *http.Response, error) {
 	v := new(LSSStatusCodes)
 	relativeURL := fmt.Sprintf(mgmtConfigTypesAndFormats + lssStatusCodesEndpoint)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

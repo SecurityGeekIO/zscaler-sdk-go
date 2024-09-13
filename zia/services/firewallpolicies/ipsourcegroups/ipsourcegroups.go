@@ -33,12 +33,12 @@ type IPSourceGroups struct {
 
 func Get(service *services.Service, ipGroupID int) (*IPSourceGroups, error) {
 	var ipSourceGroups IPSourceGroups
-	err := service.Client.Read(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID), &ipSourceGroups)
+	err := service.Read(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID), &ipSourceGroups)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning ip source groupfrom Get: %d", ipSourceGroups.ID)
 	return &ipSourceGroups, nil
 }
 
@@ -57,7 +57,7 @@ func GetByName(service *services.Service, ipSourceGroupsName string) (*IPSourceG
 }
 
 func Create(service *services.Service, ipGroupID *IPSourceGroups) (*IPSourceGroups, error) {
-	resp, err := service.Client.Create(ipSourceGroupsEndpoint, *ipGroupID)
+	resp, err := service.Create(ipSourceGroupsEndpoint, *ipGroupID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,23 +67,23 @@ func Create(service *services.Service, ipGroupID *IPSourceGroups) (*IPSourceGrou
 		return nil, errors.New("object returned from api was not an ip source group pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from create: %d", createdIPSourceGroups.ID)
 	return createdIPSourceGroups, nil
 }
 
 func Update(service *services.Service, ipGroupID int, ipGroup *IPSourceGroups) (*IPSourceGroups, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID), *ipGroup)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID), *ipGroup)
 	if err != nil {
 		return nil, err
 	}
 	updatedIPSourceGroups, _ := resp.(*IPSourceGroups)
 
-	service.Client.Logger.Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning ip source group from update: %d", updatedIPSourceGroups.ID)
 	return updatedIPSourceGroups, nil
 }
 
 func Delete(service *services.Service, ipGroupID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID))
+	err := service.Delete(fmt.Sprintf("%s/%d", ipSourceGroupsEndpoint, ipGroupID))
 	if err != nil {
 		return nil, err
 	}

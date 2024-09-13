@@ -67,7 +67,7 @@ type Software struct {
 func GetDevice(service *services.Service, deviceID string) (*DeviceDetail, *http.Response, error) {
 	v := new(DeviceDetail)
 	path := fmt.Sprintf("%v/%v", devicesEndpoint, deviceID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -82,7 +82,7 @@ func GetAllDevices(service *services.Service, filters GetDevicesFilters) ([]Devi
 	}
 
 	relativeURL := devicesEndpoint
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, filters, nil, &v)
+	resp, err := service.NewRequestDo("GET", relativeURL, filters, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}

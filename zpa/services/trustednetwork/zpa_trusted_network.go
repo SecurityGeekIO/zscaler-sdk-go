@@ -29,8 +29,8 @@ type TrustedNetwork struct {
 
 func Get(service *services.Service, networkID string) (*TrustedNetwork, *http.Response, error) {
 	v := new(TrustedNetwork)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+trustedNetworkEndpoint, networkID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+trustedNetworkEndpoint, networkID)
+	resp, err := service.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,7 +39,7 @@ func Get(service *services.Service, networkID string) (*TrustedNetwork, *http.Re
 }
 
 func GetByNetID(service *services.Service, netID string) (*TrustedNetwork, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint)
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + trustedNetworkEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -54,7 +54,7 @@ func GetByNetID(service *services.Service, netID string) (*TrustedNetwork, *http
 
 func GetByName(service *services.Service, trustedNetworkName string) (*TrustedNetwork, *http.Response, error) {
 	adaptedtrustedNetworkName := common.RemoveCloudSuffix(trustedNetworkName)
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + trustedNetworkEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: adaptedtrustedNetworkName} // Using the adapted trusted Network Name for searching
@@ -75,7 +75,7 @@ func GetByName(service *services.Service, trustedNetworkName string) (*TrustedNe
 }
 
 func GetAll(service *services.Service) ([]TrustedNetwork, *http.Response, error) {
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + trustedNetworkEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + trustedNetworkEndpoint
 	list, resp, err := common.GetAllPagesGeneric[TrustedNetwork](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

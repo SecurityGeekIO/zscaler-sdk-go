@@ -45,7 +45,7 @@ type ByIPAddress struct {
 
 func GetByIPAddress(service *services.Service, ipAddress string) (*ByIPAddress, error) {
 	var ip ByIPAddress
-	err := service.Client.Read(fmt.Sprintf("%s/%s", byIPAdddressEndpoint, url.QueryEscape(ipAddress)), &ip)
+	err := service.Read(fmt.Sprintf("%s/%s", byIPAdddressEndpoint, url.QueryEscape(ipAddress)), &ip)
 	if err != nil {
 		return nil, err
 	}

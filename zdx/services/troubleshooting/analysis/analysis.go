@@ -33,7 +33,7 @@ type Result struct {
 func GetAnalysis(service *services.Service, analysisID string) (*AnalysisResult, *http.Response, error) {
 	var response AnalysisResult
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
-	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, &response)
+	resp, err := service.NewRequestDo("GET", path, nil, nil, &response)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -42,7 +42,7 @@ func GetAnalysis(service *services.Service, analysisID string) (*AnalysisResult,
 
 func CreateAnalysis(service *services.Service, request AnalysisRequest) (*http.Response, error) {
 	path := analysisEndpoint
-	resp, err := service.Client.NewRequestDo("POST", path, nil, request, nil)
+	resp, err := service.NewRequestDo("POST", path, nil, request, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func CreateAnalysis(service *services.Service, request AnalysisRequest) (*http.R
 
 func DeleteAnalysis(service *services.Service, analysisID string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", analysisEndpoint, analysisID)
-	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
+	resp, err := service.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}

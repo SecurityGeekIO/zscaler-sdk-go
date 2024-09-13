@@ -111,12 +111,12 @@ type ManagedBy struct {
 
 func GetLocationGroup(service *services.Service, groupID int) (*LocationGroup, error) {
 	var locationGroup LocationGroup
-	err := service.Client.Read(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
+	err := service.Read(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning location group from Get: %d", locationGroup.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning location group from Get: %d", locationGroup.ID)
 	return &locationGroup, nil
 }
 
@@ -137,7 +137,7 @@ func GetLocationGroupByName(service *services.Service, locationGroupName string)
 // GetGroupType queries the location group by its type
 func GetGroupType(service *services.Service, gType string) (*LocationGroup, error) {
 	var groupTypes []LocationGroup
-	err := service.Client.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
+	err := service.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
 	if err != nil {
 		return nil, err
 	}

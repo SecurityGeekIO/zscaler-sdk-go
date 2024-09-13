@@ -21,12 +21,12 @@ type QueryParameters struct {
 
 func Get(service *services.Service) (*ExemptedUrls, error) {
 	var urls ExemptedUrls
-	err := service.Client.Read(exemptedUrlsEndpoint, &urls)
+	err := service.Read(exemptedUrlsEndpoint, &urls)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning exempted url rules from Get: %v", urls)
+	service.Client.GetLogger().Printf("[DEBUG]Returning exempted url rules from Get: %v", urls)
 	return &urls, nil
 }
 
@@ -56,13 +56,13 @@ func Update(service *services.Service, urls ExemptedUrls) (*ExemptedUrls, error)
 	newUrls := difference(urls.URLs, currentUrsl.URLs)
 	removedUrls := difference(currentUrsl.URLs, urls.URLs)
 	if len(newUrls) > 0 {
-		_, err := service.Client.Create(fmt.Sprintf("%s?action=ADD_TO_LIST", exemptedUrlsEndpoint), ExemptedUrls{newUrls})
+		_, err := service.Create(fmt.Sprintf("%s?action=ADD_TO_LIST", exemptedUrlsEndpoint), ExemptedUrls{newUrls})
 		if err != nil {
 			return nil, err
 		}
 	}
 	if len(removedUrls) > 0 {
-		_, err := service.Client.Create(fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{removedUrls})
+		_, err := service.Create(fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{removedUrls})
 		if err != nil {
 			return nil, err
 		}

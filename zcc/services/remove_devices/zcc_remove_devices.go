@@ -30,7 +30,7 @@ func SoftRemoveDevices(service *services.Service, request RemoveDevicesRequest, 
 	fullURL := fmt.Sprintf("%s?pageSize=%d", softRemoveDevicesEndpoint, pagination.PageSize)
 
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", fullURL, nil, &request, &response)
+	_, err := service.NewRequestDo("POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func ForceRemoveDevices(service *services.Service, request RemoveDevicesRequest,
 	fullURL := fmt.Sprintf("%s?pageSize=%d", forceRemoveDevicesEndpoint, pagination.PageSize)
 
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", fullURL, nil, &request, &response)
+	_, err := service.NewRequestDo("POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}

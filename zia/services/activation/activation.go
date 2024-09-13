@@ -17,7 +17,7 @@ type Activation struct {
 
 func GetActivationStatus(service *services.Service) (*Activation, error) {
 	var activation Activation
-	err := service.Client.Read(activationStatusEndpoint, &activation)
+	err := service.Read(activationStatusEndpoint, &activation)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func GetActivationStatus(service *services.Service) (*Activation, error) {
 }
 
 func CreateActivation(service *services.Service, activation Activation) (*Activation, error) {
-	resp, err := service.Client.Create(activationEndpoint, activation)
+	resp, err := service.Create(activationEndpoint, activation)
 	if err != nil {
 		return nil, err
 	}

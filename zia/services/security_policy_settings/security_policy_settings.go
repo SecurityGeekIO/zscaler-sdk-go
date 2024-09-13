@@ -52,7 +52,7 @@ func UpdateListUrls(service *services.Service, listUrls ListUrls) (*ListUrls, er
 }
 
 func UpdateWhiteListUrls(service *services.Service, list ListUrls) (*ListUrls, error) {
-	_, err := service.Client.UpdateWithPut(securityEndpoint, list)
+	_, err := service.UpdateWithPut(securityEndpoint, list)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func UpdateWhiteListUrls(service *services.Service, list ListUrls) (*ListUrls, e
 }
 
 func UpdateBlackListUrls(service *services.Service, list ListUrls) (*ListUrls, error) {
-	_, err := service.Client.UpdateWithPut(securityAdvancedEndpoint, list)
+	_, err := service.UpdateWithPut(securityAdvancedEndpoint, list)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func UpdateBlackListUrls(service *services.Service, list ListUrls) (*ListUrls, e
 
 func GetWhiteListUrls(service *services.Service) (*ListUrls, error) {
 	var whitelist ListUrls
-	err := service.Client.Read(securityEndpoint, &whitelist)
+	err := service.Read(securityEndpoint, &whitelist)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func GetWhiteListUrls(service *services.Service) (*ListUrls, error) {
 
 func GetBlackListUrls(service *services.Service) (*ListUrls, error) {
 	var blacklist ListUrls
-	err := service.Client.Read(securityAdvancedEndpoint, &blacklist)
+	err := service.Read(securityAdvancedEndpoint, &blacklist)
 	if err != nil {
 		return nil, err
 	}

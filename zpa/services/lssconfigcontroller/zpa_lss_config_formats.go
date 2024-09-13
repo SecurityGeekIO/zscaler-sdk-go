@@ -16,7 +16,7 @@ type LSSFormats struct {
 func GetFormats(service *services.Service, logType string) (*LSSFormats, *http.Response, error) {
 	v := new(LSSFormats)
 	relativeURL := fmt.Sprintf("%slssConfig/logType/formats", mgmtConfigTypesAndFormats)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {
+	resp, err := service.NewRequestDo("GET", relativeURL, struct {
 		LogType string `url:"logType"`
 	}{
 		LogType: logType,

@@ -57,7 +57,7 @@ func cleanResources() {
 		}
 	}
 	if len(urlsToRemove) > 0 {
-		_, err := service.Client.Create(fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{urlsToRemove})
+		_, err := service.Create(fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{urlsToRemove})
 		if err != nil {
 			log.Printf("Error removing exempted URL during cleanup: %v", err)
 		}

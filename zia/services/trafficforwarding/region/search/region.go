@@ -45,7 +45,7 @@ type Regions struct {
 
 func GetDatacenterRegion(service *services.Service, regionPrefix string) ([]Regions, error) {
 	var regions []Regions
-	err := service.Client.Read(fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
+	err := service.Read(fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
 	if err != nil {
 		return nil, err
 	}

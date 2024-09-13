@@ -93,8 +93,8 @@ type WorkingHours struct {
 
 func Get(service *services.Service, approvalID string) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
+	resp, err := service.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -102,7 +102,7 @@ func Get(service *services.Service, approvalID string) (*PrivilegedApproval, *ht
 }
 
 func GetByEmailID(service *services.Service, emailID string) (*PrivilegedApproval, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + privilegedApprovalEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + privilegedApprovalEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -119,7 +119,7 @@ func GetByEmailID(service *services.Service, emailID string) (*PrivilegedApprova
 
 func Create(service *services.Service, privilegedApproval *PrivilegedApproval) (*PrivilegedApproval, *http.Response, error) {
 	v := new(PrivilegedApproval)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, &v)
+	resp, err := service.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -127,8 +127,8 @@ func Create(service *services.Service, privilegedApproval *PrivilegedApproval) (
 }
 
 func Update(service *services.Service, approvalID string, privilegedApproval *PrivilegedApproval) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, nil)
+	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
+	resp, err := service.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, privilegedApproval, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +136,8 @@ func Update(service *services.Service, approvalID string, privilegedApproval *Pr
 }
 
 func Delete(service *services.Service, approvalID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+privilegedApprovalEndpoint, approvalID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	relativeURL := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+privilegedApprovalEndpoint, approvalID)
+	resp, err := service.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +145,8 @@ func Delete(service *services.Service, approvalID string) (*http.Response, error
 }
 
 func DeleteExpired(service *services.Service) (*http.Response, error) {
-	path := fmt.Sprintf("%s%s%s/expired", mgmtConfig, service.Client.Config.CustomerID, privilegedApprovalEndpoint)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	path := fmt.Sprintf("%s%s%s/expired", mgmtConfig, service.Client.GetCustomerID(), privilegedApprovalEndpoint)
+	resp, err := service.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func DeleteExpired(service *services.Service) (*http.Response, error) {
 }
 
 func GetAll(service *services.Service) ([]PrivilegedApproval, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + privilegedApprovalEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + privilegedApprovalEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PrivilegedApproval](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

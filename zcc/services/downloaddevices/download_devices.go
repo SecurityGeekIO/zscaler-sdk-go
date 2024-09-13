@@ -23,7 +23,7 @@ func DownloadDevices(service *services.Service, osTypes, registrationTypes strin
 		RegistrationTypes: registrationTypes,
 	}
 
-	resp, err := service.Client.NewRequestDo("GET", downloadDevicesEndpoint, queryParams, nil, nil)
+	resp, err := service.NewRequestDo("GET", downloadDevicesEndpoint, queryParams, nil, nil)
 	if err != nil {
 		return err
 	}

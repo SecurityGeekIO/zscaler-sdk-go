@@ -172,7 +172,7 @@ func TestNewClient(t *testing.T) {
 				UserAgent: "UserAgent",
 			},
 			wantC: &Client{
-				URL:       fmt.Sprintf("https://zsapi.%s.net/%s", "ziaCloud", ziaAPIVersion),
+				URL:       "https://ziaCloud/api/v1",
 				userName:  "userName",
 				password:  "password",
 				apiKey:    "apiKey",

@@ -122,12 +122,12 @@ type IDMProfileMatchAccuracy struct {
 
 func Get(service *services.Service, dlpDictionariesID int) (*DlpDictionary, error) {
 	var dlpDictionary DlpDictionary
-	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
+	err := service.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning dictionary from Get: %d", dlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning dictionary from Get: %d", dlpDictionary.ID)
 	return &dlpDictionary, nil
 }
 
@@ -153,7 +153,7 @@ func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) 
 
 	var predefinedIdentifiers []string
 	endpoint := fmt.Sprintf("%s/%d/predefinedIdentifiers", dlpDictionariesEndpoint, dictionary.ID)
-	err = service.Client.Read(endpoint, &predefinedIdentifiers)
+	err = service.Read(endpoint, &predefinedIdentifiers)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -161,7 +161,7 @@ func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) 
 	return predefinedIdentifiers, dictionary.ID, nil
 }
 func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
-	resp, err := service.Client.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
+	resp, err := service.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -171,23 +171,23 @@ func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDi
 		return nil, nil, errors.New("object returned from api was not a dlp dictionary pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new custom dlp dictionary that uses patterns and phrases from create: %d", createdDlpDictionary.ID)
 	return createdDlpDictionary, nil, nil
 }
 
 func Update(service *services.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedDlpDictionary, _ := resp.(*DlpDictionary)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates custom dlp dictionary that uses patterns and phrases from ppdate: %d", updatedDlpDictionary.ID)
 	return updatedDlpDictionary, nil, nil
 }
 
 func DeleteDlpDictionary(service *services.Service, dlpDictionariesID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
+	err := service.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
 	if err != nil {
 		return nil, err
 	}

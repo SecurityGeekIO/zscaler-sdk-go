@@ -39,12 +39,12 @@ type RuleLabels struct {
 
 func Get(service *services.Service, ruleLabelID int) (*RuleLabels, error) {
 	var ruleLabel RuleLabels
-	err := service.Client.Read(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
+	err := service.Read(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning rule label from Get: %d", ruleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning rule label from Get: %d", ruleLabel.ID)
 	return &ruleLabel, nil
 }
 
@@ -63,7 +63,7 @@ func GetRuleLabelByName(service *services.Service, labelName string) (*RuleLabel
 }
 
 func Create(service *services.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
-	resp, err := service.Client.Create(ruleLabelsEndpoint, *ruleLabelID)
+	resp, err := service.Create(ruleLabelsEndpoint, *ruleLabelID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,23 +73,23 @@ func Create(service *services.Service, ruleLabelID *RuleLabels) (*RuleLabels, *h
 		return nil, nil, errors.New("object returned from api was not a rule label pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning new rule label from create: %d", createdRuleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning new rule label from create: %d", createdRuleLabel.ID)
 	return createdRuleLabel, nil, nil
 }
 
 func Update(service *services.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
+	resp, err := service.UpdateWithPut(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
 	if err != nil {
 		return nil, nil, err
 	}
 	updatedRuleLabel, _ := resp.(*RuleLabels)
 
-	service.Client.Logger.Printf("[DEBUG]returning updates rule label from update: %d", updatedRuleLabel.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning updates rule label from update: %d", updatedRuleLabel.ID)
 	return updatedRuleLabel, nil, nil
 }
 
 func Delete(service *services.Service, ruleLabelID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
+	err := service.Delete(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
 	if err != nil {
 		return nil, err
 	}

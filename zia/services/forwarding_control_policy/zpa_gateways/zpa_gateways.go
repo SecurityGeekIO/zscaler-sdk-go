@@ -77,12 +77,12 @@ type ZPAAppSegments struct {
 
 func (service *Service) Get(ruleID int) (*ZPAGateways, error) {
 	var rule ZPAGateways
-	err := service.Client.Read(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), &rule)
+	err := service.read(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
+	service.Client.GetLogger().Printf("[DEBUG]Returning zpa gateway from Get: %d", rule.ID)
 	return &rule, nil
 }
 
@@ -101,7 +101,7 @@ func (service *Service) GetByName(ruleName string) (*ZPAGateways, error) {
 }
 
 func (service *Service) Create(rule *ZPAGateways) (*ZPAGateways, error) {
-	resp, err := service.Client.Create(zpaGatewaysEndpoint, *rule)
+	resp, err := service.create(zpaGatewaysEndpoint, *rule)
 	if err != nil {
 		return nil, err
 	}
@@ -111,22 +111,22 @@ func (service *Service) Create(rule *ZPAGateways) (*ZPAGateways, error) {
 		return nil, errors.New("object returned from api was not a rule Pointer")
 	}
 
-	service.Client.Logger.Printf("[DEBUG]returning zpa gateway from create: %d", createdRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning zpa gateway from create: %d", createdRules.ID)
 	return createdRules, nil
 }
 
 func (service *Service) Update(ruleID int, rules *ZPAGateways) (*ZPAGateways, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), *rules)
+	resp, err := service.updateWithPut(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
 	}
 	updatedRules, _ := resp.(*ZPAGateways)
-	service.Client.Logger.Printf("[DEBUG]returning zpa gateway from update: %d", updatedRules.ID)
+	service.Client.GetLogger().Printf("[DEBUG]returning zpa gateway from update: %d", updatedRules.ID)
 	return updatedRules, nil
 }
 
 func (service *Service) Delete(ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID))
+	err := service.delete(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID))
 	if err != nil {
 		return nil, err
 	}
