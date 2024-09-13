@@ -18,7 +18,7 @@ import (
 
 func TestBACertificates(t *testing.T) {
 	// Initialize the ZPA client
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -165,24 +165,24 @@ func TestBACertificates(t *testing.T) {
 
 	// Test for Create to cover the missed branch
 	t.Run("TestCreateWithError", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid_customer_id" // Force an error
+		client.Config.CustomerID = "invalid_customer_id" // Force an error
 		_, _, err := Create(service, baCertificate)
 		if err == nil {
 			t.Errorf("Expected error while creating certificate with invalid customer ID, got nil")
 		}
 		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
+		client.Config.CustomerID = service.Client.GetCustomerID()
 	})
 
 	// Test for Delete to cover the missed branch
 	t.Run("TestDeleteWithError", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid_customer_id" // Force an error
+		client.Config.CustomerID = "invalid_customer_id" // Force an error
 		_, err := Delete(service, createdCert.ID)
 		if err == nil {
 			t.Errorf("Expected error while deleting certificate with invalid customer ID, got nil")
 		}
 		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
+		client.Config.CustomerID = service.Client.GetCustomerID()
 	})
 }
 

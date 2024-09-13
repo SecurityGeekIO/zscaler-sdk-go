@@ -8,7 +8,7 @@ import (
 )
 
 func TestInspectionPredefinedControls(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -49,7 +49,7 @@ func TestInspectionPredefinedControls(t *testing.T) {
 }
 
 func TestGetAllByGroup(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -94,7 +94,7 @@ func TestGetAllByGroup(t *testing.T) {
 
 func TestGetControlGroup(t *testing.T) {
 	t.Run("TestValidControlGroup", func(t *testing.T) {
-		client, err := tests.NewZpaClient()
+		client, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
@@ -115,7 +115,7 @@ func TestGetControlGroup(t *testing.T) {
 	})
 
 	t.Run("TestNonExistentControlGroup", func(t *testing.T) {
-		client, err := tests.NewZpaClient()
+		client, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}

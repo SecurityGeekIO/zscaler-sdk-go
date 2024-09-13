@@ -11,7 +11,7 @@ import (
 )
 
 func getTestIdpId(t *testing.T) string {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return ""
@@ -47,7 +47,7 @@ func getTestIdpId(t *testing.T) string {
 }
 
 func TestSCIMAttributeHeader(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestSCIMAttributeHeader(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
@@ -114,7 +114,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSCIMAttributeHeaderName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
@@ -129,7 +129,7 @@ func TestNonExistentSCIMAttributeHeaderName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -153,7 +153,7 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSCIMAttributeHeaderByID(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -187,7 +187,7 @@ func TestGetSCIMAttributeHeaderByID(t *testing.T) {
 }
 
 func TestSCIMAttributeHeaderGetValues(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -222,7 +222,7 @@ func TestSCIMAttributeHeaderGetValues(t *testing.T) {
 }
 
 func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -268,7 +268,7 @@ func TestAllFieldsOfSCIMAttributeHeaders(t *testing.T) {
 }
 
 func TestResponseHeadersAndFormat(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

@@ -18,7 +18,7 @@ import (
 
 func TestCBICertificates(t *testing.T) {
 	// Initialize the ZPA client
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

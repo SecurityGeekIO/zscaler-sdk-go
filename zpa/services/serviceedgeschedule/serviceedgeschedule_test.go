@@ -12,7 +12,7 @@ import (
 )
 
 func TestAppConnectorSchedule(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestAppConnectorSchedule(t *testing.T) {
 }
 
 func TestUpdateScheduleWhenDisabled(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	require.NoError(t, err, "Error creating client")
 
 	service := services.New(client)
@@ -115,7 +115,7 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 }
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	require.NoError(t, err, "Error creating client")
 
 	service := services.New(client)
@@ -144,7 +144,7 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 }
 
 func TestCustomerIDValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	require.NoError(t, err, "Error creating client")
 
 	service := services.New(client)

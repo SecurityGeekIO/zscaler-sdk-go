@@ -17,6 +17,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
 
@@ -68,6 +69,24 @@ func NewZpaClient() (*zpa.Client, error) {
 	}
 	zpaClient := zpa.NewClient(config)
 	return zpaClient, nil
+}
+
+func NewOneAPIClient() (*zidentity.Client, error) {
+	// Fetch credentials and config from environment variables
+	clientID := os.Getenv("ZIDENTITY_CLIENT_ID")
+	clientSecret := os.Getenv("ZIDENTITY_CLIENT_SECRET")
+	privateKeyPath := os.Getenv("ZIDENTITY_PRIVATE_KEY")
+	vanityDomain := os.Getenv("ZIDENTITY_VANITY_DOMAIN")
+	customerID := os.Getenv("ZPA_CUSTOMER_ID")
+
+	// Instantiate the OneAPI client
+	client, err := zidentity.NewClient(clientID, clientSecret, privateKeyPath, customerID, vanityDomain, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating OneAPI client failed: %v\n", err)
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {

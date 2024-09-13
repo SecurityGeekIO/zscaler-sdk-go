@@ -18,10 +18,10 @@ func TestApplicationSegment(t *testing.T) {
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 	updatedPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
 
 	service := services.New(client)
@@ -168,10 +168,12 @@ func TestApplicationSegment(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, _, err = Get(service, "non-existent-id")
@@ -181,10 +183,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, err = Delete(service, "non-existent-id")
@@ -194,10 +198,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, err = Update(service, "non-existent-id", ApplicationSegmentResource{})
@@ -207,10 +213,12 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, _, err = GetByName(service, "non-existent-name")

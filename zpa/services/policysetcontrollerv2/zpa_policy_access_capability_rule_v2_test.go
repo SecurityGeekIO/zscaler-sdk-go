@@ -14,7 +14,7 @@ import (
 
 func TestAccessCapabilityPolicyV2(t *testing.T) {
 	policyType := "CAPABILITIES_POLICY"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

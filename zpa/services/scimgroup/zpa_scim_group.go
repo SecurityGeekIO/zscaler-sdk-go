@@ -2,6 +2,8 @@ package scimgroup
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -25,12 +27,36 @@ type ScimGroup struct {
 	InternalID   string `json:"internalId,omitempty"`
 }
 
+// func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {
+// 	v := new(ScimGroup)
+// 	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint, scimGroupID)
+// 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
+
+// 	return v, resp, nil
+// }
+
 func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {
 	v := new(ScimGroup)
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint, scimGroupID)
+
+	customerID := service.Client.GetCustomerID()
+	if customerID == "" {
+		return nil, nil, fmt.Errorf("CustomerID is empty")
+	}
+
+	// Log the constructed URL
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+customerID+scimGroupEndpoint, scimGroupID)
+	log.Printf("Constructed URL: %s", relativeURL)
+
+	// Make the API call
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
 	if err != nil {
-		return nil, nil, err
+		log.Printf("Error in NewRequestDo: %v", err)
+		rawResponse, _ := ioutil.ReadAll(resp.Body)
+		log.Printf("Raw response: %s", string(rawResponse))
+		return nil, resp, err
 	}
 
 	return v, resp, nil
@@ -38,9 +64,10 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 
 func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Response, error) {
 	// Construct the API endpoint URL with query parameters
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
-	// Fetch the pages
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.ClientI.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
+
+	// Use ClientI instead of Client to call the common pagination function
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.ClientI, relativeURL, common.Filter{
 		Search:    scimName,
 		SortBy:    string(service.sortBy),
 		SortOrder: string(service.sortOrder),
@@ -60,8 +87,10 @@ func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Res
 }
 
 func (service *Service) GetAllByIdpId(idpId string) ([]ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.ClientI.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
+
+	// Use ClientI instead of Client to call the common pagination function
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.ClientI, relativeURL, common.Filter{
 		SortBy:    string(service.sortBy),
 		SortOrder: string(service.sortOrder),
 	})

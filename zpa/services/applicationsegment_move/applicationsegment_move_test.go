@@ -23,13 +23,12 @@ func TestApplicationSegmentMove(t *testing.T) {
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
 
-	// Step 1: Get available auth domains
 	service := services.New(client)
 
 	authDomainList, _, err := authdomain.GetAllAuthDomains(service)

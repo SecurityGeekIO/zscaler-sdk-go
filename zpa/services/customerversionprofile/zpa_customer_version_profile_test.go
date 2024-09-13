@@ -12,7 +12,7 @@ import (
 )
 
 func TestCustomerVersionProfile(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -57,7 +57,7 @@ func TestCustomerVersionProfile(t *testing.T) {
 
 	// Simulate network error by using an invalid URL
 	t.Run("Network error case for GetAll", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid-customer-id"
+		client.Config.CustomerID = "invalid_customer_id"
 		_, _, err := GetAll(service)
 		if err == nil {
 			t.Errorf("Expected network error when calling GetAll with invalid customer ID, but got none")
@@ -65,11 +65,11 @@ func TestCustomerVersionProfile(t *testing.T) {
 	})
 
 	// Reset the customer ID after the test
-	service.Client.GetCustomerID() = client.Config.CustomerID
+	client.Config.CustomerID = service.Client.GetCustomerID()
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return

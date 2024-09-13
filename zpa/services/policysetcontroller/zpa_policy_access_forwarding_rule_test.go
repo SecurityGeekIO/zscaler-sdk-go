@@ -14,7 +14,7 @@ import (
 
 func TestAccessForwardingPolicy(t *testing.T) {
 	policyType := "CLIENT_FORWARDING_POLICY"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

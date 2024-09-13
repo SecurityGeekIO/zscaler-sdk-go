@@ -17,7 +17,7 @@ import (
 func TestEmergencyAccessIntegration(t *testing.T) {
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

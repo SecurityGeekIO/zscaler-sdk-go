@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetAllFormats(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}

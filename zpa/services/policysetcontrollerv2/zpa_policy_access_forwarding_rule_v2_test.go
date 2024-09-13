@@ -18,7 +18,7 @@ import (
 func TestAccessForwardingPolicyV2(t *testing.T) {
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	policyType := "CLIENT_FORWARDING_POLICY"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentinspection"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
@@ -20,7 +20,7 @@ import (
 func TestCreateApplicationSegmentPRA(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -92,7 +92,7 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 func TestAppSegmentInspectionInspection(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -173,7 +173,7 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 func TestBaApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -250,7 +250,7 @@ func TestBaApplicationSegment(t *testing.T) {
 }
 
 func TestGetByApplicationType(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -305,7 +305,7 @@ func TestGetByApplicationType(t *testing.T) {
 	})
 }
 
-func cleanupResources(client *zpa.Client) error {
+func cleanupResources(client *zidentity.Client) error {
 
 	service := services.New(client)
 

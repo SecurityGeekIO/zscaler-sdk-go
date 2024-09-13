@@ -16,7 +16,7 @@ import (
 func TestAccessIsolationPolicyIsolateV2(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
 	isolationProfileID := "BD_SA_Profile1"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

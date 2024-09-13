@@ -13,7 +13,7 @@ import (
 )
 
 func TestIsolationProfile(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -54,18 +54,18 @@ func TestIsolationProfile(t *testing.T) {
 	}
 
 	// Cover the GetAll function error
-	service.Client.GetCustomerID() = "invalid_id"
+	client.Config.CustomerID = "invalid_customer_id"
 	_, _, err = GetAll(service)
 	if err == nil {
 		t.Errorf("Expected error when getting all profiles with invalid CustomerID, got nil")
 		return
 	}
 	// Restore valid CustomerID for further tests
-	service.Client.GetCustomerID() = client.Config.CustomerID
+	client.Config.CustomerID = service.Client.GetCustomerID()
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -99,7 +99,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
@@ -136,7 +136,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -167,7 +167,7 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

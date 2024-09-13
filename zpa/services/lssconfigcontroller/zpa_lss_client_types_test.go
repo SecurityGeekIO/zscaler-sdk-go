@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetAllClientTypes(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestGetAllClientTypes(t *testing.T) {
 }
 
 func TestClientTypesStatusCodeCheck(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestClientTypesStatusCodeCheck(t *testing.T) {
 }
 
 func TestClientTypesErrorResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}

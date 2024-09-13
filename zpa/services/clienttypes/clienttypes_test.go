@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetAllClientTypes(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Failed to create ZPA client: %v", err)
 	}
@@ -55,13 +55,13 @@ func TestGetAllClientTypes(t *testing.T) {
 	// Test case: Error scenario
 	t.Run("TestGetAllClientTypesError", func(t *testing.T) {
 		// Temporarily change the client configuration to trigger an error
-		service.Client.GetCustomerID() = "invalid_customer_id"
+		client.Config.CustomerID = "invalid_customer_id"
 		_, _, err := GetAllClientTypes(service)
 		if err == nil {
 			t.Errorf("Expected error while fetching client types with invalid customer ID, got nil")
 		}
 		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
+		client.Config.CustomerID = "invalid_customer_id"
 	})
 }
 

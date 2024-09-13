@@ -13,7 +13,7 @@ import (
 
 func TestAccessRedirectionPolicy(t *testing.T) {
 	policyType := "REDIRECTION_POLICY"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,6 +27,7 @@ import (
 type ClientI interface {
 	NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error)
 	GetCustomerID() string
+	GetLogger() logger.Logger
 }
 
 type Client struct {
@@ -34,6 +36,10 @@ type Client struct {
 }
 
 func (client *Client) GetCustomerID() string {
+	if client.Config == nil {
+		log.Printf("[ERROR] Client configuration is nil")
+		return "" // Handle the nil case gracefully
+	}
 	return client.Config.CustomerID
 }
 

@@ -1,5 +1,6 @@
 package sweep
 
+/*
 import (
 	"flag"
 	"fmt"
@@ -14,7 +15,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegment"
@@ -71,14 +72,16 @@ func TestMain(m *testing.M) {
 // sweep the resources before running integration tests
 func sweep() error {
 	log.Println("[INFO] Sweeping ZPA test resources")
-	client, err := tests.NewZpaClient()
+
+	// Instantiate the ZPA client using NewOneAPIClient with no arguments
+	zpaClient, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Printf("[ERROR] Failed to instantiate ZPA client: %v", err)
 		return err
 	}
 
-	// List of all sweep functions to execute
-	sweepFunctions := []func(*zpa.Client) error{
+	// List of all sweep functions to execute, now accepting *zidentity.Client
+	sweepFunctions := []func(client *zidentity.Client) error{
 		sweepPrivilegedApproval,
 		sweepApplicationSegment,
 		sweepSegmentGroup,
@@ -109,7 +112,7 @@ func sweep() error {
 		shortFnName := fnName[strings.LastIndex(fnName, ".")+1:]
 		log.Printf("[INFO] Starting sweep: %s", shortFnName)
 
-		if err := fn(client); err != nil {
+		if err := fn(zpaClient); err != nil {
 			log.Printf("[ERROR] %s function error: %v", shortFnName, err)
 			return err
 		}
@@ -119,14 +122,17 @@ func sweep() error {
 	return nil
 }
 
-func sweepAppConnectorGroups(client *zpa.Client) error {
-	service := services.New(client)
+func sweepAppConnectorGroups(client *zidentity.Client) error {
+	service := services.New(client) // Adjust this to use zidentity.Client which implements GetLogger
+
+	// Fetch all app connector groups
 	resources, _, err := appconnectorgroup.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get app connector groups: %v", err)
 		return err
 	}
 
+	// Loop through the resources and delete those that start with 'tests-'
 	for _, r := range resources {
 		if !strings.HasPrefix(r.Name, "tests-") {
 			continue
@@ -137,10 +143,11 @@ func sweepAppConnectorGroups(client *zpa.Client) error {
 			log.Printf("[ERROR] Failed to delete app connector group with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
+
 	return nil
 }
 
-func sweepApplicationServers(client *zpa.Client) error {
+func sweepApplicationServers(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := appservercontroller.GetAll(service)
 	if err != nil {
@@ -161,7 +168,7 @@ func sweepApplicationServers(client *zpa.Client) error {
 	return nil
 }
 
-func sweepApplicationSegment(client *zpa.Client) error {
+func sweepApplicationSegment(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := applicationsegment.GetAll(service)
 	if err != nil {
@@ -182,7 +189,7 @@ func sweepApplicationSegment(client *zpa.Client) error {
 	return nil
 }
 
-func sweepBaCertificateController(client *zpa.Client) error {
+func sweepBaCertificateController(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := bacertificate.GetAll(service)
 	if err != nil {
@@ -203,7 +210,7 @@ func sweepBaCertificateController(client *zpa.Client) error {
 	return nil
 }
 
-func sweepCBIBannerController(client *zpa.Client) error {
+func sweepCBIBannerController(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := cbibannercontroller.GetAll(service)
 	if err != nil {
@@ -224,7 +231,7 @@ func sweepCBIBannerController(client *zpa.Client) error {
 	return nil
 }
 
-func sweepCBICertificateController(client *zpa.Client) error {
+func sweepCBICertificateController(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := cbicertificatecontroller.GetAll(service)
 	if err != nil {
@@ -245,7 +252,7 @@ func sweepCBICertificateController(client *zpa.Client) error {
 	return nil
 }
 
-func sweepCBIProfileController(client *zpa.Client) error {
+func sweepCBIProfileController(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := cbiprofilecontroller.GetAll(service)
 	if err != nil {
@@ -266,7 +273,7 @@ func sweepCBIProfileController(client *zpa.Client) error {
 	return nil
 }
 
-func sweepInspectionCustomControl(client *zpa.Client) error {
+func sweepInspectionCustomControl(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := inspection_custom_controls.GetAll(service)
 	if err != nil {
@@ -287,7 +294,7 @@ func sweepInspectionCustomControl(client *zpa.Client) error {
 	return nil
 }
 
-func sweepInspectionProfile(client *zpa.Client) error {
+func sweepInspectionProfile(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := inspection_profile.GetAll(service)
 	if err != nil {
@@ -308,7 +315,7 @@ func sweepInspectionProfile(client *zpa.Client) error {
 	return nil
 }
 
-func sweepLSSController(client *zpa.Client) error {
+func sweepLSSController(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := lssconfigcontroller.GetAll(service)
 	if err != nil {
@@ -329,7 +336,7 @@ func sweepLSSController(client *zpa.Client) error {
 	return nil
 }
 
-func sweepMicrotenants(client *zpa.Client) error {
+func sweepMicrotenants(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := microtenants.GetAll(service)
 	if err != nil {
@@ -350,7 +357,7 @@ func sweepMicrotenants(client *zpa.Client) error {
 	return nil
 }
 
-func sweepSegmentGroup(client *zpa.Client) error {
+func sweepSegmentGroup(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := segmentgroup.GetAll(service)
 	if err != nil {
@@ -371,7 +378,7 @@ func sweepSegmentGroup(client *zpa.Client) error {
 	return nil
 }
 
-func sweepServerGroup(client *zpa.Client) error {
+func sweepServerGroup(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := servergroup.GetAll(service)
 	if err != nil {
@@ -392,7 +399,7 @@ func sweepServerGroup(client *zpa.Client) error {
 	return nil
 }
 
-func sweepServiceEdgeGroup(client *zpa.Client) error {
+func sweepServiceEdgeGroup(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := serviceedgegroup.GetAll(service)
 	if err != nil {
@@ -413,7 +420,7 @@ func sweepServiceEdgeGroup(client *zpa.Client) error {
 	return nil
 }
 
-func sweepProvisioningKey(client *zpa.Client) error {
+func sweepProvisioningKey(client *zidentity.Client) error {
 	service := services.New(client)
 
 	// Define the association types to iterate over
@@ -440,7 +447,7 @@ func sweepProvisioningKey(client *zpa.Client) error {
 	return nil
 }
 
-func sweepPolicySetController(client *zpa.Client) error {
+func sweepPolicySetController(client *zidentity.Client) error {
 	service := services.New(client)
 
 	policyTypes := []string{"ACCESS_POLICY", "TIMEOUT_POLICY", "CLIENT_FORWARDING_POLICY", "ISOLATION_POLICY", "INSPECTION_POLICY", "CREDENTIAL_POLICY", "CAPABILITIES_POLICY", "CLIENTLESS_SESSION_PROTECTION_POLICY", "REDIRECTION_POLICY"}
@@ -474,7 +481,7 @@ func sweepPolicySetController(client *zpa.Client) error {
 	return nil
 }
 
-func sweeppracredential(client *zpa.Client) error {
+func sweeppracredential(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := pracredential.GetAll(service)
 	if err != nil {
@@ -495,7 +502,7 @@ func sweeppracredential(client *zpa.Client) error {
 	return nil
 }
 
-func sweepPRAConsole(client *zpa.Client) error {
+func sweepPRAConsole(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := praconsole.GetAll(service)
 	if err != nil {
@@ -516,7 +523,7 @@ func sweepPRAConsole(client *zpa.Client) error {
 	return nil
 }
 
-func sweepPRAPortal(client *zpa.Client) error {
+func sweepPRAPortal(client *zidentity.Client) error {
 	service := services.New(client)
 	resources, _, err := praportal.GetAll(service)
 	if err != nil {
@@ -537,7 +544,7 @@ func sweepPRAPortal(client *zpa.Client) error {
 	return nil
 }
 
-func sweepPrivilegedApproval(client *zpa.Client) error {
+func sweepPrivilegedApproval(client *zidentity.Client) error {
 	service := services.New(client)
 
 	// Retrieve all privileged approvals
@@ -563,3 +570,4 @@ func sweepPrivilegedApproval(client *zpa.Client) error {
 	log.Printf("[INFO] Successfully deleted all privileged approvals")
 	return nil
 }
+*/

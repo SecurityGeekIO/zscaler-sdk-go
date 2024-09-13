@@ -11,10 +11,10 @@ import (
 func TestAppConnectorGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
 
 	service := services.New(client)
@@ -119,10 +119,12 @@ func TestAppConnectorGroup(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, _, err = Get(service, "non_existent_id")
@@ -132,10 +134,12 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, err = Delete(service, "non_existent_id")
@@ -145,10 +149,12 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, err = Update(service, "non_existent_id", &AppConnectorGroup{})
@@ -158,10 +164,12 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	// Instantiate the NewOneAPIClient directly
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
+
 	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")

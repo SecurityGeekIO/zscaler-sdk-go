@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -34,6 +35,11 @@ type Credentials struct {
 	PrivateKey   string
 	Cloud        string
 	UserAgent    string
+}
+
+// zidentity/client.go
+func (client *Client) GetLogger() logger.Logger {
+	return client.Config.Logger
 }
 
 func Authenticate(creds *Credentials, httpClient *http.Client) (*AuthToken, error) {

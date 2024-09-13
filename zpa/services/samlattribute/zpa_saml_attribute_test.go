@@ -9,7 +9,7 @@ import (
 )
 
 func TestSAMLAttribute(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -40,7 +40,7 @@ func TestSAMLAttribute(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -71,7 +71,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSAMLAttributeName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -85,7 +85,7 @@ func TestNonExistentSAMLAttributeName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -104,7 +104,7 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSAMLAttributeByID(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -135,7 +135,7 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 }
 
 func TestAllFieldsOfSAMLAttribute(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -179,7 +179,7 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 }
 
 func TestResponseHeadersAndFormat(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

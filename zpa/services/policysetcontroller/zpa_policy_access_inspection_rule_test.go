@@ -16,7 +16,7 @@ import (
 func TestAccessInspectionPolicyInspect(t *testing.T) {
 	policyType := "INSPECTION_POLICY"
 	inspectionProfileID := "BD_SA_Profile1"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -154,7 +154,7 @@ func TestAccessInspectionPolicyInspect(t *testing.T) {
 
 func TestAccessInspectionPolicyBypass(t *testing.T) {
 	policyType := "INSPECTION_POLICY"
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
