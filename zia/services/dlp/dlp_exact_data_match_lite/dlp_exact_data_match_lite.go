@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -56,7 +56,7 @@ type TokenList struct {
 	ColLengthBitmap int `json:"colLengthBitmap,omitempty"`
 }
 
-func GetBySchemaName(service *services.Service, schemaName string, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
+func GetBySchemaName(service *zidentity.Service, schemaName string, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
 	queryParameters := url.Values{}
 	queryParameters.Set("schemaName", schemaName)
 	if activeOnly {
@@ -75,7 +75,7 @@ func GetBySchemaName(service *services.Service, schemaName string, activeOnly, f
 	return edmData, nil
 }
 
-func GetAllEDMSchema(service *services.Service, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
+func GetAllEDMSchema(service *zidentity.Service, activeOnly, fetchTokens bool) ([]DLPEDMLite, error) {
 	queryParameters := url.Values{}
 	if activeOnly {
 		queryParameters.Set("activeOnly", "true")

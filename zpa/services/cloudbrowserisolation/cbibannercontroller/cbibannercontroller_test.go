@@ -1,5 +1,7 @@
 package cbibannercontroller
 
+// TODO: Test is failing. Server is returning 500.
+
 import (
 	"testing"
 
@@ -77,7 +79,7 @@ func TestCBIBannerController(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByNameOrID(service, updateName)
+	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}

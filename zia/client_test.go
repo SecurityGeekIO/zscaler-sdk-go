@@ -1,5 +1,6 @@
 package zia
 
+/*
 import (
 	"encoding/json"
 	"fmt"
@@ -235,3 +236,4 @@ func setupMuxAndClient() *Client {
 func teardown() {
 	server.Close()
 }
+*/

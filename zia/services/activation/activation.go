@@ -3,7 +3,7 @@ package activation
 import (
 	"errors"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -15,7 +15,7 @@ type Activation struct {
 	Status string `json:"status"`
 }
 
-func GetActivationStatus(service *services.Service) (*Activation, error) {
+func GetActivationStatus(service *zidentity.Service) (*Activation, error) {
 	var activation Activation
 	err := service.Client.Read(activationStatusEndpoint, &activation)
 	if err != nil {
@@ -25,7 +25,7 @@ func GetActivationStatus(service *services.Service) (*Activation, error) {
 	return &activation, nil
 }
 
-func CreateActivation(service *services.Service, activation Activation) (*Activation, error) {
+func CreateActivation(service *zidentity.Service, activation Activation) (*Activation, error) {
 	resp, err := service.Client.Create(activationEndpoint, activation)
 	if err != nil {
 		return nil, err

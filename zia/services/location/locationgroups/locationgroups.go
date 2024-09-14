@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -109,7 +109,7 @@ type ManagedBy struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-func GetLocationGroup(service *services.Service, groupID int) (*LocationGroup, error) {
+func GetLocationGroup(service *zidentity.Service, groupID int) (*LocationGroup, error) {
 	var locationGroup LocationGroup
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationGroupEndpoint, groupID), &locationGroup)
 	if err != nil {
@@ -120,7 +120,7 @@ func GetLocationGroup(service *services.Service, groupID int) (*LocationGroup, e
 	return &locationGroup, nil
 }
 
-func GetLocationGroupByName(service *services.Service, locationGroupName string) (*LocationGroup, error) {
+func GetLocationGroupByName(service *zidentity.Service, locationGroupName string) (*LocationGroup, error) {
 	var locationGroups []LocationGroup
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?name=%s", locationGroupEndpoint, url.QueryEscape(locationGroupName)), &locationGroups)
 	if err != nil {
@@ -135,7 +135,7 @@ func GetLocationGroupByName(service *services.Service, locationGroupName string)
 }
 
 // GetGroupType queries the location group by its type
-func GetGroupType(service *services.Service, gType string) (*LocationGroup, error) {
+func GetGroupType(service *zidentity.Service, gType string) (*LocationGroup, error) {
 	var groupTypes []LocationGroup
 	err := service.Client.Read(fmt.Sprintf("%s?groupType=%s", locationGroupEndpoint, url.QueryEscape(gType)), &groupTypes)
 	if err != nil {
@@ -149,7 +149,7 @@ func GetGroupType(service *services.Service, gType string) (*LocationGroup, erro
 	return nil, fmt.Errorf("no group type found with name: %s", gType)
 }
 
-func GetAll(service *services.Service) ([]LocationGroup, error) {
+func GetAll(service *zidentity.Service) ([]LocationGroup, error) {
 	var locationGroups []LocationGroup
 	err := common.ReadAllPages(service.Client, locationGroupEndpoint, &locationGroups)
 	return locationGroups, err

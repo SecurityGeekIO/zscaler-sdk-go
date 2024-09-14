@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -29,7 +29,7 @@ type IncidentReceiverServers struct {
 	Flags int `json:"flags,omitempty"`
 }
 
-func Get(service *services.Service, receiverID int) (*IncidentReceiverServers, error) {
+func Get(service *zidentity.Service, receiverID int) (*IncidentReceiverServers, error) {
 	var incidentReceiver IncidentReceiverServers
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIncidentReceiverEndpoint, receiverID), &incidentReceiver)
 	if err != nil {
@@ -40,7 +40,7 @@ func Get(service *services.Service, receiverID int) (*IncidentReceiverServers, e
 	return &incidentReceiver, nil
 }
 
-func GetByName(service *services.Service, receiverName string) (*IncidentReceiverServers, error) {
+func GetByName(service *zidentity.Service, receiverName string) (*IncidentReceiverServers, error) {
 	var incidentReceiver []IncidentReceiverServers
 	err := common.ReadAllPages(service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
 	if err != nil {
@@ -54,7 +54,7 @@ func GetByName(service *services.Service, receiverName string) (*IncidentReceive
 	return nil, fmt.Errorf("no dlp incident receiver found with name: %s", receiverName)
 }
 
-func GetAll(service *services.Service) ([]IncidentReceiverServers, error) {
+func GetAll(service *zidentity.Service) ([]IncidentReceiverServers, error) {
 	var incidentReceiver []IncidentReceiverServers
 	err := common.ReadAllPages(service.Client, dlpIncidentReceiverEndpoint, &incidentReceiver)
 	return incidentReceiver, err

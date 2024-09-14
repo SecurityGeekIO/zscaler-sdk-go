@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -99,7 +99,7 @@ type ExecMobileAppTokens struct {
 	DeviceName  string `json:"deviceName,omitempty"`
 }
 
-func GetAdminUsers(service *services.Service, adminUserId int) (*AdminUsers, error) {
+func GetAdminUsers(service *zidentity.Service, adminUserId int) (*AdminUsers, error) {
 	v := new(AdminUsers)
 	relativeURL := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserId)
 	err := service.Client.Read(relativeURL, v)
@@ -109,7 +109,7 @@ func GetAdminUsers(service *services.Service, adminUserId int) (*AdminUsers, err
 	return v, nil
 }
 
-func GetAdminUsersByLoginName(service *services.Service, adminUsersLoginName string) (*AdminUsers, error) {
+func GetAdminUsersByLoginName(service *zidentity.Service, adminUsersLoginName string) (*AdminUsers, error) {
 	adminUsers, err := GetAllAdminUsers(service)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func GetAdminUsersByLoginName(service *services.Service, adminUsersLoginName str
 	return nil, fmt.Errorf("no admin login found with name: %s", adminUsersLoginName)
 }
 
-func GetAdminByUsername(service *services.Service, adminUsername string) (*AdminUsers, error) {
+func GetAdminByUsername(service *zidentity.Service, adminUsername string) (*AdminUsers, error) {
 	adminUsers, err := GetAllAdminUsers(service)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func GetAdminByUsername(service *services.Service, adminUsername string) (*Admin
 	return nil, fmt.Errorf("no admin found with username: %s", adminUsername)
 }
 
-func CreateAdminUser(service *services.Service, adminUser AdminUsers) (*AdminUsers, error) {
+func CreateAdminUser(service *zidentity.Service, adminUser AdminUsers) (*AdminUsers, error) {
 	resp, err := service.Client.Create(adminUsersEndpoint, adminUser)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func CreateAdminUser(service *services.Service, adminUser AdminUsers) (*AdminUse
 	return res, nil
 }
 
-func UpdateAdminUser(service *services.Service, adminUserID int, adminUser AdminUsers) (*AdminUsers, error) {
+func UpdateAdminUser(service *zidentity.Service, adminUserID int, adminUser AdminUsers) (*AdminUsers, error) {
 	path := fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID)
 	resp, err := service.Client.UpdateWithPut(path, adminUser)
 	if err != nil {
@@ -157,7 +157,7 @@ func UpdateAdminUser(service *services.Service, adminUserID int, adminUser Admin
 	return &res, err
 }
 
-func DeleteAdminUser(service *services.Service, adminUserID int) (*http.Response, error) {
+func DeleteAdminUser(service *zidentity.Service, adminUserID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", adminUsersEndpoint, adminUserID))
 	if err != nil {
 		return nil, err
@@ -166,7 +166,7 @@ func DeleteAdminUser(service *services.Service, adminUserID int) (*http.Response
 	return nil, nil
 }
 
-func GetAllAdminUsers(service *services.Service) ([]AdminUsers, error) {
+func GetAllAdminUsers(service *zidentity.Service) ([]AdminUsers, error) {
 	var adminUsers []AdminUsers
 	err := common.ReadAllPages(service.Client, adminUsersEndpoint+"?includeAuditorUsers=true&includeAdminUsers=true", &adminUsers)
 	return adminUsers, err

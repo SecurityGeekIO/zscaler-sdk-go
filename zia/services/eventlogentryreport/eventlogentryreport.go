@@ -3,7 +3,7 @@ package eventlogentryreport
 import (
 	"errors"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -53,13 +53,13 @@ type EventLogEntryReport struct {
 	StatusCode string `json:"statusCode,omitempty"`
 }
 
-func GetAll(service *services.Service) ([]EventLogEntryReportTaskInfo, error) {
+func GetAll(service *zidentity.Service) ([]EventLogEntryReportTaskInfo, error) {
 	var eventLogEntryReport []EventLogEntryReportTaskInfo
 	err := service.Client.Read(eventlogEntryReportEndpoint, &eventLogEntryReport)
 	return eventLogEntryReport, err
 }
 
-func Create(service *services.Service, eventLog *EventLogEntryReport) (*EventLogEntryReport, error) {
+func Create(service *zidentity.Service, eventLog *EventLogEntryReport) (*EventLogEntryReport, error) {
 	resp, err := service.Client.Create(eventlogEntryReportEndpoint, eventLog)
 	if err != nil {
 		return nil, err

@@ -3,7 +3,7 @@ package greinternalipranges
 import (
 	"fmt"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -18,7 +18,7 @@ type GREInternalIPRange struct {
 	EndIPAddress string `json:"endIPAddress,omitempty"`
 }
 
-func GetGREInternalIPRange(service *services.Service, count int) (*[]GREInternalIPRange, error) {
+func GetGREInternalIPRange(service *zidentity.Service, count int) (*[]GREInternalIPRange, error) {
 	var greInternalIPRanges []GREInternalIPRange
 	err := service.Client.Read(fmt.Sprintf("%s?limit=%d", greTunnelIPRangeEndpoint, count), &greInternalIPRanges)
 	if err != nil {

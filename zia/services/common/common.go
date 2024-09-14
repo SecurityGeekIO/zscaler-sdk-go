@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const pageSize = 1000
@@ -93,7 +93,7 @@ func GetPageSize() int {
 	return pageSize
 }
 
-func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
+func ReadAllPages[T any](client *zidentity.Client, endpoint string, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -117,7 +117,7 @@ func ReadAllPages[T any](client *zia.Client, endpoint string, list *[]T) error {
 	return nil
 }
 
-func ReadPage[T any](client *zia.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](client *zidentity.Client, endpoint string, page int, list *[]T) error {
 	if list == nil {
 		return nil
 	}

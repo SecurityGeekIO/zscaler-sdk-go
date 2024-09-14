@@ -1,13 +1,14 @@
 package services
 
-import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-)
+/*
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 
 type Service struct {
-	Client *zia.Client
+	Client *zidentity.Client // use the client from zidentity
 }
 
-func New(c *zia.Client) *Service {
-	return &Service{Client: c}
+// New function to instantiate the service with the new zidentity client
+func New(client *zidentity.Client) *Service {
+	return &Service{Client: client}
 }
+*/

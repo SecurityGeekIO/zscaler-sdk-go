@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -21,7 +21,7 @@ type NetworkApplicationGroups struct {
 	Description         string   `json:"description,omitempty"`
 }
 
-func GetNetworkApplicationGroups(service *services.Service, groupID int) (*NetworkApplicationGroups, error) {
+func GetNetworkApplicationGroups(service *zidentity.Service, groupID int) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups NetworkApplicationGroups
 	err := service.Client.Read(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), &networkApplicationGroups)
 	if err != nil {
@@ -32,7 +32,7 @@ func GetNetworkApplicationGroups(service *services.Service, groupID int) (*Netwo
 	return &networkApplicationGroups, nil
 }
 
-func GetNetworkApplicationGroupsByName(service *services.Service, appGroupsName string) (*NetworkApplicationGroups, error) {
+func GetNetworkApplicationGroupsByName(service *zidentity.Service, appGroupsName string) (*NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
 	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	if err != nil {
@@ -46,7 +46,7 @@ func GetNetworkApplicationGroupsByName(service *services.Service, appGroupsName 
 	return nil, fmt.Errorf("no network application groups found with name: %s", appGroupsName)
 }
 
-func Create(service *services.Service, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, error) {
+func Create(service *zidentity.Service, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, error) {
 	resp, err := service.Client.Create(networkAppGroupsEndpoint, *applicationGroup)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func Create(service *services.Service, applicationGroup *NetworkApplicationGroup
 	return createdApplicationGroups, nil
 }
 
-func Update(service *services.Service, groupID int, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, *http.Response, error) {
+func Update(service *zidentity.Service, groupID int, applicationGroup *NetworkApplicationGroups) (*NetworkApplicationGroups, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID), *applicationGroup)
 	if err != nil {
 		return nil, nil, err
@@ -72,7 +72,7 @@ func Update(service *services.Service, groupID int, applicationGroup *NetworkApp
 	return updatedApplicationGroups, nil, nil
 }
 
-func Delete(service *services.Service, groupID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, groupID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkAppGroupsEndpoint, groupID))
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func Delete(service *services.Service, groupID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAllNetworkApplicationGroups(service *services.Service) ([]NetworkApplicationGroups, error) {
+func GetAllNetworkApplicationGroups(service *zidentity.Service) ([]NetworkApplicationGroups, error) {
 	var networkApplicationGroups []NetworkApplicationGroups
 	err := common.ReadAllPages(service.Client, networkAppGroupsEndpoint, &networkApplicationGroups)
 	return networkApplicationGroups, err

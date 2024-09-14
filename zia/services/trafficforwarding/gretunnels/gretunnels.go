@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -130,7 +130,7 @@ type LastModifiedBy struct {
 }
 
 // Gets specific provisioned GRE tunnel information.
-func GetGreTunnels(service *services.Service, greTunnelID int) (*GreTunnels, error) {
+func GetGreTunnels(service *zidentity.Service, greTunnelID int) (*GreTunnels, error) {
 	var greTunnels GreTunnels
 	err := service.Client.Read(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), &greTunnels)
 	if err != nil {
@@ -142,7 +142,7 @@ func GetGreTunnels(service *services.Service, greTunnelID int) (*GreTunnels, err
 }
 
 // Gets specific provisioned GRE tunnel information by source IP address
-func GetByIPAddress(service *services.Service, sourceIP string) (*GreTunnels, error) {
+func GetByIPAddress(service *zidentity.Service, sourceIP string) (*GreTunnels, error) {
 	var sourceIPs []GreTunnels
 	err := common.ReadAllPages(service.Client, greTunnelsEndpoint, &sourceIPs)
 	if err != nil {
@@ -157,7 +157,7 @@ func GetByIPAddress(service *services.Service, sourceIP string) (*GreTunnels, er
 }
 
 // Adds a GRE tunnel configuration.
-func CreateGreTunnels(service *services.Service, greTunnelID *GreTunnels) (*GreTunnels, *http.Response, error) {
+func CreateGreTunnels(service *zidentity.Service, greTunnelID *GreTunnels) (*GreTunnels, *http.Response, error) {
 	resp, err := service.Client.Create(greTunnelsEndpoint, *greTunnelID)
 	if err != nil {
 		return nil, nil, err
@@ -172,7 +172,7 @@ func CreateGreTunnels(service *services.Service, greTunnelID *GreTunnels) (*GreT
 	return createdGreTunnels, nil, nil
 }
 
-func UpdateGreTunnels(service *services.Service, greTunnelID int, greTunnels *GreTunnels) (*GreTunnels, *http.Response, error) {
+func UpdateGreTunnels(service *zidentity.Service, greTunnelID int, greTunnels *GreTunnels) (*GreTunnels, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID), *greTunnels)
 	if err != nil {
 		return nil, nil, err
@@ -183,7 +183,7 @@ func UpdateGreTunnels(service *services.Service, greTunnelID int, greTunnels *Gr
 	return updatedGreTunnels, nil, nil
 }
 
-func DeleteGreTunnels(service *services.Service, greTunnelID int) (*http.Response, error) {
+func DeleteGreTunnels(service *zidentity.Service, greTunnelID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", greTunnelsEndpoint, greTunnelID))
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func DeleteGreTunnels(service *services.Service, greTunnelID int) (*http.Respons
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]GreTunnels, error) {
+func GetAll(service *zidentity.Service) ([]GreTunnels, error) {
 	var greTunnels []GreTunnels
 	err := common.ReadAllPages(service.Client, greTunnelsEndpoint, &greTunnels)
 	return greTunnels, err

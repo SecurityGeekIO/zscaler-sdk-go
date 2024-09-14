@@ -3,7 +3,7 @@ package user_authentication_settings
 import (
 	"fmt"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -19,7 +19,7 @@ type QueryParameters struct {
 	ID string
 }
 
-func Get(service *services.Service) (*ExemptedUrls, error) {
+func Get(service *zidentity.Service) (*ExemptedUrls, error) {
 	var urls ExemptedUrls
 	err := service.Client.Read(exemptedUrlsEndpoint, &urls)
 	if err != nil {
@@ -48,7 +48,7 @@ func difference(slice1 []string, slice2 []string) []string {
 	return diff
 }
 
-func Update(service *services.Service, urls ExemptedUrls) (*ExemptedUrls, error) {
+func Update(service *zidentity.Service, urls ExemptedUrls) (*ExemptedUrls, error) {
 	currentUrsl, err := Get(service)
 	if err != nil {
 		return nil, err

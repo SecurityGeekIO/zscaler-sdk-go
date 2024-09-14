@@ -20,11 +20,31 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 type Client struct {
 	Config *Config
 	cache  cache.Cache
+}
+
+// The cloud parameter is optional and is handled in the Config object.
+func NewOneAPIClient(config *Config) (c *Client) {
+	// If config is nil, create a new one with default values
+	if config == nil {
+		// Empty strings for clientID, clientSecret, etc., will fallback to environment variables in NewOneAPIConfig
+		config, _ = NewOneAPIConfig("", "", "", "", "", "", "")
+	}
+
+	// Setup the cache
+	cche, err := cache.NewCache(config.cacheTtl, config.cacheCleanwindow, config.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+
+	// Create and return the Client with the provided Config
+	c = &Client{Config: config, cache: cche}
+	return
 }
 
 // NewClient returns a new client for the specified apiKey.
@@ -100,7 +120,20 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 func (client *Client) authenticate() error {
 	client.Config.Lock()
 	defer client.Config.Unlock()
+
 	if client.Config.AuthToken == nil || client.Config.AuthToken.AccessToken == "" || utils.IsTokenExpired(client.Config.AuthToken.AccessToken) {
+		if client.Config.useOneAPI {
+			a, err := zidentity.Authenticate(client.Config.oauth2Credentials) // Removed second argument
+			if err != nil {
+				return err
+			}
+			client.Config.AuthToken = &AuthToken{
+				TokenType:   a.TokenType,
+				AccessToken: a.AccessToken,
+			}
+			return nil
+		}
+		// Legacy client credentials code
 		if client.Config.ClientID == "" || client.Config.ClientSecret == "" {
 			client.Config.Logger.Printf("[ERROR] No client credentials were provided. Please set %s, %s and %s environment variables.\n", ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID)
 			return errors.New("no client credentials were provided")
@@ -115,8 +148,8 @@ func (client *Client) authenticate() error {
 		}
 		req, err := http.NewRequest("POST", authUrl, strings.NewReader(data.Encode()))
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
 		}
 
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -125,24 +158,24 @@ func (client *Client) authenticate() error {
 		}
 		resp, err := client.Config.GetHTTPClient().Do(req)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
 		}
 		defer resp.Body.Close()
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
 		}
 		if resp.StatusCode >= 300 {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, got http status:%dn response body:%s\n", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, got http status:%d, response body:%s", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, got http status:%dn response body:%s\n", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, got http status:%d, response body:%s", ZPA_CLIENT_ID, client.Config.ClientID, resp.StatusCode, respBody)
 		}
 		var a AuthToken
 		err = json.Unmarshal(respBody, &a)
 		if err != nil {
-			client.Config.Logger.Printf("[ERROR] Failed to signin the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
-			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			client.Config.Logger.Printf("[ERROR] Failed to sign in the user %s=%s, err: %v\n", ZPA_CLIENT_ID, client.Config.ClientID, err)
+			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZPA_CLIENT_ID, client.Config.ClientID, err)
 		}
 		// we need keep auth token for future http request
 		client.Config.AuthToken = &a
@@ -243,7 +276,9 @@ func (client *Client) getRequest(method, urlPath string, options, body interface
 		return nil, err
 	}
 
-	// Join the parsed path with the base URL
+	if client.Config.useOneAPI {
+		parsedPath.Path = client.Config.BaseURL.Path + parsedPath.Path
+	}
 	u := client.Config.BaseURL.ResolveReference(parsedPath)
 
 	// Handle query parameters from options and any additional logic

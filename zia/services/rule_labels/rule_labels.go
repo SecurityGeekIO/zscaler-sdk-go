@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -37,18 +37,18 @@ type RuleLabels struct {
 	ReferencedRuleCount int `json:"referencedRuleCount,omitempty"`
 }
 
-func Get(service *services.Service, ruleLabelID int) (*RuleLabels, error) {
+func Get(service *zidentity.Service, ruleLabelID int) (*RuleLabels, error) {
 	var ruleLabel RuleLabels
 	err := service.Client.Read(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), &ruleLabel)
 	if err != nil {
 		return nil, err
 	}
 
-	service.Client.Logger.Printf("[DEBUG]Returning rule label from Get: %d", ruleLabel.ID)
+	service.Client.Logger.Printf("[DEBUG] Returning rule label from Get: %d", ruleLabel.ID)
 	return &ruleLabel, nil
 }
 
-func GetRuleLabelByName(service *services.Service, labelName string) (*RuleLabels, error) {
+func GetRuleLabelByName(service *zidentity.Service, labelName string) (*RuleLabels, error) {
 	var ruleLabels []RuleLabels
 	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	if err != nil {
@@ -62,7 +62,7 @@ func GetRuleLabelByName(service *services.Service, labelName string) (*RuleLabel
 	return nil, fmt.Errorf("no rule label found with name: %s", labelName)
 }
 
-func Create(service *services.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
+func Create(service *zidentity.Service, ruleLabelID *RuleLabels) (*RuleLabels, *http.Response, error) {
 	resp, err := service.Client.Create(ruleLabelsEndpoint, *ruleLabelID)
 	if err != nil {
 		return nil, nil, err
@@ -77,7 +77,7 @@ func Create(service *services.Service, ruleLabelID *RuleLabels) (*RuleLabels, *h
 	return createdRuleLabel, nil, nil
 }
 
-func Update(service *services.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
+func Update(service *zidentity.Service, ruleLabelID int, ruleLabels *RuleLabels) (*RuleLabels, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID), *ruleLabels)
 	if err != nil {
 		return nil, nil, err
@@ -88,7 +88,7 @@ func Update(service *services.Service, ruleLabelID int, ruleLabels *RuleLabels) 
 	return updatedRuleLabel, nil, nil
 }
 
-func Delete(service *services.Service, ruleLabelID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, ruleLabelID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", ruleLabelsEndpoint, ruleLabelID))
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func Delete(service *services.Service, ruleLabelID int) (*http.Response, error) 
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]RuleLabels, error) {
+func GetAll(service *zidentity.Service) ([]RuleLabels, error) {
 	var ruleLabels []RuleLabels
 	err := common.ReadAllPages(service.Client, ruleLabelsEndpoint, &ruleLabels)
 	return ruleLabels, err

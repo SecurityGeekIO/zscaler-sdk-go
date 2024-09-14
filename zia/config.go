@@ -1,9 +1,9 @@
 package zia
 
+/*
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,6 +22,8 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
@@ -43,30 +45,31 @@ const (
 )
 
 // Client ...
-// Client ...
 type Client struct {
 	sync.Mutex
-	userName         string
-	password         string
-	cloud            string
-	apiKey           string
-	session          *Session
-	sessionRefreshed time.Time     // Also indicates last usage
-	sessionTimeout   time.Duration // in minutes
-	URL              string
-	HTTPClient       *http.Client
-	Logger           logger.Logger
-	UserAgent        string
-	freshCache       bool
-	cacheEnabled     bool
-	cache            cache.Cache
-	cacheTtl         time.Duration
-	cacheCleanwindow time.Duration
-	cacheMaxSizeMB   int
-	rateLimiter      *rl.RateLimiter
-	sessionTicker    *time.Ticker
-	stopTicker       chan bool
-	refreshing       bool
+	userName          string
+	password          string
+	cloud             string
+	apiKey            string
+	session           *Session
+	sessionRefreshed  time.Time     // Also indicates last usage
+	sessionTimeout    time.Duration // in minutes
+	URL               string
+	HTTPClient        *http.Client
+	Logger            logger.Logger
+	UserAgent         string
+	freshCache        bool
+	cacheEnabled      bool
+	cache             cache.Cache
+	cacheTtl          time.Duration
+	cacheCleanwindow  time.Duration
+	cacheMaxSizeMB    int
+	rateLimiter       *rl.RateLimiter
+	sessionTicker     *time.Ticker
+	stopTicker        chan bool
+	refreshing        bool
+	useOneAPI         bool
+	oauth2Credentials *zidentity.Configuration
 }
 
 // Session ...
@@ -112,44 +115,107 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	return key, nil
 }
 
+// NewOneAPIClient Returns a Client from credentials passed as parameters.
+// The ziaCloud parameter is now optional using a variadic argument.
+func NewOneAPIClient(clientID, clientSecret, privateKeyPath, vanityDomain, userAgent string, optionalCloud ...string) (*Client, error) {
+	logger := logger.GetDefaultLogger(loggerPrefix)
+	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
+	httpClient := getHTTPClient(logger, rateLimiter)
+
+	// Fallback to environment variables if clientID or clientSecret are not provided
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") {
+		clientID = os.Getenv(zidentity.ZSCALER_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZSCALER_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZSCALER_PRIVATE_KEY)
+	}
+
+	// Handle the optional ziaCloud parameter
+	var ziaCloud string
+	if len(optionalCloud) > 0 && optionalCloud[0] != "" {
+		ziaCloud = optionalCloud[0] // Use provided cloud value
+	} else {
+		ziaCloud = os.Getenv("ZIA_CLOUD") // Fallback to environment variable
+	}
+
+	// Default to production if no ZIA_CLOUD is specified
+	if ziaCloud == "" {
+		ziaCloud = "PRODUCTION" // Default to production
+	}
+
+	// Build the URL based on the ziaCloud parameter
+	var url string
+	if strings.EqualFold(ziaCloud, "PRODUCTION") {
+		url = "https://api.zsapi.net/zia/" + ziaAPIVersion
+	} else {
+		url = fmt.Sprintf("https://api.%s.zsapi.net/zia/%s", strings.ToLower(ziaCloud), ziaAPIVersion)
+	}
+
+	// Construct the OAuth2 provider URL correctly based on ZIA_CLOUD
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZSCALER_VANITY_DOMAIN)
+	}
+
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	cli := &Client{
+		cloud:            ziaCloud,
+		HTTPClient:       httpClient,
+		URL:              url,
+		Logger:           logger,
+		UserAgent:        userAgent,
+		cacheEnabled:     !cacheDisabled,
+		cacheTtl:         time.Minute * 10,
+		cacheCleanwindow: time.Minute * 8,
+		cacheMaxSizeMB:   0,
+		rateLimiter:      rateLimiter,
+		stopTicker:       make(chan bool),
+		sessionTimeout:   30 * time.Minute, // Initialize with a default session timeout
+		useOneAPI:        true,
+		oauth2Credentials: &zidentity.Configuration{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			VanityDomain: vanityDomain,
+			PrivateKey:   privateKeyPath,
+			UserAgent:    userAgent,
+			Cloud:        ziaCloud,
+		},
+	}
+
+	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	cli.cache = cche
+
+	// Start the session refresh ticker
+	cli.startSessionTicker()
+
+	return cli, nil
+}
+
 // NewClient Returns a Client from credentials passed as parameters.
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
-
-	var url string
-	var bypassSSL bool // Declare bypassSSL here but don't set it yet
-
-	// Predefined clouds and their URL formatting
-	predefinedClouds := map[string]bool{
-		"zscalerbeta":  true,
-		"zscaler":      true,
-		"zscloud":      true,
-		"zscalerone":   true,
-		"zscalertwo":   true,
-		"zscalerthree": true,
-		"zscalergov":   true,
-		"zscalerten":   true,
-		"zspreview":    false, // Treat zspreview differently
+	httpClient := getHTTPClient(logger, rateLimiter)
+	if username == "" || password == "" || apiKey == "" {
+		username = os.Getenv("ZIA_USERNAME")
+		password = os.Getenv("ZIA_PASSWORD")
+		apiKey = os.Getenv("ZIA_API_KEY")
 	}
 
-	// Check if ziaCloud is one of the predefined ones or arbitrary
-	if _, exists := predefinedClouds[ziaCloud]; exists {
-		if ziaCloud == "zspreview" {
-			url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
-		} else {
-			url = fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
-		}
-		bypassSSL = false // No need to bypass SSL for known clouds
-	} else {
-		// For arbitrary URLs, format differently and plan to bypass SSL
-		url = fmt.Sprintf("https://%s/%s", ziaCloud, ziaAPIVersion)
-		bypassSSL = true // Bypass SSL verification for arbitrary URLs
+	if username == "" || password == "" || apiKey == "" {
+		return nil, fmt.Errorf("username, password, and apiKey cannot be empty")
 	}
-
-	// Generate the HTTP client with the decision on SSL verification
-	httpClient := getHTTPClient(logger, rateLimiter, bypassSSL)
-
+	if ziaCloud == "" {
+		ziaCloud = os.Getenv("ZIA_CLOUD")
+	}
+	if ziaCloud == "" {
+		ziaCloud = "PRODUCTION"
+	}
+	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
+	if ziaCloud == "zspreview" {
+		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+	}
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := &Client{
 		userName:         username,
@@ -316,6 +382,20 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
+	if c.useOneAPI {
+		if c.oauth2Credentials != nil && (c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AccessToken)) {
+			a, err := zidentity.Authenticate(
+				c.oauth2Credentials,
+				c.HTTPClient,
+			)
+			if err != nil {
+				return err
+			}
+			c.oauth2Credentials.Zscaler.Client.AuthToken = a
+			return nil
+		}
+		return nil
+	}
 
 	now := time.Now()
 	if c.session == nil {
@@ -416,8 +496,7 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 	return 0
 }
 
-// Modified getHTTPClient to handle bypassSSL parameter
-func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, bypassSSL bool) *http.Client {
+func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
@@ -427,22 +506,14 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, bypassSSL bool)
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		l.Printf("[ERROR] failed to create cookie jar: %v", err)
+		// Handle the error, possibly by continuing without a cookie jar
+		// or you can choose to halt the execution if the cookie jar is critical
 	}
 
 	// Configure the underlying HTTP client
-	httpTransport := &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
-		MaxIdleConnsPerHost: maxIdleConnections,
-	}
-
-	if bypassSSL {
-		httpTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
-
 	retryableClient.HTTPClient = &http.Client{
-		Jar:       jar,
-		Timeout:   time.Duration(requestTimeout) * time.Second,
-		Transport: logging.NewSubsystemLoggingHTTPTransport("gozscaler", httpTransport),
+		Jar: jar, // Set the cookie jar
+		// ... other configurations ...
 	}
 
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
@@ -462,6 +533,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, bypassSSL bool)
 				}
 			}
 		}
+		// default to exp backoff
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -469,6 +541,24 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, bypassSSL bool)
 		}
 		return sleep
 	}
+	retryableClient.CheckRetry = checkRetry
+	retryableClient.Logger = l
+	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
+	retryableClient.HTTPClient.Transport = &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		MaxIdleConnsPerHost: maxIdleConnections,
+	}
+
+	retryableClient.HTTPClient = &http.Client{
+		Timeout: time.Duration(requestTimeout) * time.Second,
+		Transport: &http.Transport{
+			Proxy:               http.ProxyFromEnvironment,
+			MaxIdleConnsPerHost: maxIdleConnections,
+		},
+		Jar: jar, // Set the cookie jar
+	}
+	retryableClient.HTTPClient.Transport = logging.NewSubsystemLoggingHTTPTransport("gozscaler", retryableClient.HTTPClient.Transport)
+
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
 
@@ -540,34 +630,12 @@ func (c *Client) GetSandboxToken() string {
 	return os.Getenv("ZIA_SANDBOX_TOKEN")
 }
 
-// func (c *Client) startSessionTicker() {
-// 	c.Lock()
-// 	defer c.Unlock()
-
-// 	if c.sessionTicker != nil {
-// 		c.stopTicker <- true
-// 		c.sessionTicker.Stop()
-// 	}
-
-// 	tickerInterval := c.sessionTimeout - 1*time.Minute
-// 	c.sessionTicker = time.NewTicker(tickerInterval)
-// 	go func() {
-// 		for {
-// 			select {
-// 			case <-c.sessionTicker.C:
-// 				err := c.refreshSession()
-// 				if err != nil {
-// 					c.Logger.Printf("[ERROR] Failed to refresh session: %v\n", err)
-// 				}
-// 			case <-c.stopTicker:
-// 				return
-// 			}
-// 		}
-// 	}()
-// }
-
 // startSessionTicker starts a ticker to refresh the session periodically
 func (c *Client) startSessionTicker() {
+	if c.useOneAPI {
+		return
+	}
+
 	if c.sessionTimeout > 0 {
 		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
 		go func() {
@@ -593,3 +661,4 @@ func (c *Client) startSessionTicker() {
 		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
 	}
 }
+*/

@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -32,7 +32,7 @@ type GreVIP struct {
 	Datacenter         string `json:"datacenter,omitempty"`
 }
 
-func SearchByDatacenters(service *services.Service, params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
+func SearchByDatacenters(service *zidentity.Service, params common.DatacenterSearchParameters) ([]DatacenterVIPS, error) {
 	var zscalerVips []DatacenterVIPS
 	var queryParams []string
 

@@ -1,6 +1,6 @@
 package security_policy_settings
 
-import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 
 const (
 	securityEndpoint         = "/security"
@@ -21,7 +21,7 @@ type ListUrls struct {
 	Black []string `json:"blacklistUrls,omitempty"`
 }
 
-func GetListUrls(service *services.Service) (*ListUrls, error) {
+func GetListUrls(service *zidentity.Service) (*ListUrls, error) {
 	whitelist, err := GetWhiteListUrls(service)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func GetListUrls(service *services.Service) (*ListUrls, error) {
 	}, nil
 }
 
-func UpdateListUrls(service *services.Service, listUrls ListUrls) (*ListUrls, error) {
+func UpdateListUrls(service *zidentity.Service, listUrls ListUrls) (*ListUrls, error) {
 	whitelist, err := UpdateWhiteListUrls(service, ListUrls{White: listUrls.White})
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func UpdateListUrls(service *services.Service, listUrls ListUrls) (*ListUrls, er
 	}, nil
 }
 
-func UpdateWhiteListUrls(service *services.Service, list ListUrls) (*ListUrls, error) {
+func UpdateWhiteListUrls(service *zidentity.Service, list ListUrls) (*ListUrls, error) {
 	_, err := service.Client.UpdateWithPut(securityEndpoint, list)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func UpdateWhiteListUrls(service *services.Service, list ListUrls) (*ListUrls, e
 	return &list, nil
 }
 
-func UpdateBlackListUrls(service *services.Service, list ListUrls) (*ListUrls, error) {
+func UpdateBlackListUrls(service *zidentity.Service, list ListUrls) (*ListUrls, error) {
 	_, err := service.Client.UpdateWithPut(securityAdvancedEndpoint, list)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func UpdateBlackListUrls(service *services.Service, list ListUrls) (*ListUrls, e
 	return &list, nil
 }
 
-func GetWhiteListUrls(service *services.Service) (*ListUrls, error) {
+func GetWhiteListUrls(service *zidentity.Service) (*ListUrls, error) {
 	var whitelist ListUrls
 	err := service.Client.Read(securityEndpoint, &whitelist)
 	if err != nil {
@@ -77,7 +77,7 @@ func GetWhiteListUrls(service *services.Service) (*ListUrls, error) {
 	return &whitelist, nil
 }
 
-func GetBlackListUrls(service *services.Service) (*ListUrls, error) {
+func GetBlackListUrls(service *zidentity.Service) (*ListUrls, error) {
 	var blacklist ListUrls
 	err := service.Client.Read(securityAdvancedEndpoint, &blacklist)
 	if err != nil {

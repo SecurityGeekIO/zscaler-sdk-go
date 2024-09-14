@@ -20,6 +20,7 @@ import (
 
 	logger "github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
@@ -83,12 +84,100 @@ type Config struct {
 	BackoffConf *BackoffConfig
 	AuthToken   *AuthToken
 	sync.Mutex
-	UserAgent        string
-	cacheEnabled     bool
-	freshCache       bool
-	cacheTtl         time.Duration
-	cacheCleanwindow time.Duration
-	cacheMaxSizeMB   int
+	UserAgent         string
+	cacheEnabled      bool
+	freshCache        bool
+	cacheTtl          time.Duration
+	cacheCleanwindow  time.Duration
+	cacheMaxSizeMB    int
+	useOneAPI         bool
+	oauth2Credentials *zidentity.Configuration
+}
+
+// NewOneAPIConfig returns a Config from credentials passed as parameters.
+// The cloud parameter is now optional using a variadic argument.
+// NewOneAPIConfig returns a Config from credentials passed as parameters.
+func NewOneAPIConfig(clientID, clientSecret, privateKeyPath, customerID, vanityDomain, userAgent string, optionalCloud ...string) (*Config, error) {
+	var logger logger.Logger = logger.GetDefaultLogger(loggerPrefix)
+
+	// Handle the optional cloud parameter
+	var cloud string
+	if len(optionalCloud) > 0 && optionalCloud[0] != "" {
+		cloud = optionalCloud[0] // Use provided cloud value
+	} else {
+		cloud = os.Getenv(ZPA_CLOUD) // Fallback to environment variable
+	}
+
+	// Default to production if no cloud is specified
+	if cloud == "" {
+		cloud = "PRODUCTION"
+	}
+
+	// Check for vanity domain and ensure proper formatting of the OAuth2 provider URL based on the cloud
+	if vanityDomain == "" {
+		vanityDomain = os.Getenv(zidentity.ZSCALER_VANITY_DOMAIN)
+	}
+
+	// Use environment variables if clientID, clientSecret, customerID, or userAgent are not provided
+	if clientID == "" || (clientSecret == "" && privateKeyPath == "") || customerID == "" || userAgent == "" {
+		clientID = os.Getenv(zidentity.ZSCALER_CLIENT_ID)
+		clientSecret = os.Getenv(zidentity.ZSCALER_CLIENT_SECRET)
+		privateKeyPath = os.Getenv(zidentity.ZSCALER_PRIVATE_KEY)
+		customerID = os.Getenv(ZPA_CUSTOMER_ID)
+	}
+
+	// Default to production if no cloud is specified
+	var rawUrl string
+	if strings.EqualFold(cloud, "PRODUCTION") {
+		rawUrl = "https://api.zsapi.net/zpa"
+	} else {
+		rawUrl = fmt.Sprintf("https://api.%s.zsapi.net/zpa", strings.ToLower(cloud))
+	}
+
+	// Parse the base URL
+	baseURL, err := url.Parse(rawUrl)
+	if err != nil {
+		logger.Printf("[ERROR] error occurred while configuring the client: %v", err)
+	}
+
+	// Construct Configuration using ConfigSetters from zidentity package
+	config, err := zidentity.NewConfiguration(
+		zidentity.WithClientID(clientID),
+		zidentity.WithClientSecret(clientSecret),
+		zidentity.WithPrivateKey(privateKeyPath),
+		zidentity.WithVanityDomain(vanityDomain),
+		zidentity.WithUserAgent(userAgent),
+		zidentity.WithCache(true), // You can change this based on your cache requirements
+		zidentity.WithDebug(false),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply other settings based on environment variables or defaults
+	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	if cacheDisabled {
+		zidentity.WithCache(false)(config)
+	}
+
+	// Return the Config object
+	return &Config{
+		BaseURL:           baseURL,
+		Logger:            logger,
+		httpClient:        nil,
+		CustomerID:        customerID,
+		Cloud:             cloud,
+		BackoffConf:       defaultBackoffConf,
+		UserAgent:         userAgent,
+		rateLimiter:       rl.NewRateLimiter(20, 10, 10, 10),
+		cacheEnabled:      !cacheDisabled,
+		cacheTtl:          time.Minute * 10,
+		cacheCleanwindow:  time.Minute * 8,
+		cacheMaxSizeMB:    0,
+		useOneAPI:         true,
+		oauth2Credentials: config, // Reusing zidentity.Configuration object
+	}, err
 }
 
 /*

@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
-	dlpDictionariesEndpoint    = "/dlpDictionaries"
-	validateDLPPatternEndpoint = "/dlpDictionaries/validateDlpPattern"
+	dlpDictionariesEndpoint          = "/dlpDictionaries"
+	dlpPredefinedIdentifiersEndpoint = "/predefinedIdentifiers"
 )
 
 type DlpDictionary struct {
@@ -35,7 +35,7 @@ type DlpDictionary struct {
 	NameL10nTag bool `json:"nameL10nTag"`
 
 	// This value is set to true for custom DLP dictionaries.
-	Custom bool `json:"custom"`
+	Custom bool `json:"custom,omitempty"`
 
 	// DLP threshold type
 	ThresholdType string `json:"thresholdType,omitempty"`
@@ -75,24 +75,48 @@ type DlpDictionary struct {
 	// This field is set to true if the dictionary is cloned from a predefined dictionary. Otherwise, it is set to false.
 	PredefinedClone bool `json:"predefinedClone,omitempty"`
 
+	// This field specifies whether duplicate matches of a phrase from a dictionary must be counted individually toward the match count or ignored, thereby maintaining a single count for multiple occurrences.
+	PredefinedCountActionType string `json:"predefinedCountActionType,omitempty"`
+
 	// This value is set to true if proximity length and high confidence phrases are enabled for the DLP dictionary.
 	ProximityLengthEnabled bool `json:"proximityLengthEnabled,omitempty"`
+
+	// A Boolean constant that indicates if proximity length is enabled or disabled for a custom DLP dictionary. A true value indicates that proximity length is enabled, whereas a false value indicates that it is disabled.
+	ProximityEnabledForCustomDictionary bool `json:"proximityEnabledForCustomDictionary,omitempty"`
+
+	// A Boolean constant that indicates that the cloning option is supported for the DLP dictionary using the true value. This field is applicable only to predefined DLP dictionaries.
+	DictionaryCloningEnabled bool `json:"dictionaryCloningEnabled"`
+
+	// A Boolean constant that indicates that custom phrases are supported for the DLP dictionary using the true value. This field is applicable only to predefined DLP dictionaries with a high confidence score threshold.
+	CustomPhraseSupported bool `json:"customPhraseSupported,omitempty"`
+
+	// A true value indicates that the DLP dictionary is of hierarchical type that includes sub-dictionaries. A false value indicates that the dictionary is not hierarchical.
+	HierarchicalDictionary bool `json:"hierarchicalDictionary,omitempty"`
+
+	// The list of identifiers selected within a DLP dictionary of hierarchical type. Each identifier represents a sub-dictionary that consists of specific patterns. To retrieve the list of identifiers that are available for selection within a specific hierarchical dictionary, send a GET request to /dlpDictionaries/{dictId}/predefinedIdentifiers.
+	HierarchicalIdentifiers []string `json:"hierarchicalIdentifiers,omitempty"`
+
+	PredefinedPhrases []string `json:"predefinedPhrases,omitempty"`
+
+	ThresholdAllowed bool `json:"thresholdAllowed,omitempty"`
+
+	ConfidenceLevelForPredefinedDict string `json:"confidenceLevelForPredefinedDict"`
 }
 
 type Phrases struct {
 	// The action applied to a DLP dictionary using phrases
-	Action string `json:"action,omitempty"`
+	Action string `json:"action"`
 
 	// DLP dictionary phrase
-	Phrase string `json:"phrase,omitempty"`
+	Phrase string `json:"phrase"`
 }
 
 type Patterns struct {
 	// The action applied to a DLP dictionary using patterns
-	Action string `json:"action,omitempty"`
+	Action string `json:"action"`
 
 	// DLP dictionary pattern
-	Pattern string `json:"pattern,omitempty"`
+	Pattern string `json:"pattern"`
 }
 
 type EDMMatchDetails struct {
@@ -120,7 +144,7 @@ type IDMProfileMatchAccuracy struct {
 	MatchAccuracy string `json:"matchAccuracy,omitempty"`
 }
 
-func Get(service *services.Service, dlpDictionariesID int) (*DlpDictionary, error) {
+func Get(service *zidentity.Service, dlpDictionariesID int) (*DlpDictionary, error) {
 	var dlpDictionary DlpDictionary
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), &dlpDictionary)
 	if err != nil {
@@ -131,7 +155,7 @@ func Get(service *services.Service, dlpDictionariesID int) (*DlpDictionary, erro
 	return &dlpDictionary, nil
 }
 
-func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary, error) {
+func GetByName(service *zidentity.Service, dictionaryName string) (*DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	if err != nil {
@@ -145,7 +169,25 @@ func GetByName(service *services.Service, dictionaryName string) (*DlpDictionary
 	return nil, fmt.Errorf("no dictionary found with name: %s", dictionaryName)
 }
 
-func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) ([]string, int, error) {
+// func GetPredefinedIdentifiers(service *zidentity.Service, dictionaryName string) ([]string, error) {
+// 	// Use the GetByName function to retrieve the dictionary by name
+// 	dictionary, err := GetByName(service, dictionaryName)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error retrieving dictionary by name: %v", err)
+// 	}
+
+// 	// If dictionary is found, get the predefined identifiers using the dictionary ID
+// 	predefinedIdentifiersEndpoint := fmt.Sprintf(dlpDictionariesEndpoint+"/%d/predefinedIdentifiers", dictionary.ID)
+// 	var predefinedIdentifiers []string
+// 	err = service.Client.Read(predefinedIdentifiersEndpoint, &predefinedIdentifiers)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error retrieving predefined identifiers: %v", err)
+// 	}
+
+// 	return predefinedIdentifiers, nil
+// }
+
+func GetPredefinedIdentifiers(service *zidentity.Service, dictionaryName string) ([]string, int, error) {
 	dictionary, err := GetByName(service, dictionaryName)
 	if err != nil {
 		return nil, 0, err
@@ -160,7 +202,8 @@ func GetPredefinedIdentifiers(service *services.Service, dictionaryName string) 
 
 	return predefinedIdentifiers, dictionary.ID, nil
 }
-func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+
+func Create(service *zidentity.Service, dlpDictionariesID *DlpDictionary) (*DlpDictionary, *http.Response, error) {
 	resp, err := service.Client.Create(dlpDictionariesEndpoint, *dlpDictionariesID)
 	if err != nil {
 		return nil, nil, err
@@ -175,7 +218,7 @@ func Create(service *services.Service, dlpDictionariesID *DlpDictionary) (*DlpDi
 	return createdDlpDictionary, nil, nil
 }
 
-func Update(service *services.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
+func Update(service *zidentity.Service, dlpDictionariesID int, dlpDictionaries *DlpDictionary) (*DlpDictionary, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID), *dlpDictionaries)
 	if err != nil {
 		return nil, nil, err
@@ -186,7 +229,7 @@ func Update(service *services.Service, dlpDictionariesID int, dlpDictionaries *D
 	return updatedDlpDictionary, nil, nil
 }
 
-func DeleteDlpDictionary(service *services.Service, dlpDictionariesID int) (*http.Response, error) {
+func DeleteDlpDictionary(service *zidentity.Service, dlpDictionariesID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", dlpDictionariesEndpoint, dlpDictionariesID))
 	if err != nil {
 		return nil, err
@@ -195,7 +238,7 @@ func DeleteDlpDictionary(service *services.Service, dlpDictionariesID int) (*htt
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]DlpDictionary, error) {
+func GetAll(service *zidentity.Service) ([]DlpDictionary, error) {
 	var dictionaries []DlpDictionary
 	err := common.ReadAllPages(service.Client, dlpDictionariesEndpoint, &dictionaries)
 	return dictionaries, err

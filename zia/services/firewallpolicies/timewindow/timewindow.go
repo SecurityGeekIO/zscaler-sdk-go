@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -20,7 +20,7 @@ type TimeWindow struct {
 	DayOfWeek []string `json:"dayOfWeek,omitempty"`
 }
 
-func GetTimeWindowByName(service *services.Service, timeWindowName string) (*TimeWindow, error) {
+func GetTimeWindowByName(service *zidentity.Service, timeWindowName string) (*TimeWindow, error) {
 	var timeWindow []TimeWindow
 	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
 	if err != nil {
@@ -34,7 +34,7 @@ func GetTimeWindowByName(service *services.Service, timeWindowName string) (*Tim
 	return nil, fmt.Errorf("no time window found with name: %s", timeWindowName)
 }
 
-func GetAll(service *services.Service) ([]TimeWindow, error) {
+func GetAll(service *zidentity.Service) ([]TimeWindow, error) {
 	var timeWindow []TimeWindow
 	err := common.ReadAllPages(service.Client, timeWindowEndpoint, &timeWindow)
 	return timeWindow, err

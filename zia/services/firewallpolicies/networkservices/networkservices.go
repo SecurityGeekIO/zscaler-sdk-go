@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -33,7 +33,7 @@ type NetworkPorts struct {
 	End   int `json:"end,omitempty"`
 }
 
-func Get(service *services.Service, serviceID int) (*NetworkServices, error) {
+func Get(service *zidentity.Service, serviceID int) (*NetworkServices, error) {
 	var networkServices NetworkServices
 	err := service.Client.Read(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), &networkServices)
 	if err != nil {
@@ -44,7 +44,7 @@ func Get(service *services.Service, serviceID int) (*NetworkServices, error) {
 	return &networkServices, nil
 }
 
-func GetByName(service *services.Service, networkServiceName string) (*NetworkServices, error) {
+func GetByName(service *zidentity.Service, networkServiceName string) (*NetworkServices, error) {
 	var networkServices []NetworkServices
 	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
 	if err != nil {
@@ -58,7 +58,7 @@ func GetByName(service *services.Service, networkServiceName string) (*NetworkSe
 	return nil, fmt.Errorf("no network services found with name: %s", networkServiceName)
 }
 
-func Create(service *services.Service, networkService *NetworkServices) (*NetworkServices, error) {
+func Create(service *zidentity.Service, networkService *NetworkServices) (*NetworkServices, error) {
 	resp, err := service.Client.Create(networkServicesEndpoint, *networkService)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func Create(service *services.Service, networkService *NetworkServices) (*Networ
 	return createdNetworkServices, nil
 }
 
-func Update(service *services.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
+func Update(service *zidentity.Service, serviceID int, networkService *NetworkServices) (*NetworkServices, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID), *networkService)
 	if err != nil {
 		return nil, nil, err
@@ -84,7 +84,7 @@ func Update(service *services.Service, serviceID int, networkService *NetworkSer
 	return updatedNetworkServices, nil, nil
 }
 
-func Delete(service *services.Service, serviceID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, serviceID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", networkServicesEndpoint, serviceID))
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func Delete(service *services.Service, serviceID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAllNetworkServices(service *services.Service) ([]NetworkServices, error) {
+func GetAllNetworkServices(service *zidentity.Service) ([]NetworkServices, error) {
 	var networkServices []NetworkServices
 	err := common.ReadAllPages(service.Client, networkServicesEndpoint, &networkServices)
 	return networkServices, err

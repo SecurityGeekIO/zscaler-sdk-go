@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -26,7 +26,7 @@ type DLPICAPServers struct {
 	Status string `json:"status,omitempty"`
 }
 
-func Get(service *services.Service, icapServerID int) (*DLPICAPServers, error) {
+func Get(service *zidentity.Service, icapServerID int) (*DLPICAPServers, error) {
 	var icapServers DLPICAPServers
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIcapServersEndpoint, icapServerID), &icapServers)
 	if err != nil {
@@ -37,7 +37,7 @@ func Get(service *services.Service, icapServerID int) (*DLPICAPServers, error) {
 	return &icapServers, nil
 }
 
-func GetByName(service *services.Service, icapServerName string) (*DLPICAPServers, error) {
+func GetByName(service *zidentity.Service, icapServerName string) (*DLPICAPServers, error) {
 	var icapServers []DLPICAPServers
 	err := common.ReadAllPages(service.Client, dlpIcapServersEndpoint, &icapServers)
 	if err != nil {
@@ -51,7 +51,7 @@ func GetByName(service *services.Service, icapServerName string) (*DLPICAPServer
 	return nil, fmt.Errorf("no dlp icap server found with name: %s", icapServerName)
 }
 
-func GetAll(service *services.Service) ([]DLPICAPServers, error) {
+func GetAll(service *zidentity.Service) ([]DLPICAPServers, error) {
 	var icapServers []DLPICAPServers
 	err := common.ReadAllPages(service.Client, dlpIcapServersEndpoint, &icapServers)
 	return icapServers, err

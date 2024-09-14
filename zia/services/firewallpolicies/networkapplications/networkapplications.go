@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -19,7 +19,7 @@ type NetworkApplications struct {
 	Deprecated     bool   `json:"deprecated"`
 }
 
-func GetNetworkApplication(service *services.Service, id, locale string) (*NetworkApplications, error) {
+func GetNetworkApplication(service *zidentity.Service, id, locale string) (*NetworkApplications, error) {
 	var networkApplications NetworkApplications
 	url := fmt.Sprintf("%s/%s", networkApplicationsEndpoint, id)
 	if locale != "" {
@@ -32,7 +32,7 @@ func GetNetworkApplication(service *services.Service, id, locale string) (*Netwo
 	return &networkApplications, nil
 }
 
-func GetByName(service *services.Service, nwApplicationName, locale string) (*NetworkApplications, error) {
+func GetByName(service *zidentity.Service, nwApplicationName, locale string) (*NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 
 	// Construct the URL with search and locale query parameters
@@ -52,7 +52,7 @@ func GetByName(service *services.Service, nwApplicationName, locale string) (*Ne
 	return nil, fmt.Errorf("no network application found with name: %s", nwApplicationName)
 }
 
-func GetAll(service *services.Service, locale string) ([]NetworkApplications, error) {
+func GetAll(service *zidentity.Service, locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint
 	if locale != "" {

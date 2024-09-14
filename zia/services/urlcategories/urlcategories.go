@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -126,7 +126,7 @@ type URLReview struct {
 	Matches    []DomainMatch `json:"matches"`
 }
 
-func Get(service *services.Service, categoryID string) (*URLCategory, error) {
+func Get(service *zidentity.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
 	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
 	if err != nil {
@@ -137,7 +137,7 @@ func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func GetCustomURLCategories(service *services.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
+func GetCustomURLCategories(service *zidentity.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	queryParams := url.Values{}
 
@@ -161,7 +161,7 @@ func GetCustomURLCategories(service *services.Service, customName string, includ
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
-func CreateURLCategories(service *services.Service, category *URLCategory) (*URLCategory, error) {
+func CreateURLCategories(service *zidentity.Service, category *URLCategory) (*URLCategory, error) {
 	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func CreateURLCategories(service *services.Service, category *URLCategory) (*URL
 	return createdUrlCategory, nil
 }
 
-func UpdateURLCategories(service *services.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
+func UpdateURLCategories(service *zidentity.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
 	if err != nil {
 		return nil, nil, err
@@ -186,7 +186,7 @@ func UpdateURLCategories(service *services.Service, categoryID string, category 
 	return updatedUrlCategory, nil, nil
 }
 
-func DeleteURLCategories(service *services.Service, categoryID string) (*http.Response, error) {
+func DeleteURLCategories(service *zidentity.Service, categoryID string) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func DeleteURLCategories(service *services.Service, categoryID string) (*http.Re
 	return nil, nil
 }
 
-func GetURLQuota(service *services.Service) (*URLQuota, error) {
+func GetURLQuota(service *zidentity.Service) (*URLQuota, error) {
 	url := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, urlQuotaHandler)
 	var quota URLQuota
 	err := service.Client.Read(url, &quota)
@@ -205,7 +205,7 @@ func GetURLQuota(service *services.Service) (*URLQuota, error) {
 	return &quota, nil
 }
 
-func GetURLLookup(service *services.Service, urls []string) ([]URLClassification, error) {
+func GetURLLookup(service *zidentity.Service, urls []string) ([]URLClassification, error) {
 	resp, err := service.Client.CreateWithSlicePayload(urlLookupEndpoint, urls)
 	if err != nil {
 		return nil, err
@@ -221,13 +221,13 @@ func GetURLLookup(service *services.Service, urls []string) ([]URLClassification
 	return lookupResults, nil
 }
 
-func GetAll(service *services.Service) ([]URLCategory, error) {
+func GetAll(service *zidentity.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err
 }
 
-func GetAllLite(service *services.Service) ([]URLCategory, error) {
+func GetAllLite(service *zidentity.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
 	if err != nil {
@@ -237,7 +237,7 @@ func GetAllLite(service *services.Service) ([]URLCategory, error) {
 	return urlCategories, nil
 }
 
-func CreateURLReview(service *services.Service, domains []string) ([]URLReview, error) {
+func CreateURLReview(service *zidentity.Service, domains []string) ([]URLReview, error) {
 	resp, err := service.Client.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
 	if err != nil {
 		return nil, err
@@ -253,7 +253,7 @@ func CreateURLReview(service *services.Service, domains []string) ([]URLReview, 
 	return reviewResults, nil
 }
 
-func UpdateURLReview(service *services.Service, reviews []URLReview) error {
+func UpdateURLReview(service *zidentity.Service, reviews []URLReview) error {
 	resp, err := service.Client.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
 	if err != nil {
 		return err

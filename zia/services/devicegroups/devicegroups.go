@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -70,7 +70,7 @@ type Devices struct {
 	HostName string `json:"hostName,omitempty"`
 }
 
-func GetDeviceGroupByName(service *services.Service, deviceGroupName string) (*DeviceGroups, error) {
+func GetDeviceGroupByName(service *zidentity.Service, deviceGroupName string) (*DeviceGroups, error) {
 	var deviceGroups []DeviceGroups
 	err := service.Client.Read(deviceGroupEndpoint, &deviceGroups)
 	if err != nil {
@@ -84,7 +84,7 @@ func GetDeviceGroupByName(service *services.Service, deviceGroupName string) (*D
 	return nil, fmt.Errorf("no device group found with name: %s", deviceGroupName)
 }
 
-func GetIncludeDeviceInfo(service *services.Service, includeDeviceInfo, includePseudoGroups bool) ([]DeviceGroups, error) {
+func GetIncludeDeviceInfo(service *zidentity.Service, includeDeviceInfo, includePseudoGroups bool) ([]DeviceGroups, error) {
 	queryParams := url.Values{}
 	if includeDeviceInfo {
 		queryParams.Set("includeDeviceInfo", "true")
@@ -102,13 +102,13 @@ func GetIncludeDeviceInfo(service *services.Service, includeDeviceInfo, includeP
 	return deviceInfos, nil
 }
 
-func GetAllDevicesGroups(service *services.Service) ([]DeviceGroups, error) {
+func GetAllDevicesGroups(service *zidentity.Service) ([]DeviceGroups, error) {
 	var owners []DeviceGroups
 	err := common.ReadAllPages(service.Client, deviceGroupEndpoint, &owners)
 	return owners, err
 }
 
-func GetDevicesByID(service *services.Service, deviceID int) (*Devices, error) {
+func GetDevicesByID(service *zidentity.Service, deviceID int) (*Devices, error) {
 	devices, err := GetAllDevices(service)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func GetDevicesByID(service *services.Service, deviceID int) (*Devices, error) {
 }
 
 // Get Devices by Name.
-func GetDevicesByName(service *services.Service, deviceName string) (*Devices, error) {
+func GetDevicesByName(service *zidentity.Service, deviceName string) (*Devices, error) {
 	var devices []Devices
 	// We are assuming this device name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?page=1&pageSize=1000", devicesEndpoint), &devices)
@@ -139,7 +139,7 @@ func GetDevicesByName(service *services.Service, deviceName string) (*Devices, e
 	return nil, fmt.Errorf("no device found with name: %s", deviceName)
 }
 
-func GetDevicesByModel(service *services.Service, deviceModel string) (*Devices, error) {
+func GetDevicesByModel(service *zidentity.Service, deviceModel string) (*Devices, error) {
 	var models []Devices
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?model=%s", devicesEndpoint, url.QueryEscape(deviceModel)), &models)
 	if err != nil {
@@ -153,7 +153,7 @@ func GetDevicesByModel(service *services.Service, deviceModel string) (*Devices,
 	return nil, fmt.Errorf("no device found with model: %s", deviceModel)
 }
 
-func GetDevicesByOwner(service *services.Service, ownerName string) (*Devices, error) {
+func GetDevicesByOwner(service *zidentity.Service, ownerName string) (*Devices, error) {
 	var owners []Devices
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?owner=%s", devicesEndpoint, url.QueryEscape(ownerName)), &owners)
 	if err != nil {
@@ -167,7 +167,7 @@ func GetDevicesByOwner(service *services.Service, ownerName string) (*Devices, e
 	return nil, fmt.Errorf("no device found for owner: %s", ownerName)
 }
 
-func GetDevicesByOSType(service *services.Service, osTypeName string) (*Devices, error) {
+func GetDevicesByOSType(service *zidentity.Service, osTypeName string) (*Devices, error) {
 	var osTypes []Devices
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osType=%s", devicesEndpoint, url.QueryEscape(osTypeName)), &osTypes)
 	if err != nil {
@@ -181,7 +181,7 @@ func GetDevicesByOSType(service *services.Service, osTypeName string) (*Devices,
 	return nil, fmt.Errorf("no device found for type: %s", osTypeName)
 }
 
-func GetDevicesByOSVersion(service *services.Service, osVersionName string) (*Devices, error) {
+func GetDevicesByOSVersion(service *zidentity.Service, osVersionName string) (*Devices, error) {
 	var osVersions []Devices
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?osVersion=%s", devicesEndpoint, url.QueryEscape(osVersionName)), &osVersions)
 	if err != nil {
@@ -195,7 +195,7 @@ func GetDevicesByOSVersion(service *services.Service, osVersionName string) (*De
 	return nil, fmt.Errorf("no device found for version: %s", osVersionName)
 }
 
-func GetAllDevices(service *services.Service) ([]Devices, error) {
+func GetAllDevices(service *zidentity.Service) ([]Devices, error) {
 	var owners []Devices
 	err := common.ReadAllPages(service.Client, devicesEndpoint, &owners)
 	return owners, err

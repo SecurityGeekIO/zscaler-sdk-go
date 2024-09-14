@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -43,7 +43,7 @@ type Regions struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func GetDatacenterRegion(service *services.Service, regionPrefix string) ([]Regions, error) {
+func GetDatacenterRegion(service *zidentity.Service, regionPrefix string) ([]Regions, error) {
 	var regions []Regions
 	err := service.Client.Read(fmt.Sprintf("%s?prefix=%s", regionSearchEndpoint, url.QueryEscape(regionPrefix)), &regions)
 	if err != nil {

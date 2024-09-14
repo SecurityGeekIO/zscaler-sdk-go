@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -223,7 +223,7 @@ type DynamiclocationGroups struct {
 }
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
-func GetLocation(service *services.Service, locationID int) (*Locations, error) {
+func GetLocation(service *zidentity.Service, locationID int) (*Locations, error) {
 	var location Locations
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
@@ -235,7 +235,7 @@ func GetLocation(service *services.Service, locationID int) (*Locations, error) 
 }
 
 // GetSubLocationBySubID gets a sub-location by its ID (fetches all locations's sub-location to find a match).
-func GetSubLocationBySubID(service *services.Service, subLocationID int) (*Locations, error) {
+func GetSubLocationBySubID(service *zidentity.Service, subLocationID int) (*Locations, error) {
 	locations, err := GetAll(service)
 	if err != nil {
 		return nil, err
@@ -250,14 +250,14 @@ func GetSubLocationBySubID(service *services.Service, subLocationID int) (*Locat
 }
 
 // GetSublocations gets all sub-locations for a given location ID.
-func GetSublocations(service *services.Service, locationID int) ([]Locations, error) {
+func GetSublocations(service *zidentity.Service, locationID int) ([]Locations, error) {
 	var locations []Locations
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, locationID, subLocationEndpoint), &locations)
 	return locations, err
 }
 
 // GetSubLocation gets a sub-location by its ID and parent ID.
-func GetSubLocation(service *services.Service, locationID, subLocationID int) (*Locations, error) {
+func GetSubLocation(service *zidentity.Service, locationID, subLocationID int) (*Locations, error) {
 	locations, err := GetSublocations(service, locationID)
 	if err != nil {
 		return nil, err
@@ -271,7 +271,7 @@ func GetSubLocation(service *services.Service, locationID, subLocationID int) (*
 }
 
 // GetLocationByName gets a location by its name.
-func GetLocationByName(service *services.Service, locationName string) (*Locations, error) {
+func GetLocationByName(service *zidentity.Service, locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
@@ -287,7 +287,7 @@ func GetLocationByName(service *services.Service, locationName string) (*Locatio
 }
 
 // GetSubLocationByNames gets a sub-location by its name and parent location name
-func GetSubLocationByNames(service *services.Service, locationName, subLocatioName string) (*Locations, error) {
+func GetSubLocationByNames(service *zidentity.Service, locationName, subLocatioName string) (*Locations, error) {
 	location, err := GetLocationByName(service, locationName)
 	if err != nil {
 		return nil, err
@@ -305,7 +305,7 @@ func GetSubLocationByNames(service *services.Service, locationName, subLocatioNa
 }
 
 // GetSubLocationByName gets a sub-location by its name (fetches all locations's sub-location to find a match).
-func GetSubLocationByName(service *services.Service, subLocatioName string) (*Locations, error) {
+func GetSubLocationByName(service *zidentity.Service, subLocatioName string) (*Locations, error) {
 	locations, err := GetAll(service)
 	if err != nil {
 		return nil, err
@@ -321,7 +321,7 @@ func GetSubLocationByName(service *services.Service, subLocatioName string) (*Lo
 	return nil, fmt.Errorf("no sublocation found with name: %s", subLocatioName)
 }
 
-func Create(service *services.Service, locations *Locations) (*Locations, error) {
+func Create(service *zidentity.Service, locations *Locations) (*Locations, error) {
 	resp, err := service.Client.Create(locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
@@ -336,7 +336,7 @@ func Create(service *services.Service, locations *Locations) (*Locations, error)
 	return createdLocations, nil
 }
 
-func Update(service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
+func Update(service *zidentity.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
@@ -347,7 +347,7 @@ func Update(service *services.Service, locationID int, locations *Locations) (*L
 	return updatedLocations, nil, nil
 }
 
-func Delete(service *services.Service, locationID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, locationID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
@@ -356,7 +356,7 @@ func Delete(service *services.Service, locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
+func BulkDelete(service *zidentity.Service, ids []int) (*http.Response, error) {
 	if len(ids) > maxBulkDeleteIDs {
 		// Truncate the list to the first 100 IDs
 		ids = ids[:maxBulkDeleteIDs]
@@ -370,14 +370,14 @@ func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
 	return service.Client.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
 }
 
-func GetAll(service *services.Service) ([]Locations, error) {
+func GetAll(service *zidentity.Service) ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	return locations, err
 }
 
-func GetAllSublocations(service *services.Service) ([]Locations, error) {
+func GetAllSublocations(service *zidentity.Service) ([]Locations, error) {
 	// Step 1: Fetch all parent locations.
 	parentLocations, err := GetAll(service)
 	if err != nil {
@@ -403,7 +403,7 @@ func GetAllSublocations(service *services.Service) ([]Locations, error) {
 }
 
 // GetLocationOrSublocationByID gets a location or sub-location by its ID.
-func GetLocationOrSublocationByID(service *services.Service, id int) (*Locations, error) {
+func GetLocationOrSublocationByID(service *zidentity.Service, id int) (*Locations, error) {
 	location, err := GetLocation(service, id)
 	if err == nil && location != nil {
 		return location, nil
@@ -412,7 +412,7 @@ func GetLocationOrSublocationByID(service *services.Service, id int) (*Locations
 }
 
 // GetLocationOrSublocationByName gets a location or sub-location by its name.
-func GetLocationOrSublocationByName(service *services.Service, name string) (*Locations, error) {
+func GetLocationOrSublocationByName(service *zidentity.Service, name string) (*Locations, error) {
 	location, err := GetLocationByName(service, name)
 	if err == nil && location != nil {
 		return location, nil

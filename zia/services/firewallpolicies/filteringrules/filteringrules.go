@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -127,7 +127,7 @@ type FirewallFilteringRules struct {
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 }
 
-func Get(service *services.Service, ruleID int) (*FirewallFilteringRules, error) {
+func Get(service *zidentity.Service, ruleID int) (*FirewallFilteringRules, error) {
 	var rule FirewallFilteringRules
 	err := service.Client.Read(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), &rule)
 	if err != nil {
@@ -138,7 +138,7 @@ func Get(service *services.Service, ruleID int) (*FirewallFilteringRules, error)
 	return &rule, nil
 }
 
-func GetByName(service *services.Service, ruleName string) (*FirewallFilteringRules, error) {
+func GetByName(service *zidentity.Service, ruleName string) (*FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
 	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
 	if err != nil {
@@ -152,7 +152,7 @@ func GetByName(service *services.Service, ruleName string) (*FirewallFilteringRu
 	return nil, fmt.Errorf("no firewall rule found with name: %s", ruleName)
 }
 
-func Create(service *services.Service, rule *FirewallFilteringRules) (*FirewallFilteringRules, error) {
+func Create(service *zidentity.Service, rule *FirewallFilteringRules) (*FirewallFilteringRules, error) {
 	resp, err := service.Client.Create(firewallRulesEndpoint, *rule)
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func Create(service *services.Service, rule *FirewallFilteringRules) (*FirewallF
 	return createdRules, nil
 }
 
-func Update(service *services.Service, ruleID int, rules *FirewallFilteringRules) (*FirewallFilteringRules, error) {
+func Update(service *zidentity.Service, ruleID int, rules *FirewallFilteringRules) (*FirewallFilteringRules, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID), *rules)
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func Update(service *services.Service, ruleID int, rules *FirewallFilteringRules
 	return updatedRules, nil
 }
 
-func Delete(service *services.Service, ruleID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, ruleID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", firewallRulesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
@@ -186,7 +186,7 @@ func Delete(service *services.Service, ruleID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]FirewallFilteringRules, error) {
+func GetAll(service *zidentity.Service) ([]FirewallFilteringRules, error) {
 	var rules []FirewallFilteringRules
 	err := common.ReadAllPages(service.Client, firewallRulesEndpoint, &rules)
 	return rules, err

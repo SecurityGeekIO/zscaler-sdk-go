@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -18,7 +18,7 @@ type ApplicationServicesLite struct {
 	NameL10nTag bool   `json:"nameL10nTag"`
 }
 
-func GetByName(service *services.Service, serviceName string) (*ApplicationServicesLite, error) {
+func GetByName(service *zidentity.Service, serviceName string) (*ApplicationServicesLite, error) {
 	var appServicesLite []ApplicationServicesLite
 	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServicesLite)
 	if err != nil {
@@ -32,7 +32,7 @@ func GetByName(service *services.Service, serviceName string) (*ApplicationServi
 	return nil, fmt.Errorf("no application services found with name: %s", serviceName)
 }
 
-func GetAll(service *services.Service) ([]ApplicationServicesLite, error) {
+func GetAll(service *zidentity.Service) ([]ApplicationServicesLite, error) {
 	var appServices []ApplicationServicesLite
 	err := common.ReadAllPages(service.Client, appServicesLiteEndpoint, &appServices)
 	return appServices, err

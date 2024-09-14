@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -85,7 +85,7 @@ type SystemSummaryDetail struct {
 	SignatureSources []string `json:"SignatureSources,omitempty"`
 }
 
-func GetRatingQuota(service *services.Service) ([]RatingQuota, error) {
+func GetRatingQuota(service *zidentity.Service) ([]RatingQuota, error) {
 	var quotas []RatingQuota
 	err := service.Client.Read(reportQuotaEndpoint, &quotas)
 	if err != nil {
@@ -97,7 +97,7 @@ func GetRatingQuota(service *services.Service) ([]RatingQuota, error) {
 }
 
 // GetReportMD5Hash retrieves the sandbox report for a specific MD5 hash with either full or summary details.
-func GetReportMD5Hash(service *services.Service, md5Hash, details string) (*ReportMD5Hash, error) {
+func GetReportMD5Hash(service *zidentity.Service, md5Hash, details string) (*ReportMD5Hash, error) {
 	// Validate the 'details' parameter to ensure it is either "full" or "summary".
 	if details != "full" && details != "summary" {
 		return nil, fmt.Errorf("details parameter must be 'full' or 'summary'")

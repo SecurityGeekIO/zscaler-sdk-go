@@ -3,7 +3,6 @@ package cbizpaprofile
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
@@ -27,19 +26,15 @@ type ZPAProfiles struct {
 	CBIURL       string `json:"cbiUrl"`
 }
 
-type QueryParams struct {
-	ShowDisabled string `url:"showDisabled,omitempty"`
-	ScopeId      string `url:"scopeId,omitempty"`
-}
-
-// Get retrieves a profile by its ID. This function now uses GetAll with optional parameters correctly.
+// The current API does not seem to support search by ID
 func Get(service *services.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
-	// Using nil for optional parameters as defaults
-	profiles, resp, err := GetAll(service, nil, nil)
+	// First get all the profiles
+	profiles, resp, err := GetAll(service)
 	if err != nil {
 		return nil, resp, err
 	}
 
+	// Loop through the profiles and find the one with the matching ID
 	for _, profile := range profiles {
 		if profile.ID == profileID {
 			return &profile, resp, nil
@@ -49,36 +44,24 @@ func Get(service *services.Service, profileID string) (*ZPAProfiles, *http.Respo
 	return nil, resp, fmt.Errorf("no isolation profile with ID '%s' was found", profileID)
 }
 
-// GetByName retrieves a profile by name. This function now uses GetAll with optional parameters correctly.
+// The current API does not seem to support search by Name
 func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
-	// Using nil for optional parameters as defaults
-	list, resp, err := GetAll(service, nil, nil)
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, profile := range list {
-		if strings.EqualFold(profile.Name, profileName) {
-			return &profile, resp, nil
+	for _, app := range list {
+		if strings.EqualFold(app.Name, profileName) {
+			return &app, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("no zpa profile named '%s' was found", profileName)
 }
 
-// GetAll retrieves all profiles, with optional parameters to show disabled profiles and filter by scopeId.
-func GetAll(service *services.Service, showDisabled *bool, scopeId *int) ([]ZPAProfiles, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s%s%s", cbiConfig, service.Client.Config.CustomerID, zpaProfileEndpoint)
-
-	// Prepare query parameters using a struct
-	params := QueryParams{}
-	if showDisabled != nil {
-		params.ShowDisabled = strconv.FormatBool(*showDisabled)
-	}
-	if scopeId != nil {
-		params.ScopeId = strconv.Itoa(*scopeId)
-	}
-
+func GetAll(service *services.Service) ([]ZPAProfiles, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
 	var list []ZPAProfiles
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, params, nil, &list)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {
 		return nil, nil, err
 	}

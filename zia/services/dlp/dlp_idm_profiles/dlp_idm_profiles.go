@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -77,7 +77,7 @@ type DLPIDMProfile struct {
 	ModifiedBy *common.IDNameExtensions `json:"modifiedBy,omitempty"`
 }
 
-func Get(service *services.Service, idmProfileID int) (*DLPIDMProfile, error) {
+func Get(service *zidentity.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	var idmpProfile DLPIDMProfile
 	err := service.Client.Read(fmt.Sprintf("%s/%d", dlpIDMProfileEndpoint, idmProfileID), &idmpProfile)
 	if err != nil {
@@ -88,7 +88,7 @@ func Get(service *services.Service, idmProfileID int) (*DLPIDMProfile, error) {
 	return &idmpProfile, nil
 }
 
-func GetByName(service *services.Service, idmProfileName string) (*DLPIDMProfile, error) {
+func GetByName(service *zidentity.Service, idmProfileName string) (*DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
 	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	if err != nil {
@@ -102,7 +102,7 @@ func GetByName(service *services.Service, idmProfileName string) (*DLPIDMProfile
 	return nil, fmt.Errorf("no dlp icap server found with name: %s", idmProfileName)
 }
 
-func GetAll(service *services.Service) ([]DLPIDMProfile, error) {
+func GetAll(service *zidentity.Service) ([]DLPIDMProfile, error) {
 	var idmpProfile []DLPIDMProfile
 	err := common.ReadAllPages(service.Client, dlpIDMProfileEndpoint, &idmpProfile)
 	return idmpProfile, err

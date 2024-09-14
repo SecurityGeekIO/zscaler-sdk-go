@@ -109,28 +109,17 @@ func Get(service *services.Service, profileID string) (*IsolationProfile, *http.
 	return v, resp, nil
 }
 
-func GetByNameOrID(service *services.Service, identifier string) (*IsolationProfile, *http.Response, error) {
-	// Retrieve all profiles
+func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	// Try to find by ID
 	for _, profile := range list {
-		if profile.ID == identifier {
-			return Get(service, profile.ID)
+		if strings.EqualFold(profile.Name, profileName) {
+			return &profile, resp, nil
 		}
 	}
-
-	// Try to find by name
-	for _, profile := range list {
-		if strings.EqualFold(profile.Name, identifier) {
-			return Get(service, profile.ID)
-		}
-	}
-
-	return nil, resp, fmt.Errorf("no isolation profile named or with ID '%s' was found", identifier)
+	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
 func Create(service *services.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {

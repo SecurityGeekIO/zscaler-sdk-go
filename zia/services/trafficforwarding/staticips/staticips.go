@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -75,7 +75,7 @@ type City struct {
 	Name string `json:"name,omitempty"`
 }
 
-func Get(service *services.Service, staticIpID int) (*StaticIP, error) {
+func Get(service *zidentity.Service, staticIpID int) (*StaticIP, error) {
 	var staticIP StaticIP
 	err := service.Client.Read(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), &staticIP)
 	if err != nil {
@@ -86,7 +86,7 @@ func Get(service *services.Service, staticIpID int) (*StaticIP, error) {
 	return &staticIP, nil
 }
 
-func GetByIPAddress(service *services.Service, address string) (*StaticIP, error) {
+func GetByIPAddress(service *zidentity.Service, address string) (*StaticIP, error) {
 	var staticIPs []StaticIP
 	err := common.ReadAllPages(service.Client, staticIPEndpoint, &staticIPs)
 	if err != nil {
@@ -100,7 +100,7 @@ func GetByIPAddress(service *services.Service, address string) (*StaticIP, error
 	return nil, fmt.Errorf("no device group found with name: %s", address)
 }
 
-func Create(service *services.Service, staticIpID *StaticIP) (*StaticIP, *http.Response, error) {
+func Create(service *zidentity.Service, staticIpID *StaticIP) (*StaticIP, *http.Response, error) {
 	resp, err := service.Client.Create(staticIPEndpoint, *staticIpID)
 	if err != nil {
 		return nil, nil, err
@@ -115,7 +115,7 @@ func Create(service *services.Service, staticIpID *StaticIP) (*StaticIP, *http.R
 	return createdStaticIP, nil, nil
 }
 
-func Update(service *services.Service, staticIpID int, staticIP *StaticIP) (*StaticIP, *http.Response, error) {
+func Update(service *zidentity.Service, staticIpID int, staticIP *StaticIP) (*StaticIP, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID), *staticIP)
 	if err != nil {
 		return nil, nil, err
@@ -126,7 +126,7 @@ func Update(service *services.Service, staticIpID int, staticIP *StaticIP) (*Sta
 	return updatedStaticIP, nil, nil
 }
 
-func Delete(service *services.Service, staticIpID int) (*http.Response, error) {
+func Delete(service *zidentity.Service, staticIpID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", staticIPEndpoint, staticIpID))
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func Delete(service *services.Service, staticIpID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func GetAll(service *services.Service) ([]StaticIP, error) {
+func GetAll(service *zidentity.Service) ([]StaticIP, error) {
 	var staticIPs []StaticIP
 	err := common.ReadAllPages(service.Client, staticIPEndpoint, &staticIPs)
 	return staticIPs, err

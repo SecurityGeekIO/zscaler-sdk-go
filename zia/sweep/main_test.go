@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/admins"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_notification_templates"
@@ -38,6 +36,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/urlfilteringpolicies"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/user_authentication_settings"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/users"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 func init() {
@@ -80,7 +79,7 @@ func sweep() error {
 	}
 
 	// List of all sweep functions to execute
-	sweepFunctions := []func(*zia.Client) error{
+	sweepFunctions := []func(*zidentity.Client) error{
 		sweepFirewallFilteringRules,
 		sweepURLFilteringPolicies,
 		sweepLocationManagement,
@@ -125,8 +124,8 @@ func sweep() error {
 	return nil
 }
 
-func sweepAdminUsers(client *zia.Client) error {
-	service := services.New(client)
+func sweepAdminUsers(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := admins.GetAllAdminUsers(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get admin users: %v", err)
@@ -146,8 +145,8 @@ func sweepAdminUsers(client *zia.Client) error {
 	return nil
 }
 
-func sweepDLPEngines(client *zia.Client) error {
-	service := services.New(client)
+func sweepDLPEngines(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := dlp_engines.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp engines: %v", err)
@@ -167,8 +166,8 @@ func sweepDLPEngines(client *zia.Client) error {
 	return nil
 }
 
-func sweepDLPNotificationTemplates(client *zia.Client) error {
-	service := services.New(client)
+func sweepDLPNotificationTemplates(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := dlp_notification_templates.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
@@ -188,8 +187,8 @@ func sweepDLPNotificationTemplates(client *zia.Client) error {
 	return nil
 }
 
-func sweepADLPWebRules(client *zia.Client) error {
-	service := services.New(client)
+func sweepADLPWebRules(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := dlp_web_rules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
@@ -209,8 +208,8 @@ func sweepADLPWebRules(client *zia.Client) error {
 	return nil
 }
 
-func sweepDLPDictionaries(client *zia.Client) error {
-	service := services.New(client)
+func sweepDLPDictionaries(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := dlpdictionaries.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
@@ -230,8 +229,8 @@ func sweepDLPDictionaries(client *zia.Client) error {
 	return nil
 }
 
-func sweepFirewallFilteringRules(client *zia.Client) error {
-	service := services.New(client)
+func sweepFirewallFilteringRules(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := filteringrules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
@@ -251,8 +250,8 @@ func sweepFirewallFilteringRules(client *zia.Client) error {
 	return nil
 }
 
-func sweepIPDestinationGroup(client *zia.Client) error {
-	service := services.New(client)
+func sweepIPDestinationGroup(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := ipdestinationgroups.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip destination group: %v", err)
@@ -272,8 +271,8 @@ func sweepIPDestinationGroup(client *zia.Client) error {
 	return nil
 }
 
-func sweepIPSourceGroup(client *zia.Client) error {
-	service := services.New(client)
+func sweepIPSourceGroup(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := ipsourcegroups.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip source group: %v", err)
@@ -293,8 +292,8 @@ func sweepIPSourceGroup(client *zia.Client) error {
 	return nil
 }
 
-func sweepNetworkAplicationGroups(client *zia.Client) error {
-	service := services.New(client)
+func sweepNetworkAplicationGroups(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := networkapplicationgroups.GetAllNetworkApplicationGroups(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network application groups: %v", err)
@@ -314,8 +313,8 @@ func sweepNetworkAplicationGroups(client *zia.Client) error {
 	return nil
 }
 
-func sweepNetworkServiceGroups(client *zia.Client) error {
-	service := services.New(client)
+func sweepNetworkServiceGroups(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := networkservicegroups.GetAllNetworkServiceGroups(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network service groups: %v", err)
@@ -335,8 +334,8 @@ func sweepNetworkServiceGroups(client *zia.Client) error {
 	return nil
 }
 
-func sweepNetworkServices(client *zia.Client) error {
-	service := services.New(client)
+func sweepNetworkServices(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := networkservices.GetAllNetworkServices(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network services: %v", err)
@@ -356,8 +355,8 @@ func sweepNetworkServices(client *zia.Client) error {
 	return nil
 }
 
-func sweepForwardingControlRules(client *zia.Client) error {
-	service := services.New(client)
+func sweepForwardingControlRules(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := forwarding_rules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get forwarding control rules: %v", err)
@@ -377,7 +376,7 @@ func sweepForwardingControlRules(client *zia.Client) error {
 	return nil
 }
 
-func sweepZPAGateways(client *zia.Client) error {
+func sweepZPAGateways(client *zidentity.Client) error {
 	service := zpa_gateways.New(client)
 	resources, err := service.GetAll()
 	if err != nil {
@@ -398,8 +397,8 @@ func sweepZPAGateways(client *zia.Client) error {
 	return nil
 }
 
-func sweepLocationManagement(client *zia.Client) error {
-	service := services.New(client)
+func sweepLocationManagement(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := locationmanagement.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get location management: %v", err)
@@ -419,8 +418,8 @@ func sweepLocationManagement(client *zia.Client) error {
 	return nil
 }
 
-func sweepRuleLabels(client *zia.Client) error {
-	service := services.New(client)
+func sweepRuleLabels(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := rule_labels.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to rule labels: %v", err)
@@ -441,8 +440,8 @@ func sweepRuleLabels(client *zia.Client) error {
 }
 
 // TODO: Need to review method calls.
-func sweepSandboxSettings(client *zia.Client) error {
-	service := services.New(client)
+func sweepSandboxSettings(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	// First, fetch the current list of MD5 hashes
 	currentSettings, err := sandbox_settings.Get(service)
 	if err != nil {
@@ -474,8 +473,8 @@ func sweepSandboxSettings(client *zia.Client) error {
 }
 
 // TODO: Need to review method calls.
-func sweepSecurityPolicySettings(client *zia.Client) error {
-	service := services.New(client)
+func sweepSecurityPolicySettings(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 
 	// First, fetch the current lists of whitelist and blacklist URLs
 	currentSettings, err := security_policy_settings.GetListUrls(service)
@@ -508,8 +507,8 @@ func sweepSecurityPolicySettings(client *zia.Client) error {
 	return nil
 }
 
-func sweepUserAuthenticationSettings(client *zia.Client) error {
-	service := services.New(client)
+func sweepUserAuthenticationSettings(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 
 	currentSettings, err := user_authentication_settings.Get(service)
 	if err != nil {
@@ -535,8 +534,8 @@ func sweepUserAuthenticationSettings(client *zia.Client) error {
 	return nil
 }
 
-func sweepGRETunnels(client *zia.Client) error {
-	service := services.New(client)
+func sweepGRETunnels(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := gretunnels.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get gre tunnels: %v", err)
@@ -556,8 +555,8 @@ func sweepGRETunnels(client *zia.Client) error {
 	return nil
 }
 
-func sweepStaticIP(client *zia.Client) error {
-	service := services.New(client)
+func sweepStaticIP(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := staticips.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get static ip: %v", err)
@@ -577,8 +576,8 @@ func sweepStaticIP(client *zia.Client) error {
 	return nil
 }
 
-func sweepVPNCredentials(client *zia.Client) error {
-	service := services.New(client)
+func sweepVPNCredentials(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := vpncredentials.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get vpn credentials: %v", err)
@@ -598,8 +597,8 @@ func sweepVPNCredentials(client *zia.Client) error {
 	return nil
 }
 
-func sweepURLCategories(client *zia.Client) error {
-	service := services.New(client)
+func sweepURLCategories(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := urlcategories.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
@@ -619,8 +618,8 @@ func sweepURLCategories(client *zia.Client) error {
 	return nil
 }
 
-func sweepURLFilteringPolicies(client *zia.Client) error {
-	service := services.New(client)
+func sweepURLFilteringPolicies(client *zidentity.Client) error {
+	service := zidentity.NewService(client)
 	resources, err := urlfilteringpolicies.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url filtering policies: %v", err)
@@ -640,7 +639,7 @@ func sweepURLFilteringPolicies(client *zia.Client) error {
 	return nil
 }
 
-func sweepUserManagement(client *zia.Client) error {
+func sweepUserManagement(client *zidentity.Client) error {
 	service := users.New(client)
 	resources, err := service.GetAllUsers()
 	if err != nil {

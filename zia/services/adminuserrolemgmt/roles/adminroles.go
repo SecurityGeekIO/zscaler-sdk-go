@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -66,7 +66,7 @@ type AdminRoles struct {
 // 	return v, nil
 // }
 
-func GetByName(service *services.Service, adminRoleName string) (*AdminRoles, error) {
+func GetByName(service *zidentity.Service, adminRoleName string) (*AdminRoles, error) {
 	var adminRoles []AdminRoles
 	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
 	if err != nil {
@@ -80,7 +80,7 @@ func GetByName(service *services.Service, adminRoleName string) (*AdminRoles, er
 	return nil, fmt.Errorf("no admin role found with name: %s", adminRoleName)
 }
 
-func GetAPIRole(service *services.Service, apiRole, includeApiRole string) (*AdminRoles, error) {
+func GetAPIRole(service *zidentity.Service, apiRole, includeApiRole string) (*AdminRoles, error) {
 	var apiRoles []AdminRoles
 	err := service.Client.Read(fmt.Sprintf("%s?includeApiRole=%s", adminRolesEndpoint, url.QueryEscape(includeApiRole)), &apiRoles)
 	if err != nil {
@@ -94,7 +94,7 @@ func GetAPIRole(service *services.Service, apiRole, includeApiRole string) (*Adm
 	return nil, fmt.Errorf("no api role found with name: %s", apiRole)
 }
 
-func GetAuditorRole(service *services.Service, auditorRole, includeAuditorRole string) (*AdminRoles, error) {
+func GetAuditorRole(service *zidentity.Service, auditorRole, includeAuditorRole string) (*AdminRoles, error) {
 	var auditorRoles []AdminRoles
 	err := service.Client.Read(fmt.Sprintf("%s?includeAuditorRole=%s", adminRolesEndpoint, url.QueryEscape(includeAuditorRole)), &auditorRoles)
 	if err != nil {
@@ -108,7 +108,7 @@ func GetAuditorRole(service *services.Service, auditorRole, includeAuditorRole s
 	return nil, fmt.Errorf("no auditor role found with name: %s", auditorRole)
 }
 
-func GetPartnerRole(service *services.Service, partnerRole, includePartnerRole string) (*AdminRoles, error) {
+func GetPartnerRole(service *zidentity.Service, partnerRole, includePartnerRole string) (*AdminRoles, error) {
 	var partnerRoles []AdminRoles
 	err := service.Client.Read(fmt.Sprintf("%s?includePartnerRole=%s", adminRolesEndpoint, url.QueryEscape(includePartnerRole)), &partnerRoles)
 	if err != nil {
@@ -122,7 +122,7 @@ func GetPartnerRole(service *services.Service, partnerRole, includePartnerRole s
 	return nil, fmt.Errorf("no partner role found with name: %s", partnerRole)
 }
 
-func GetAllAdminRoles(service *services.Service) ([]AdminRoles, error) {
+func GetAllAdminRoles(service *zidentity.Service) ([]AdminRoles, error) {
 	var adminRoles []AdminRoles
 	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
 	return adminRoles, err

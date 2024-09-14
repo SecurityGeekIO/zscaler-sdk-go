@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -43,7 +43,7 @@ type ByIPAddress struct {
 	ContinentCode string `json:"continentCode"`
 }
 
-func GetByIPAddress(service *services.Service, ipAddress string) (*ByIPAddress, error) {
+func GetByIPAddress(service *zidentity.Service, ipAddress string) (*ByIPAddress, error) {
 	var ip ByIPAddress
 	err := service.Client.Read(fmt.Sprintf("%s/%s", byIPAdddressEndpoint, url.QueryEscape(ipAddress)), &ip)
 	if err != nil {
