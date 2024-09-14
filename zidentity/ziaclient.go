@@ -14,12 +14,18 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
 	"github.com/google/uuid"
 )
 
 // Performs the HTTP request and manages caching and token refresh logic.
 // Performs the HTTP request and manages caching and token refresh logic.
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
+	err := c.authenticate()
+	if err != nil {
+		return nil, err
+	}
+
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
@@ -38,7 +44,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 			return resp, nil
 		}
 	}
-
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
 	// Perform the HTTP request
 	resp, err := c.HTTPClient.Do(req)
 	logger.LogResponse(c.Logger, resp, start, reqID)
@@ -54,12 +60,11 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 
 	// Handle 401 Unauthorized or token expiration cases for OAuth2
 	if resp.StatusCode == http.StatusUnauthorized {
-		// Retry with refreshed token by calling Authenticate directly
-		authToken, err := Authenticate(c.oauth2Credentials)
+		// Retry with refreshed token
+		err := c.authenticate()
 		if err != nil {
 			return nil, err
 		}
-		c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
 
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
 		resp, err = c.HTTPClient.Do(req)
@@ -75,6 +80,21 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	}
 
 	return resp, nil
+}
+
+func (c *Client) authenticate() error {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken) {
+		authToken, err := Authenticate(c.oauth2Credentials)
+		if err != nil {
+			return err
+		}
+		c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
+		return nil
+	}
+	return nil
 }
 
 // GenericRequest handles a generic HTTP request.
