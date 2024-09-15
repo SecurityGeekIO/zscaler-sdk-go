@@ -46,8 +46,7 @@ type Configuration struct {
 	HTTPClient     *http.Client
 	UserAgentExtra string
 	Context        context.Context
-	// Common Zscaler config
-	Zscaler struct {
+	Zscaler        struct {
 		Client struct {
 			ClientID     string     `yaml:"clientId" envconfig:"ZSCALER_CLIENT_ID"`
 			ClientSecret string     `yaml:"clientSecret" envconfig:"ZSCALER_CLIENT_SECRET"`
@@ -413,10 +412,16 @@ func WithZscalerCloud(cloud string) ConfigSetter {
 	}
 }
 
+// func WithZPAMicrotenantID(microtenant string) ConfigSetter {
+// 	return func(c *Configuration) {
+// 		c.Zscaler.Client.Microtenant = microtenant
+// 	}
+// }
+
 // WithUserAgent sets the UserAgent in the Config.
-func WithUserAgent(userAgent string) ConfigSetter {
+func WithUserAgentExtra(userAgent string) ConfigSetter {
 	return func(c *Configuration) {
-		c.UserAgent = userAgent
+		c.UserAgentExtra = userAgent
 	}
 }
 

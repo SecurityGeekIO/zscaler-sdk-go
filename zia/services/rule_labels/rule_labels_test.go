@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -50,7 +51,7 @@ func TestRuleLabels(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := services.New(client)
+	service := zidentity.NewService(client)
 
 	label := RuleLabels{
 		Name:        name,

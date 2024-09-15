@@ -2,8 +2,11 @@ package zidentity
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"sync"
@@ -46,42 +49,29 @@ type Client struct {
 }
 
 // NewOneAPIClient creates a new ZIA Client using OAuth2 authentication.
-func NewOneAPIClient(userAgent, service, cloud string, sandboxEnabled bool, configSetters ...ConfigSetter) (*Client, error) {
+func NewOneAPIClient(config *Configuration, service string) (*Service, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
-	httpClient := getHTTPClient(logger, rateLimiter)
+	// Pass the config to getHTTPClient so it can access proxy settings
+	httpClient := getHTTPClient(logger, rateLimiter, config)
 
 	// Build the API endpoint based on the service and cloud parameters
-	url := GetAPIEndpoint(service, cloud, sandboxEnabled)
-
-	// Apply ConfigSetters to customize the configuration
-	cfg, err := NewConfiguration(configSetters...)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set default UserAgent if not provided via ConfigSetter
-	if cfg.UserAgent == "" {
-		cfg.UserAgent = userAgent
-	}
-
-	// Determine if cache should be disabled from environment variables
-	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
+	url := GetAPIEndpoint(service, config.Zscaler.Client.Cloud, false) // Pass the service explicitly
 
 	// Create the client configuration
 	cli := &Client{
-		cloud:             cloud,
+		cloud:             config.Zscaler.Client.Cloud,
 		HTTPClient:        httpClient,
 		URL:               url,
 		Logger:            logger,
-		UserAgent:         cfg.UserAgent,
-		cacheEnabled:      !cacheDisabled,
+		UserAgent:         config.UserAgent,
+		cacheEnabled:      config.Zscaler.Client.Cache.Enabled,
 		cacheTtl:          time.Minute * 10,
 		cacheCleanwindow:  time.Minute * 8,
 		cacheMaxSizeMB:    0,
 		rateLimiter:       rateLimiter,
 		useOneAPI:         true,
-		oauth2Credentials: cfg,
+		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
 
@@ -95,7 +85,8 @@ func NewOneAPIClient(userAgent, service, cloud string, sandboxEnabled bool, conf
 	// Start token renewal ticker
 	cli.startTokenRenewalTicker()
 
-	return cli, nil
+	// Return the service directly
+	return NewService(cli), nil
 }
 
 // GetSandboxURL retrieves the sandbox URL for the ZIA service.
@@ -143,12 +134,13 @@ func (c *Client) startTokenRenewalTicker() {
 }
 
 // getHTTPClient sets up the retryable HTTP client with backoff and retry policies.
-func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
+func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configuration) *http.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
 	retryableClient.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	retryableClient.RetryMax = MaxNumOfRetries
 
+	// Configure backoff and retry policies
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
@@ -165,7 +157,6 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 				return 0
 			}
 		}
-		// Default to exponential backoff
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -176,10 +167,41 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter) *http.Client {
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
 	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
-	retryableClient.HTTPClient.Transport = &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
+
+	// Configure proxy settings from configuration
+	proxyFunc := http.ProxyFromEnvironment // Default behavior (uses system/env variables)
+	if cfg.Zscaler.Client.Proxy.Host != "" {
+		// Include username and password if provided
+		proxyURLString := fmt.Sprintf("http://%s:%d", cfg.Zscaler.Client.Proxy.Host, cfg.Zscaler.Client.Proxy.Port)
+		if cfg.Zscaler.Client.Proxy.Username != "" && cfg.Zscaler.Client.Proxy.Password != "" {
+			// URL-encode the username and password
+			proxyAuth := url.UserPassword(cfg.Zscaler.Client.Proxy.Username, cfg.Zscaler.Client.Proxy.Password)
+			proxyURLString = fmt.Sprintf("http://%s@%s:%d", proxyAuth.String(), cfg.Zscaler.Client.Proxy.Host, cfg.Zscaler.Client.Proxy.Port)
+		}
+
+		proxyURL, err := url.Parse(proxyURLString)
+		if err == nil {
+			proxyFunc = http.ProxyURL(proxyURL) // Use custom proxy from configuration
+		} else {
+			l.Printf("[ERROR] Invalid proxy URL: %v", err)
+		}
+	}
+
+	// Setup transport with custom proxy, if applicable, and check for HTTPS certificate check disabling
+	transport := &http.Transport{
+		Proxy:               proxyFunc,
 		MaxIdleConnsPerHost: maxIdleConnections,
 	}
+
+	// Disable HTTPS check if the configuration requests it
+	if cfg.Zscaler.Testing.DisableHttpsCheck {
+		transport.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true, // This disables HTTPS certificate validation
+		}
+		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
+	}
+
+	retryableClient.HTTPClient.Transport = transport
 	return retryableClient.StandardClient()
 }
 

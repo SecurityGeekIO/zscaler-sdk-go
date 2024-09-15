@@ -19,7 +19,6 @@ import (
 )
 
 // Performs the HTTP request and manages caching and token refresh logic.
-// Performs the HTTP request and manages caching and token refresh logic.
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
 	err := c.authenticate()
 	if err != nil {
