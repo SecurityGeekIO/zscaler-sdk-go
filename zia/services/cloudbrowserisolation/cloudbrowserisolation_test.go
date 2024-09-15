@@ -9,17 +9,13 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestIsolationProfile(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all profiles
 	profiles, err := GetAll(service)
@@ -55,13 +51,10 @@ func TestIsolationProfile(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	profiles, err := GetAll(service)
 	if err != nil {
@@ -89,13 +82,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"BD_SA_Profile1_ZIA", "BD_SA_Profile2_ZIA", "BD SA Profile ZIA", "BD  SA Profile ZIA", "BD   SA   Profile  ZIA"}
 
@@ -126,13 +116,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming that there are profiles with the following name variations
 	variations := []string{
@@ -157,11 +144,10 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetByName(service, "non_existent_name")
 	if err == nil {

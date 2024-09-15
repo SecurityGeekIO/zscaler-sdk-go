@@ -5,19 +5,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestDLPEDM_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	templates, err := GetAll(service)
 	if err != nil {
@@ -49,12 +45,10 @@ func TestDLPEDM_data(t *testing.T) {
 }
 
 func TestGetById(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Get all servers to find a valid ID
 	templates, err := GetAll(service)
@@ -87,13 +81,10 @@ func TestGetById(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	templates, err := GetAll(service)
 	if err != nil {
@@ -118,13 +109,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming a edm template with the name "BD_EDM_TEMPLATE01" exists
 	knownName := "BD_EDM_TEMPLATE01"
@@ -152,12 +140,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestEDMFields(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Retrieve all EDM profiles
 	edmProfiles, err := GetAll(service) // Assuming appropriate method name and parameters

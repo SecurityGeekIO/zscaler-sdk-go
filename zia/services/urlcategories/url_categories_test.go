@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -45,13 +45,11 @@ func retryOnConflict(operation func() error) error {
 func TestURLCategories(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	service := services.New(client)
 
 	urlCategories := URLCategory{
 		SuperCategory:     "USER_DEFINED",
@@ -170,7 +168,7 @@ func TestURLCategories(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with a retry mechanism.
-func tryRetrieveResource(s *services.Service, id string) (*URLCategory, error) {
+func tryRetrieveResource(s *zidentity.Service, id string) (*URLCategory, error) {
 	var resource *URLCategory
 	var err error
 
@@ -190,11 +188,11 @@ func tryRetrieveResource(s *services.Service, id string) (*URLCategory, error) {
 }
 
 func TestGetURLQuota(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	// Call the GetURLQuota function
 	quota, err := GetURLQuota(service)
@@ -217,11 +215,11 @@ func TestGetURLQuota(t *testing.T) {
 }
 
 func TestGetURLLookup(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 	urls := []string{"google.com"}
 	lookupResults, err := GetURLLookup(service, urls)
 	if err != nil {
@@ -249,11 +247,11 @@ func TestGetURLLookup(t *testing.T) {
 }
 
 func TestGetAllLite(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	// Call the GetAllLite function
 	urlCategories, err := GetAllLite(service)

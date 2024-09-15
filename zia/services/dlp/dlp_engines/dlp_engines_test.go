@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/require"
 )
@@ -46,12 +46,10 @@ func TestDLPEngine(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	description := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	engine := DLPEngines{
 		Name:             name,
@@ -154,7 +152,7 @@ func TestDLPEngine(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*DLPEngines, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*DLPEngines, error) {
 	var resource *DLPEngines
 	var err error
 
@@ -171,11 +169,10 @@ func tryRetrieveResource(s *services.Service, id int) (*DLPEngines, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Get(service, 0)
 	if err == nil {
@@ -184,11 +181,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, 0)
 	if err == nil {
@@ -197,11 +193,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Update(service, 0, &DLPEngines{})
 	if err == nil {
@@ -210,11 +205,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetByName(service, "non_existent_name")
 	if err == nil {

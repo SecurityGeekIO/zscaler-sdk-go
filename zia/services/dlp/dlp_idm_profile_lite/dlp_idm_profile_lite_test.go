@@ -5,19 +5,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestDLPIDMProfileLite_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
 		profiles, err := GetAll(service, activeOnly)
@@ -58,12 +54,10 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 }
 
 func TestGetDLPProfileLiteById(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
 		profiles, err := GetAll(service, activeOnly)
@@ -86,13 +80,10 @@ func TestGetDLPProfileLiteById(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	for _, activeOnly := range []bool{true, false} {
 		profiles, err := GetAll(service, activeOnly)
@@ -117,13 +108,11 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := services.New(client)
 	knownName := "BD_IDM_TEMPLATE01"
 
 	variations := []string{

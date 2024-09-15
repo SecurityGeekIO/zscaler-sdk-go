@@ -4,17 +4,14 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestActivation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.NewService(client)
 
 	t.Run("Test GetActivationStatus", func(t *testing.T) {
 		activationStatus, err := GetActivationStatus(service)

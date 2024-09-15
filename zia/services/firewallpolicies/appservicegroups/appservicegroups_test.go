@@ -1,23 +1,20 @@
 package appservicegroups
 
 import (
+	"log"
 	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestAppServiceGroups_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		log.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	appServices, err := GetAll(service)
 	if err != nil {
@@ -49,13 +46,10 @@ func TestAppServiceGroups_data(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	appServices, err := GetAll(service)
 	if err != nil {
@@ -80,13 +74,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	// Assuming a service with the name "ZOOM" exists
 	knownName := "ZOOM"

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/region/datacenter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
@@ -14,12 +13,11 @@ import (
 func TestVIPs(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.244.0/24")
 	comment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,

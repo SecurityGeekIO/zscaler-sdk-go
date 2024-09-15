@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -45,12 +45,11 @@ func retryOnConflict(operation func() error) error {
 func TestNetworkServiceGroups(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := services.New(client)
 
 	nwSvcList, err := networkservices.GetAllNetworkServices(service)
 	if err != nil {
@@ -170,7 +169,7 @@ func TestNetworkServiceGroups(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*NetworkServiceGroups, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*NetworkServiceGroups, error) {
 	var resource *NetworkServiceGroups
 	var err error
 
@@ -187,11 +186,11 @@ func tryRetrieveResource(s *services.Service, id int) (*NetworkServiceGroups, er
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = GetNetworkServiceGroups(service, 0)
 	if err == nil {
@@ -200,11 +199,11 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = DeleteNetworkServiceGroups(service, 0)
 	if err == nil {
@@ -213,11 +212,11 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, _, err = UpdateNetworkServiceGroups(service, 0, &NetworkServiceGroups{})
 	if err == nil {
@@ -226,11 +225,11 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = GetNetworkServiceGroupsByName(service, "non_existent_name")
 	if err == nil {

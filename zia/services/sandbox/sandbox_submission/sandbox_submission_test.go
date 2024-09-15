@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestSandboxSubmission(t *testing.T) {
@@ -17,11 +16,11 @@ func TestSandboxDiscan(t *testing.T) {
 }
 
 func runSandboxTest(t *testing.T, isSubmit bool) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := &services.Service{Client: client}
 
 	baseURL := "https://github.com/SecurityGeekIO/malware-samples/raw/main/"
 	fileNames := []string{

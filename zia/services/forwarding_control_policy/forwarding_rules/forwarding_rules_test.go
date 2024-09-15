@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -46,12 +46,12 @@ func TestForwardingRulesDirect(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	randomSrcIPAddress, _ := acctest.RandIpAddress("192.168.100.0/24")
-	ziaClient, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
 
-	service := services.New(ziaClient)
 	rule := ForwardingRules{
 		Name:          name,
 		Description:   name,
@@ -169,7 +169,7 @@ func TestForwardingRulesDirect(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*ForwardingRules, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*ForwardingRules, error) {
 	var resource *ForwardingRules
 	var err error
 
@@ -186,11 +186,11 @@ func tryRetrieveResource(s *services.Service, id int) (*ForwardingRules, error) 
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = Get(service, 0)
 	if err == nil {
@@ -199,11 +199,11 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, 0)
 	if err == nil {
@@ -212,11 +212,11 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = Update(service, 0, &ForwardingRules{})
 	if err == nil {
@@ -225,11 +225,11 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-	service := services.New(client)
 
 	_, err = GetByName(service, "non_existent_name")
 	if err == nil {

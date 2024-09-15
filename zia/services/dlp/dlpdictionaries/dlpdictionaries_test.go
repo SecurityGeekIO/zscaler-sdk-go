@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -47,12 +47,10 @@ func retryOnConflict(operation func() error) error {
 func TestDLPDictionaries(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	dictionary := DlpDictionary{
 		Name:                  name,
@@ -165,9 +163,10 @@ func TestDLPDictionaries(t *testing.T) {
 }
 
 func TestGetPredefinedIdentifiers(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	require.NoError(t, err, "Error creating client")
-	service := services.New(client)
+	service, err := tests.NewZIAOneAPIClient()
+	if err != nil {
+		log.Fatalf("Error creating client: %v", err)
+	}
 
 	t.Run("Successful fetch of predefined identifiers", func(t *testing.T) {
 		dictionaryName := "CRED_LEAKAGE"
@@ -194,7 +193,7 @@ func TestGetPredefinedIdentifiers(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*DlpDictionary, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*DlpDictionary, error) {
 	var resource *DlpDictionary
 	var err error
 
@@ -211,11 +210,10 @@ func tryRetrieveResource(s *services.Service, id int) (*DlpDictionary, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Get(service, 0)
 	if err == nil {
@@ -224,11 +222,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = DeleteDlpDictionary(service, 0)
 	if err == nil {
@@ -237,11 +234,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Update(service, 0, &DlpDictionary{})
 	if err == nil {
@@ -250,11 +246,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetByName(service, "non_existent_name")
 	if err == nil {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -45,12 +45,10 @@ func retryOnConflict(operation func() error) error {
 func TestFWFilteringIPDestGroups(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-		return
+		t.Errorf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	group := IPDestinationGroups{
 		Name:        name,
@@ -195,7 +193,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*IPDestinationGroups, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*IPDestinationGroups, error) {
 	var resource *IPDestinationGroups
 	var err error
 
@@ -212,11 +210,10 @@ func tryRetrieveResource(s *services.Service, id int) (*IPDestinationGroups, err
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Get(service, 0)
 	if err == nil {
@@ -225,11 +222,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, 0)
 	if err == nil {
@@ -238,11 +234,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Update(service, 0, &IPDestinationGroups{})
 	if err == nil {
@@ -251,11 +246,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetByName(service, "non_existent_name")
 	if err == nil {

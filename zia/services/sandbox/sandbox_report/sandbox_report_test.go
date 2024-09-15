@@ -6,16 +6,14 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestGetRatingQuota(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	quotas, err := GetRatingQuota(service)
 	if err != nil {
@@ -28,12 +26,11 @@ func TestGetRatingQuota(t *testing.T) {
 }
 
 func TestGetReportMD5Hash(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	// Replace with an actual MD5 hash of known malware. This is just an example.
 	md5Hashes := []string{"F69CA01D65E6C8F9E3540029E5F6AB92"}

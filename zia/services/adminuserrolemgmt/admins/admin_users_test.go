@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/roles"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,10 +45,10 @@ func TestUserManagement(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateComments := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
-	require.NoError(t, err, "Error creating client")
-
-	service := services.New(client)
+	service, err := tests.NewZIAOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
 	roles, err := roles.GetAllAdminRoles(service)
 
@@ -181,12 +181,12 @@ func TestUserManagement(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*AdminUsers, error) {
+func tryRetrieveResource(service *zidentity.Service, id int) (*AdminUsers, error) {
 	var resource *AdminUsers
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = GetAdminUsers(s, id)
+		resource, err = GetAdminUsers(service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -198,11 +198,10 @@ func tryRetrieveResource(s *services.Service, id int) (*AdminUsers, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetAdminUsers(service, 0)
 	if err == nil {
@@ -211,11 +210,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = DeleteAdminUser(service, 0)
 	if err == nil {
@@ -224,11 +222,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = UpdateAdminUser(service, 0, AdminUsers{})
 	if err == nil {
@@ -237,11 +234,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetAdminByUsername(service, "non_existent_name")
 	if err == nil {

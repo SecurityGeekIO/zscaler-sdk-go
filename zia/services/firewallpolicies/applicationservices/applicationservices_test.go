@@ -5,20 +5,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestApplicationServices_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
-
 	appServices, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting application services: %v", err)
@@ -49,14 +44,10 @@ func TestApplicationServices_data(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
-
 	appServices, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting application service : %v", err)
@@ -80,13 +71,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	// Assuming a service with the name "SKYPEFORBUSINESS" exists
 	knownName := "SKYPEFORBUSINESS"

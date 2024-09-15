@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 // isValidMD5 checks if the given string is a valid MD5 hash.
@@ -15,12 +14,11 @@ func isValidMD5(hash string) bool {
 }
 
 func TestUpdateBaAdvancedSettings(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	desiredSettings := BaAdvancedSettings{
@@ -43,12 +41,11 @@ func TestUpdateBaAdvancedSettings(t *testing.T) {
 }
 
 func TestValidateMD5Hashes(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	hashes := []string{
@@ -89,12 +86,11 @@ func TestValidateMD5Hashes(t *testing.T) {
 }
 
 func TestGetBaAdvancedSettings(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	settings, err := Get(service)
 	if err != nil {
@@ -106,12 +102,11 @@ func TestGetBaAdvancedSettings(t *testing.T) {
 }
 
 func TestGetFileHashCount(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	hashCount, err := GetFileHashCount(service)
 	if err != nil {
@@ -123,12 +118,11 @@ func TestGetFileHashCount(t *testing.T) {
 }
 
 func TestEmptyHashList(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	// Define the desired settings for the update
 	desiredSettings := BaAdvancedSettings{

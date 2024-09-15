@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/gretunnels"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
 	virtualipaddress "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/virtualipaddress"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -39,11 +39,11 @@ func cleanResources() {
 		return
 	}
 
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
+
 	resources, err := gretunnels.GetAll(service)
 	if err != nil {
 		log.Printf("Error retrieving resources during cleanup: %v", err)
@@ -63,14 +63,12 @@ func cleanResources() {
 func TestGRETunnelInfo(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.248.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	// create static IP for testing
-	service := services.New(client)
 	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
 		Comment:   comment,
@@ -147,7 +145,7 @@ func TestGRETunnelInfo(t *testing.T) {
 }
 
 // deleteStaticIP deletes a static IP resource
-func deleteStaticIP(service *services.Service, id int, t *testing.T) {
+func deleteStaticIP(service *zidentity.Service, id int, t *testing.T) {
 	_, err := staticips.Delete(service, id)
 	if err != nil {
 		t.Errorf("Error deleting static IP: %v", err)
@@ -155,7 +153,7 @@ func deleteStaticIP(service *services.Service, id int, t *testing.T) {
 }
 
 // deleteGRETunnel deletes a GRE tunnel resource
-func deleteGRETunnel(service *services.Service, id int, t *testing.T) {
+func deleteGRETunnel(service *zidentity.Service, id int, t *testing.T) {
 	_, err := gretunnels.DeleteGreTunnels(service, id)
 	if err != nil {
 		t.Errorf("Error deleting GRE tunnel: %v", err)

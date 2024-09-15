@@ -5,19 +5,16 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestIntermediateCertificate_data(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	service := services.New(client)
 
 	// Test 1: GetAll
 	certificates, err := GetAll(service)
@@ -71,13 +68,11 @@ func TestIntermediateCertificate_data(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	service := services.New(client)
 
 	// Assuming a certificate with the name "Zscaler Intermediate CA Certificate" exists
 	knownName := "Zscaler Intermediate CA Certificate"

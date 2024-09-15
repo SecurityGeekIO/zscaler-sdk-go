@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestMain(m *testing.M) {
@@ -38,11 +37,11 @@ func cleanResources() {
 		return
 	}
 
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
+
 	resources, err := Get(service)
 	if err != nil {
 		log.Printf("Error retrieving exempted URLs during cleanup: %v", err)
@@ -65,12 +64,11 @@ func cleanResources() {
 }
 
 func TestUserAuthenticationSettings(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := &services.Service{Client: client}
 
 	// Create 3 random exempted URLs
 	initialUrls, err := Get(service)

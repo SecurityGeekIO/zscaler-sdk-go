@@ -7,17 +7,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 func TestNetworkApplications(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	service := services.New(client)
 
 	// Fetching the first page of network applications
 	nwApplications, err := GetFirstPage(service, "")
@@ -56,12 +54,11 @@ func TestNetworkApplications(t *testing.T) {
 }
 
 func TestFilteringByParentCategory(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	// Fetching only the first page of network applications
 	nwApplications, err := GetFirstPage(service, "")
@@ -89,12 +86,12 @@ func TestFilteringByParentCategory(t *testing.T) {
 }
 
 func TestLocaleSpecificResponse(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
 
-	service := services.New(client)
 	locales := []string{"en-US", "de-DE", "es-ES", "fr-FR", "ja-JP", "zh-CN"}
 
 	for _, locale := range locales {
@@ -117,12 +114,11 @@ func TestLocaleSpecificResponse(t *testing.T) {
 }
 
 func TestDeprecatedApplications(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
@@ -144,12 +140,11 @@ func TestDeprecatedApplications(t *testing.T) {
 }
 
 func TestDescriptionField(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	nwApplications, err := GetFirstPage(service, "")
 	if err != nil {
@@ -164,12 +159,11 @@ func TestDescriptionField(t *testing.T) {
 }
 
 func TestInvalidLocaleResponses(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	invalidLocales := []string{"abc", "xyz", "123"}
 	for _, locale := range invalidLocales {
@@ -183,12 +177,11 @@ func TestInvalidLocaleResponses(t *testing.T) {
 }
 
 func TestRandomizedLocaleSpecificResponse(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
+		return
 	}
-
-	service := services.New(client)
 
 	locales := []string{"en-US", "de-DE", "es-ES", "fr-FR", "ja-JP", "zh-CN"}
 
@@ -216,13 +209,11 @@ func TestRandomizedLocaleSpecificResponse(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-
-	service := services.New(client)
 
 	// Fetching only the first page of network applications
 	nwApplications, err := GetFirstPage(service, "")
@@ -245,7 +236,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 // GetFirstPage fetches the first page of network applications for a specific locale
-func GetFirstPage(service *services.Service, locale string) ([]NetworkApplications, error) {
+func GetFirstPage(service *zidentity.Service, locale string) ([]NetworkApplications, error) {
 	var networkApplications []NetworkApplications
 	endpoint := networkApplicationsEndpoint
 	if locale != "" {
