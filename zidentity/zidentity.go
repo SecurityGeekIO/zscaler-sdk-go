@@ -17,8 +17,10 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
@@ -109,8 +111,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 }
 
 // Authenticate performs OAuth2 authentication and retrieves an AuthToken.
-// Authenticate performs OAuth2 authentication and retrieves an AuthToken.
-func Authenticate(cfg *Configuration) (*AuthToken, error) {
+func Authenticate(cfg *Configuration, l logger.Logger) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
 	if creds.ClientID == "" || (creds.ClientSecret == "" && creds.PrivateKey == "") {
@@ -140,11 +141,13 @@ func Authenticate(cfg *Configuration) (*AuthToken, error) {
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s, err: %v", creds.ClientID, err)
 	}
-
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("User-Agent", cfg.UserAgent)
-
+	// start := time.Now()
+	reqID := uuid.NewString()
+	logger.LogRequest(l, req, reqID, nil, false)
 	resp, err := cfg.Zscaler.Client.HttpClient.Do(req)
+	// logger.LogResponse(l, resp, start, reqID)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s, err: %v", creds.ClientID, err)
 	}

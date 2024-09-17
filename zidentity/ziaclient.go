@@ -86,7 +86,7 @@ func (c *Client) authenticate() error {
 	defer c.Unlock()
 
 	if c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken) {
-		authToken, err := Authenticate(c.oauth2Credentials)
+		authToken, err := Authenticate(c.oauth2Credentials, c.Logger)
 		if err != nil {
 			return err
 		}

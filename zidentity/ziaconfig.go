@@ -46,7 +46,7 @@ type Client struct {
 	useOneAPI         bool
 	oauth2Credentials *Configuration
 	stopTicker        chan bool
-	Config            *Config
+	// Config            *Config
 }
 
 // NewOneAPIClient creates a new ZIA Client using OAuth2 authentication.
@@ -119,7 +119,7 @@ func (c *Client) startTokenRenewalTicker() {
 					select {
 					case <-ticker.C:
 						// Refresh the token
-						authToken, err := Authenticate(c.oauth2Credentials)
+						authToken, err := Authenticate(c.oauth2Credentials, c.Logger)
 						if err != nil {
 							c.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
 						} else {
