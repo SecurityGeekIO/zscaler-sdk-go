@@ -7,41 +7,34 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/activation"
 )
 
-func TestActivationCLI(t *testing.T) {
-	// Check that necessary environment variables are set
-	checkEnvVarForTest(t, "ZIA_USERNAME")
-	checkEnvVarForTest(t, "ZIA_PASSWORD")
-	checkEnvVarForTest(t, "ZIA_API_KEY")
-	checkEnvVarForTest(t, "ZIA_CLOUD")
+// Check if environment variables exist for the test
+func checkEnvVarForTest(t *testing.T, k string) {
+	if v := os.Getenv(k); v == "" {
+		t.Fatalf("[ERROR] Couldn't find environment variable %s", k)
+	}
+}
 
-	// Construct the client
-	client, err := tests.NewZiaClient()
+func TestActivationCLI(t *testing.T) {
+	// Ensure the required environment variables are set for the test
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_ID")
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_SECRET")
+	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
+
+	// Create the ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := services.New(client)
-
+	// Perform activation
 	_, err = activation.CreateActivation(service, activation.Activation{
 		Status: "active",
 	})
 	if err != nil {
 		t.Fatalf("[ERROR] Activation Failed: %v", err)
-	}
-
-	// Destroy the session
-	if err := client.Logout(); err != nil {
-		t.Fatalf("[ERROR] Failed destroying session: %v", err)
-	}
-}
-
-func checkEnvVarForTest(t *testing.T, k string) {
-	if v := os.Getenv(k); v == "" {
-		t.Fatalf("[ERROR] Couldn't find environment variable %s", k)
 	}
 }
 
@@ -55,18 +48,13 @@ func TestMissingEnvVars(t *testing.T) {
 		}
 	}()
 
-	// Unset required environment variables
-	os.Unsetenv("ZIA_USERNAME")
-	os.Unsetenv("ZIA_PASSWORD")
-	os.Unsetenv("ZIA_API_KEY")
-	os.Unsetenv("ZIA_CLOUD")
-
-	requireEnvVars := []string{"ZIA_USERNAME", "ZIA_PASSWORD", "ZIA_API_KEY", "ZIA_CLOUD"}
+	requireEnvVars := []string{"ZSCALER_CLIENT_ID", "ZSCALER_CLIENT_SECRET", "ZSCALER_VANITY_DOMAIN"}
 	for _, envVar := range requireEnvVars {
 		t.Run(fmt.Sprintf("Missing %s", envVar), func(t *testing.T) {
 			originalValue := os.Getenv(envVar)
 			os.Unsetenv(envVar)
 
+			// Attempt to run the check for missing environment variable
 			if v := os.Getenv(envVar); v != "" {
 				t.Fatalf("[ERROR] Environment variable %s should not be set", envVar)
 			}
@@ -80,21 +68,19 @@ func TestMissingEnvVars(t *testing.T) {
 }
 
 func TestActivationStatuses(t *testing.T) {
-	// Check that necessary environment variables are set
-	checkEnvVarForTest(t, "ZIA_USERNAME")
-	checkEnvVarForTest(t, "ZIA_PASSWORD")
-	checkEnvVarForTest(t, "ZIA_API_KEY")
-	checkEnvVarForTest(t, "ZIA_CLOUD")
+	// Ensure the required environment variables are set for the test
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_ID")
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_SECRET")
+	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
 
-	// Construct the client
-	client, err := tests.NewZiaClient()
+	// Create the ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := services.New(client)
-
-	statuses := []string{"active"}
+	// Test different activation statuses
+	statuses := []string{"active", "inactive", "suspended"}
 	for _, status := range statuses {
 		t.Run(fmt.Sprintf("Activation status %s", status), func(t *testing.T) {
 			_, err := activation.CreateActivation(service, activation.Activation{
@@ -105,27 +91,19 @@ func TestActivationStatuses(t *testing.T) {
 			}
 		})
 	}
-
-	// Destroy the session
-	if err := client.Logout(); err != nil {
-		t.Fatalf("[ERROR] Failed destroying session: %v", err)
-	}
 }
 
 func TestSuccessfulActivationAndLogout(t *testing.T) {
-	// Check that necessary environment variables are set
-	checkEnvVarForTest(t, "ZIA_USERNAME")
-	checkEnvVarForTest(t, "ZIA_PASSWORD")
-	checkEnvVarForTest(t, "ZIA_API_KEY")
-	checkEnvVarForTest(t, "ZIA_CLOUD")
+	// Ensure the required environment variables are set for the test
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_ID")
+	checkEnvVarForTest(t, "ZSCALER_CLIENT_SECRET")
+	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
 
-	// Construct the client
-	client, err := tests.NewZiaClient()
+	// Create the ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Perform activation
 	_, err = activation.CreateActivation(service, activation.Activation{
@@ -135,8 +113,4 @@ func TestSuccessfulActivationAndLogout(t *testing.T) {
 		t.Fatalf("[ERROR] Activation Failed: %v", err)
 	}
 
-	// Destroy the session
-	if err := client.Logout(); err != nil {
-		t.Fatalf("[ERROR] Failed destroying session: %v", err)
-	}
 }

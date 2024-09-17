@@ -97,7 +97,6 @@ func (c *Client) authenticate() error {
 }
 
 // GenericRequest handles a generic HTTP request.
-// GenericRequest handles a generic HTTP request.
 func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON

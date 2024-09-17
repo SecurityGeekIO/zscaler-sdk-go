@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/trafficforwarding/staticips"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -48,10 +48,9 @@ func TestLocationManagement(t *testing.T) {
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	comment := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
 
 	cleanupTasks := []func(){}
@@ -61,9 +60,6 @@ func TestLocationManagement(t *testing.T) {
 			task()
 		}
 	}()
-
-	// static ip for location management testing
-	service := services.New(client)
 
 	staticIP, _, err := staticips.Create(service, &staticips.StaticIP{
 		IpAddress: ipAddress,
@@ -318,7 +314,7 @@ func TestLocationManagement(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *services.Service, id int) (*Locations, error) {
+func tryRetrieveResource(s *zidentity.Service, id int) (*Locations, error) {
 	var result *Locations
 	var lastErr error
 
@@ -335,11 +331,10 @@ func tryRetrieveResource(s *services.Service, id int) (*Locations, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetLocation(service, 0)
 	if err == nil {
@@ -348,11 +343,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, 0)
 	if err == nil {
@@ -361,11 +355,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Update(service, 0, &Locations{})
 	if err == nil {
@@ -374,11 +367,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = GetLocationByName(service, "non_existent_name")
 	if err == nil {

@@ -1,9 +1,6 @@
 package services
 
-import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
-)
-
+/*
 type Service struct {
 	Client        *zpa.Client
 	microTenantID *string
@@ -28,3 +25,4 @@ func (service *Service) WithMicroTenant(microTenantID string) *Service {
 func (service *Service) MicroTenantID() *string {
 	return service.microTenantID
 }
+*/

@@ -5,17 +5,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 func TestLocationGroups(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test resources retrieval
 	resources, err := GetAll(service)

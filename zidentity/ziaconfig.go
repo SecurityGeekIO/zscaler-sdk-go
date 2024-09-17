@@ -46,6 +46,7 @@ type Client struct {
 	useOneAPI         bool
 	oauth2Credentials *Configuration
 	stopTicker        chan bool
+	Config            *Config
 }
 
 // NewOneAPIClient creates a new ZIA Client using OAuth2 authentication.
@@ -57,6 +58,11 @@ func NewOneAPIClient(config *Configuration, service string) (*Service, error) {
 
 	// Build the API endpoint based on the service and cloud parameters
 	url := GetAPIEndpoint(service, config.Zscaler.Client.Cloud, false) // Pass the service explicitly
+
+	// Adjust rate limits if ZCC is selected
+	if service == "zcc" {
+		rateLimiter = rl.NewRateLimiter(100, 3, 3, 86400) // ZCC has distinct limits
+	}
 
 	// Create the client configuration
 	cli := &Client{
@@ -226,12 +232,19 @@ func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
 	return 0
 }
 
+// getRetryOnStatusCodes return a list of http status codes we want to apply retry on.
+// Return empty slice to enable retry on all connection & server errors.
+// Or return []int{429}  to retry on only TooManyRequests error.
+func getRetryOnStatusCodes() []int {
+	return []int{http.StatusTooManyRequests}
+}
+
 // checkRetry defines the retry logic based on status codes or response body errors.
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	if ctx.Err() != nil {
 		return false, ctx.Err()
 	}
-	if resp != nil && containsInt([]int{http.StatusTooManyRequests}, resp.StatusCode) {
+	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)

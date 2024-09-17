@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
 const (
@@ -75,9 +76,9 @@ type ZPAAppSegments struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-func (service *Service) Get(ruleID int) (*ZPAGateways, error) {
+func Get(service *zidentity.Service, gatewayID int) (*ZPAGateways, error) {
 	var rule ZPAGateways
-	err := service.Client.Read(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), &rule)
+	err := service.Client.Read(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, gatewayID), &rule)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func (service *Service) Get(ruleID int) (*ZPAGateways, error) {
 	return &rule, nil
 }
 
-func (service *Service) GetByName(ruleName string) (*ZPAGateways, error) {
+func GetByName(service *zidentity.Service, ruleName string) (*ZPAGateways, error) {
 	var rules []ZPAGateways
 	err := common.ReadAllPages(service.Client, zpaGatewaysEndpoint, &rules)
 	if err != nil {
@@ -100,7 +101,7 @@ func (service *Service) GetByName(ruleName string) (*ZPAGateways, error) {
 	return nil, fmt.Errorf("no zpa gateway found with name: %s", ruleName)
 }
 
-func (service *Service) Create(rule *ZPAGateways) (*ZPAGateways, error) {
+func Create(service *zidentity.Service, rule *ZPAGateways) (*ZPAGateways, error) {
 	resp, err := service.Client.Create(zpaGatewaysEndpoint, *rule)
 	if err != nil {
 		return nil, err
@@ -115,8 +116,8 @@ func (service *Service) Create(rule *ZPAGateways) (*ZPAGateways, error) {
 	return createdRules, nil
 }
 
-func (service *Service) Update(ruleID int, rules *ZPAGateways) (*ZPAGateways, error) {
-	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID), *rules)
+func Update(service *zidentity.Service, gatewayID int, rules *ZPAGateways) (*ZPAGateways, error) {
+	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, gatewayID), *rules)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +126,8 @@ func (service *Service) Update(ruleID int, rules *ZPAGateways) (*ZPAGateways, er
 	return updatedRules, nil
 }
 
-func (service *Service) Delete(ruleID int) (*http.Response, error) {
-	err := service.Client.Delete(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, ruleID))
+func Delete(service *zidentity.Service, gatewayID int) (*http.Response, error) {
+	err := service.Client.Delete(fmt.Sprintf("%s/%d", zpaGatewaysEndpoint, gatewayID))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]ZPAGateways, error) {
+func GetAll(service *zidentity.Service) ([]ZPAGateways, error) {
 	var rules []ZPAGateways
 	err := common.ReadAllPages(service.Client, zpaGatewaysEndpoint, &rules)
 	return rules, err

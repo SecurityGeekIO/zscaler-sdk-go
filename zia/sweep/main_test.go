@@ -24,7 +24,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/forwarding_rules"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/location/locationmanagement"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/rule_labels"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/sandbox/sandbox_settings"
@@ -35,7 +34,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/urlcategories"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/urlfilteringpolicies"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/user_authentication_settings"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/users"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
 )
 
@@ -72,11 +70,13 @@ func TestMain(m *testing.M) {
 // sweep the resources before running integration tests
 func sweep() error {
 	log.Println("[INFO] Sweeping ZIA test resources")
-	client, err := tests.NewZiaClient()
+	service, err := tests.NewZIAOneAPIClient() // This returns a *zidentity.Service
 	if err != nil {
 		log.Printf("[ERROR] Failed to instantiate ZIA client: %v", err)
 		return err
 	}
+
+	client := service.Client // Extract the *zidentity.Client from the Service
 
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zidentity.Client) error{
@@ -94,13 +94,13 @@ func sweep() error {
 		sweepNetworkServiceGroups,
 		sweepNetworkServices,
 		sweepForwardingControlRules,
-		sweepZPAGateways,
+		// sweepZPAGateways,
 		sweepRuleLabels,
 		sweepGRETunnels,
 		sweepStaticIP,
 		sweepVPNCredentials,
 		sweepURLCategories,
-		sweepUserManagement,
+		// sweepUserManagement,
 		sweepSandboxSettings,
 		sweepSecurityPolicySettings,
 		sweepUserAuthenticationSettings,
@@ -376,6 +376,7 @@ func sweepForwardingControlRules(client *zidentity.Client) error {
 	return nil
 }
 
+/*
 func sweepZPAGateways(client *zidentity.Client) error {
 	service := zpa_gateways.New(client)
 	resources, err := service.GetAll()
@@ -396,6 +397,7 @@ func sweepZPAGateways(client *zidentity.Client) error {
 	}
 	return nil
 }
+*/
 
 func sweepLocationManagement(client *zidentity.Client) error {
 	service := zidentity.NewService(client)
@@ -639,6 +641,7 @@ func sweepURLFilteringPolicies(client *zidentity.Client) error {
 	return nil
 }
 
+/*
 func sweepUserManagement(client *zidentity.Client) error {
 	service := users.New(client)
 	resources, err := service.GetAllUsers()
@@ -659,3 +662,4 @@ func sweepUserManagement(client *zidentity.Client) error {
 	}
 	return nil
 }
+*/
