@@ -11,10 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcon"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
 )
 
 const (
@@ -109,7 +110,7 @@ func TestPassword(length int) string {
 // }
 
 // NewOneAPIClient instantiates a new OneAPI client for testing
-func NewZIAOneAPIClient() (*zidentity.Service, error) {
+func NewZIAOneAPIClient() (*zscaler.Service, error) {
 	// Fetch credentials directly from environment variables
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")

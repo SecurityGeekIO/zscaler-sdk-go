@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/cloudbrowserisolation/isolationprofile"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/postureprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/cloudbrowserisolation/isolationprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/postureprofile"
 )
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.

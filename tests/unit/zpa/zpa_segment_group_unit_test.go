@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/segmentgroup"
 )
 
 func TestSegmentGroup_Get(t *testing.T) {

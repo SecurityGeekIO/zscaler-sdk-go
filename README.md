@@ -34,7 +34,7 @@ To install the Zscaler GO SDK in your project:
   - You can skip this step if you already use `go mod`
   - Run `go get github.com/zscaler/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zpa"`.
+  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zscaler/zpa"`.
 
 ### You'll also need
 
@@ -78,9 +78,9 @@ You can provide credentials via the `ZIA_USERNAME`, `ZIA_PASSWORD`, `ZIA_API_KEY
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |    
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZIA_USERNAME` |
 | `password`       | _(String)_ A string that contains the password for the API admin.| `ZIA_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |   
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZIA_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$zsapi.<Zscaler Cloud Name>/api/v1`.| `ZIA_CLOUD` |
 
 ### ZPA native authentication
@@ -103,9 +103,9 @@ You can provide credentials via the `ZPA_CLIENT_ID`, `ZPA_CLIENT_SECRET`, `ZPA_C
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |    
+| `client_id`       | _(String)_ The ZPA API client ID generated from the ZPA console.| `ZPA_CLIENT_ID` |
 | `client_secret`       | _(String)_ The ZPA API client secret generated from the ZPA console.| `ZPA_CLIENT_SECRET` |
-| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |   
+| `customer_id`       | _(String)_ The ZPA tenant ID found in the Administration > Company menu in the ZPA console.| `ZPA_CUSTOMER_ID` |
 | `cloud`       | _(String)_ The Zscaler cloud for your tenancy.| `ZPA_CLOUD` |
 
 ### ZCC native authentication
@@ -132,8 +132,8 @@ You can provide credentials via the `ZCC_CLIENT_ID`, `ZCC_CLIENT_SECRET`, `ZCC_C
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |    
-| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` | 
+| `APIKey`       | _(String)_ A string that contains the apiKey for the Mobile Portal.| `ZCC_CLIENT_ID` |
+| `SecretKey`       | _(String)_ A string that contains the secret key for the Mobile Portal.| `ZCC_CLIENT_SECRET` |
 | `cloudEnv`       | _(String)_ The host and basePath for the ZCC cloud services API is `$mobileadmin.<Zscaler Cloud Name>/papi`.| `ZCC_CLOUD` |
 
 ### ZCON native authentication
@@ -158,9 +158,9 @@ You can provide credentials via the `ZCON_USERNAME`, `ZCON_PASSWORD`, `ZCON_API_
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |    
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZCON_USERNAME` |
 | `password`       | _(String)_ A string that contains the password for the API admin.| `ZCON_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |   
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZCON_API_KEY` |
 | `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZCON_CLOUD` |
 
 ### ZDX native authentication
@@ -175,8 +175,8 @@ You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environme
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |    
-| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` | 
+| `APIKey`       | _(String)_ A string that contains the apiKey for the ZDX Portal.| `ZDX_API_KEY_ID` |
+| `SecretKey`       | _(String)_ A string that contains the secret key for the ZDX Portal.| `ZDX_API_KEY_ID` |
 
 ## Initialize a Client
 
@@ -217,7 +217,7 @@ func main() {
 	username  := ""
 	password  := ""
 	apiKey    := ""
-	cloudEnv  := "" 
+	cloudEnv  := ""
 
 	client, err := zia.NewClient(username, password, apiKey, cloudEnv, userAgent)
 	if err != nil {
@@ -238,7 +238,7 @@ import (
 
 func main() {
 
-	APIKey    :=  "" 
+	APIKey    :=  ""
 	SecretKey :=  ""
 	cloudEnv  :=  ""
 	userAgent :=  ""
@@ -287,11 +287,11 @@ import (
 )
 
 func main() {
-	username    := ""  
-	password    := ""  
-	apiKey      := ""    
-	cloudEnv    := "" 
-	userAgent   := "" 
+	username    := ""
+	password    := ""
+	apiKey      := ""
+	cloudEnv    := ""
+	userAgent   := ""
 
 	client, err := zcon.NewClient(username, password, apiKey, cloudEnv, userAgent)
 	if err != nil {
@@ -326,7 +326,7 @@ In the default configuration the ZPA and ZIA client utilizes a memory cache that
 This helps to keep HTTP requests to the ZPA and ZIA API at a minimum. In the case where the client needs to be certain it is accessing recent data; for instance, list items, delete an item, then list items again; be sure to make use of the refresh next facility to clear the request cache. To completely disable the request
 memory cache configure the client with `WithCache(false)` or set the following environment variable ``ZSCALER_SDK_CACHE_DISABLED`` to `true`.
 
-The SDK supports caching for GET requests to improve performance and reduce the number of API calls. 
+The SDK supports caching for GET requests to improve performance and reduce the number of API calls.
 The cache can be configured and enabled/disabled using the following configuration parameters:
 
 - `cacheEnabled`: Enables or disables caching.

@@ -4,8 +4,8 @@ package main
 import (
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appservercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/appservercontroller"
 )
 
 func main() {

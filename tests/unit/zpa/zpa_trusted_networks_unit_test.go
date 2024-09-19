@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/trustednetwork"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks_Get(t *testing.T) {

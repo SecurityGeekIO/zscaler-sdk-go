@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/inventory"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/inventory"
 	"github.com/olekukonko/tablewriter"
 )
 
