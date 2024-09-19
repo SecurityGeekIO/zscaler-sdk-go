@@ -309,6 +309,11 @@ func WithCache(cache bool) ConfigSetter {
 	}
 }
 
+// Allows refreshing the cache.
+func (client *Client) WithFreshCache() {
+	client.freshCache = true
+}
+
 func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 	return func(c *Configuration) {
 		c.CacheManager = cacheManager
@@ -325,6 +330,35 @@ func WithCacheTti(i int32) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cache.DefaultTti = i
 	}
+}
+
+func (c *Client) WithCache(cache bool) {
+	c.cacheEnabled = cache
+}
+
+// WithCacheTtl sets the time-to-live (TTL) for cache.
+func (c *Client) WithCacheTtl(i time.Duration) {
+	c.cacheTtl = i
+	c.Lock()
+	c.cache.Close()
+	cche, err := cache.NewCache(i, c.cacheCleanwindow, c.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	c.cache = cche
+	c.Unlock()
+}
+
+func (c *Client) WithCacheCleanWindow(i time.Duration) {
+	c.cacheCleanwindow = i
+	c.Lock()
+	c.cache.Close()
+	cche, err := cache.NewCache(c.cacheTtl, i, c.cacheMaxSizeMB)
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	c.cache = cche
+	c.Unlock()
 }
 
 // WithHttpClient sets the HttpClient in the Config.
