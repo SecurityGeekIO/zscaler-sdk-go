@@ -23,10 +23,12 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	// Adjusting to handle the extra return value from ExecuteRequest
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
 	if err != nil {
 		return nil, err
 	}
+
 	if len(resp) > 0 {
 		responseObject := reflect.New(t).Interface()
 		err = json.Unmarshal(resp, &responseObject)
@@ -43,7 +45,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 
 // Read ...
 func (c *Client) Read(endpoint string, o interface{}) error {
-	resp, err := c.ExecuteRequest("GET", endpoint, nil, nil, "application/json")
+	resp, _, err := c.ExecuteRequest("GET", endpoint, nil, nil, "application/json")
 	if err != nil {
 		return err
 	}
@@ -79,7 +81,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 		return nil, err
 	}
 
-	resp, err := c.ExecuteRequest(method, endpoint, bytes.NewReader(data), nil, contentType)
+	resp, _, err := c.ExecuteRequest(method, endpoint, bytes.NewReader(data), nil, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +93,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 
 // Delete sends a DELETE request to the specified endpoint.
 func (c *Client) Delete(endpoint string) error {
-	_, err := c.ExecuteRequest("DELETE", endpoint, nil, nil, "application/json")
+	_, _, err := c.ExecuteRequest("DELETE", endpoint, nil, nil, "application/json")
 	if err != nil {
 		return err
 	}
@@ -109,7 +111,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 		return nil, err
 	}
 
-	resp, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +140,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
 	if err != nil {
 		return nil, err
 	}
@@ -167,141 +169,10 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, err := c.ExecuteRequest("PUT", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("PUT", endpoint, bytes.NewReader(data), nil, "application/json")
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
 }
-
-// Performs the HTTP request and manages caching and token refresh logic.
-// func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
-// 	err := c.authenticate()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	key := cache.CreateCacheKey(req)
-// 	if c.cacheEnabled {
-// 		if req.Method != http.MethodGet {
-// 			c.cache.Delete(key)
-// 			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
-// 		}
-// 		resp := c.cache.Get(key)
-// 		inCache := resp != nil
-// 		if c.freshCache {
-// 			c.cache.Delete(key)
-// 			inCache = false
-// 			c.freshCache = false
-// 		}
-// 		if inCache {
-// 			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
-// 			return resp, nil
-// 		}
-// 	}
-// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
-// 	// Perform the HTTP request
-// 	resp, err := c.HTTPClient.Do(req)
-// 	logger.LogResponse(c.Logger, resp, start, reqID)
-// 	if err != nil {
-// 		return resp, err
-// 	}
-
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return resp, err
-// 	}
-// 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
-
-// 	// Handle 401 Unauthorized or token expiration cases for OAuth2
-// 	if resp.StatusCode == http.StatusUnauthorized {
-// 		// Retry with refreshed token
-// 		err := c.authenticate()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
-// 		resp, err = c.HTTPClient.Do(req)
-// 		logger.LogResponse(c.Logger, resp, start, reqID)
-// 		if err != nil {
-// 			return resp, err
-// 		}
-// 	}
-
-// 	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
-// 		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-// 		c.cache.Set(key, cache.CopyResponse(resp))
-// 	}
-
-// 	return resp, nil
-// }
-
-// GenericRequest handles a generic HTTP request.
-// func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
-// 	if contentType == "" {
-// 		contentType = contentTypeJSON
-// 	}
-
-// 	var req *http.Request
-// 	var resp *http.Response
-// 	var err error
-// 	params := ""
-// 	if urlParams != nil {
-// 		params = urlParams.Encode()
-// 	}
-// 	if strings.Contains(endpoint, "?") && params != "" {
-// 		endpoint += "&" + params
-// 	} else if params != "" {
-// 		endpoint += "?" + params
-// 	}
-// 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
-// 	isSandboxRequest := baseUrl == c.GetSandboxURL()
-// 	req, err = http.NewRequest(method, fullURL, body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	req.Header.Set("Content-Type", contentType)
-// 	if c.UserAgent != "" {
-// 		req.Header.Add("User-Agent", c.UserAgent)
-// 	}
-
-// 	if !isSandboxRequest {
-// 		// Set the OAuth2 token in the request
-// 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
-// 	}
-
-// 	reqID := uuid.New().String()
-// 	start := time.Now()
-// 	logger.LogRequest(c.Logger, req, reqID, nil, !isSandboxRequest)
-
-// 	for retry := 1; retry <= 5; retry++ {
-// 		resp, err = c.do(req, start, reqID)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		if resp.StatusCode <= 299 {
-// 			defer resp.Body.Close()
-// 			break
-// 		}
-
-// 		resp.Body.Close()
-// 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
-// 			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
-// 		}
-// 	}
-
-// 	bodyResp, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return bodyResp, nil
-// }
-
-// Request sends a request using the client's URL.
-// func (c *Client) Request(endpoint, method string, data []byte, contentType string) ([]byte, error) {
-// 	return c.GenericRequest(c.URL, endpoint, method, bytes.NewReader(data), nil, contentType)
-// }

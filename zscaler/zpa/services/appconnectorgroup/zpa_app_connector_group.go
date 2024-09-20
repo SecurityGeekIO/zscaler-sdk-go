@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
-	mgmtConfig                = "/mgmtconfig/v1/admin/customers/"
+	// mgmtConfig                = "/mgmtconfig/v1/admin/customers/"
 	appConnectorGroupEndpoint = "/appConnectorGroup"
 )
 
@@ -99,19 +99,32 @@ type AppServerGroup struct {
 	Name             string `json:"name,omitempty"`
 }
 
-func Get(service *services.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
+func Get(service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
+
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint + "/" + appConnectorGroupID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Make the API request
 	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{Search: appConnectorGroupName, MicroTenantID: service.MicroTenantID()})
+func GetByName(service *zscaler.Service, appConnectorGroupName string) (*AppConnectorGroup, *http.Response, error) {
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, path, common.Filter{Search: appConnectorGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -123,9 +136,17 @@ func GetByName(service *services.Service, appConnectorGroupName string) (*AppCon
 	return nil, resp, fmt.Errorf("no app connector group named '%s' was found", appConnectorGroupName)
 }
 
-func Create(service *services.Service, appConnectorGroup AppConnectorGroup) (*AppConnectorGroup, *http.Response, error) {
+func Create(service *zscaler.Service, appConnectorGroup AppConnectorGroup) (*AppConnectorGroup, *http.Response, error) {
 	v := new(AppConnectorGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
+
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Make the API request
+	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -133,9 +154,15 @@ func Create(service *services.Service, appConnectorGroup AppConnectorGroup) (*Ap
 	return v, resp, nil
 }
 
-func Update(service *services.Service, appConnectorGroupID string, appConnectorGroup *AppConnectorGroup) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, nil)
+func Update(service *zscaler.Service, appConnectorGroupID string, appConnectorGroup *AppConnectorGroup) (*http.Response, error) {
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint + "/" + appConnectorGroupID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make the API request
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appConnectorGroup, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -143,9 +170,15 @@ func Update(service *services.Service, appConnectorGroupID string, appConnectorG
 	return resp, err
 }
 
-func Delete(service *services.Service, appConnectorGroupID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appConnectorGroupEndpoint, appConnectorGroupID)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+func Delete(service *zscaler.Service, appConnectorGroupID string) (*http.Response, error) {
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint + "/" + appConnectorGroupID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make the API request
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,9 +186,14 @@ func Delete(service *services.Service, appConnectorGroupID string) (*http.Respon
 	return resp, nil
 }
 
-func GetAll(service *services.Service) ([]AppConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appConnectorGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
+func GetAll(service *zscaler.Service) ([]AppConnectorGroup, *http.Response, error) {
+	// Use GetFullPath to build the URL with CustomerID
+	path, err := service.Client.GetFullPath(appConnectorGroupEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppConnectorGroup](service.Client, path, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

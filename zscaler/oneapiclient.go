@@ -50,15 +50,17 @@ type Configuration struct {
 	Context        context.Context
 	Zscaler        struct {
 		Client struct {
-			ClientID     string     `yaml:"clientId" envconfig:"ZSCALER_CLIENT_ID"`
-			ClientSecret string     `yaml:"clientSecret" envconfig:"ZSCALER_CLIENT_SECRET"`
-			VanityDomain string     `yaml:"vanityDomain" envconfig:"ZSCALER_VANITY_DOMAIN"`
-			Cloud        string     `yaml:"cloud" envconfig:"ZSCALER_CLOUD"`
-			PrivateKey   string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
-			AuthToken    *AuthToken `yaml:"authToken"`
-			AccessToken  *AuthToken `yaml:"accessToken"`
-			SandboxToken string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"` // New Sandbox token field
-			Cache        struct {
+			ClientID      string     `yaml:"clientId" envconfig:"ZSCALER_CLIENT_ID"`
+			ClientSecret  string     `yaml:"clientSecret" envconfig:"ZSCALER_CLIENT_SECRET"`
+			VanityDomain  string     `yaml:"vanityDomain" envconfig:"ZSCALER_VANITY_DOMAIN"`
+			Cloud         string     `yaml:"cloud" envconfig:"ZSCALER_CLOUD"`
+			CustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
+			MicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
+			PrivateKey    string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
+			AuthToken     *AuthToken `yaml:"authToken"`
+			AccessToken   *AuthToken `yaml:"accessToken"`
+			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"` // New Sandbox token field
+			Cache         struct {
 				Enabled    bool  `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
 				DefaultTtl int32 `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti int32 `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
@@ -305,6 +307,52 @@ func readConfigFromEnvironment(c Configuration) *Configuration {
 }
 
 // ConfigSetter type defines a function that modifies a Config struct.
+// WithClientID sets the ClientID in the Config.
+func WithClientID(clientID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.ClientID = clientID
+	}
+}
+
+// WithClientSecret sets the ClientSecret in the Config.
+func WithClientSecret(clientSecret string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.ClientSecret = clientSecret
+	}
+}
+
+// WithOauth2ProviderUrl sets the Oauth2ProviderUrl in the Config.
+func WithVanityDomain(domain string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.VanityDomain = domain
+	}
+}
+
+func WithZscalerCloud(cloud string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.Cloud = cloud
+	}
+}
+
+// WithSandboxToken is a ConfigSetter that sets the Sandbox token for the Zscaler Client.
+func WithSandboxToken(token string) ConfigSetter {
+	return func(cfg *Configuration) {
+		cfg.Zscaler.Client.SandboxToken = token
+	}
+}
+
+func WithZPACustomerID(customerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.CustomerID = customerID
+	}
+}
+
+func WithZPAMicrotenantID(microtenantID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.MicrotenantID = microtenantID
+	}
+}
+
 type ConfigSetter func(*Configuration)
 
 func WithCache(cache bool) ConfigSetter {
@@ -425,46 +473,6 @@ func WithRateLimitMaxBackOff(maxBackoff int64) ConfigSetter {
 		c.Zscaler.Client.RateLimit.MaxBackoff = maxBackoff
 	}
 }
-
-// WithClientID sets the ClientID in the Config.
-func WithClientID(clientID string) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.ClientID = clientID
-	}
-}
-
-// WithClientSecret sets the ClientSecret in the Config.
-func WithClientSecret(clientSecret string) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.ClientSecret = clientSecret
-	}
-}
-
-// WithOauth2ProviderUrl sets the Oauth2ProviderUrl in the Config.
-func WithVanityDomain(domain string) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.VanityDomain = domain
-	}
-}
-
-func WithZscalerCloud(cloud string) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.Cloud = cloud
-	}
-}
-
-// WithSandboxToken is a ConfigSetter that sets the Sandbox token for the Zscaler Client.
-func WithSandboxToken(token string) ConfigSetter {
-	return func(cfg *Configuration) {
-		cfg.Zscaler.Client.SandboxToken = token
-	}
-}
-
-// func WithZPAMicrotenantID(microtenant string) ConfigSetter {
-// 	return func(c *Configuration) {
-// 		c.Zscaler.Client.Microtenant = microtenant
-// 	}
-// }
 
 // WithUserAgent sets the UserAgent in the Config.
 func WithUserAgentExtra(userAgent string) ConfigSetter {

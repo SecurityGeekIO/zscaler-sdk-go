@@ -266,7 +266,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 }
 
 /*
-// Previously working function - Keeping in case we need to rollback
+// V1 - Previously working function - Keeping in case we need to rollback
 // ExecuteRequest performs an HTTP request with caching, authentication, and retry logic.
 func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	// Set default content type if not provided
@@ -368,6 +368,8 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 }
 */
 
+/*
+// V2 - Previously Second interation working function - Kept here in case of rollback
 func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	// Set default content type if not provided
 	if contentType == "" {
@@ -452,6 +454,90 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 	}
 
 	return bodyBytes, nil
+}
+*/
+
+func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+	if contentType == "" {
+		contentType = contentTypeJSON
+	}
+
+	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
+	isZPARequest := strings.Contains(endpoint, "/zpa")
+
+	// Build the full URL for Sandbox, ZPA, or OAuth2-based requests
+	fullURL := ""
+	if isSandboxRequest {
+		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
+		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token
+	} else if isZPARequest {
+		// Append customerId for ZPA requests
+		if c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
+			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
+		}
+		fullURL = fmt.Sprintf("%s%s", c.URL, endpoint)
+	} else {
+		fullURL = fmt.Sprintf("%s%s", c.URL, endpoint)
+	}
+
+	// Add URL parameters to the endpoint
+	params := ""
+	if urlParams != nil {
+		params = urlParams.Encode()
+	}
+	if strings.Contains(endpoint, "?") && params != "" {
+		fullURL += "&" + params
+	} else if params != "" {
+		fullURL += "?" + params
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest(method, fullURL, body)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	if c.UserAgent != "" {
+		req.Header.Add("User-Agent", c.UserAgent)
+	}
+
+	// For non-sandbox requests, handle OAuth2 authentication
+	if !isSandboxRequest {
+		err = c.authenticate()
+		if err != nil {
+			return nil, nil, err
+		}
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+	}
+
+	// Execute the request with retries
+	var resp *http.Response
+	for retry := 1; retry <= 5; retry++ {
+		start := time.Now()
+		reqID := uuid.New().String()
+		logger.LogRequest(c.Logger, req, reqID, nil, true)
+		resp, err = c.HTTPClient.Do(req)
+		logger.LogResponse(c.Logger, resp, start, reqID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if resp.StatusCode > 299 {
+			resp.Body.Close()
+			return nil, nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+		}
+
+		if resp.StatusCode < 300 {
+			break
+		}
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return bodyBytes, req, nil
 }
 
 // GetSandboxURL retrieves the sandbox URL for the ZIA service.
