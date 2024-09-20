@@ -9,10 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/google/go-querystring/query"
 )
 
@@ -45,21 +43,12 @@ func (client *Client) NewRequestDo(method, endpoint string, options, body, v int
 	} else if params != "" {
 		endpoint += "?" + params
 	}
-	resp, err := client.newRequestDoCustom(method, endpoint, body, v)
-	if err != nil {
-		return resp, err
-	}
 
-	return resp, nil
-}
-
-func (client *Client) newRequestDoCustom(method, urlStr string, body, v interface{}) (*http.Response, error) {
-	// Authenticate before executing the request
 	err := client.authenticate()
 	if err != nil {
 		return nil, err
 	}
-	parts := strings.Split(urlStr, "?")
+	parts := strings.Split(endpoint, "?")
 	path := parts[0]
 	query := ""
 	if len(parts) > 1 {
@@ -71,9 +60,9 @@ func (client *Client) newRequestDoCustom(method, urlStr string, body, v interfac
 	}
 	q = client.injectMicrotentantID(body, q)
 	query = q.Encode()
-	urlStr = path
+	endpoint = path
 	if query != "" {
-		urlStr += "?" + query
+		endpoint += "?" + query
 	}
 	// Use ExecuteRequest to handle the request
 	var bodyReader io.Reader
@@ -85,43 +74,8 @@ func (client *Client) newRequestDoCustom(method, urlStr string, body, v interfac
 		bodyReader = bytes.NewBuffer(bodyBytes)
 	}
 
-	req, err := client.getRequest(method, urlStr, bodyReader, nil, contentTypeJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create cache key using the actual request
-	key := cache.CreateCacheKey(req)
-
-	if client.cacheEnabled {
-		if method != http.MethodGet {
-			client.cache.Delete(key)
-			client.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
-		}
-		resp := client.cache.Get(key)
-		inCache := resp != nil
-		if client.freshCache {
-			client.cache.Delete(key)
-			inCache = false
-			client.freshCache = false
-		}
-		if inCache {
-			if v != nil {
-				respData, err := io.ReadAll(resp.Body)
-				if err == nil {
-					resp.Body = io.NopCloser(bytes.NewBuffer(respData))
-				}
-				if err := decodeJSON(respData, v); err != nil {
-					return resp, err
-				}
-			}
-			unescapeHTML(v)
-			client.Logger.Printf("[INFO] served from cache, key:%s\n", key)
-			return resp, nil
-		}
-	}
 	// Capture the three return values from ExecuteRequest
-	reqBody, _, err := client.ExecuteRequest(method, urlStr, bodyReader, nil, contentTypeJSON)
+	respBody, _, err := client.ExecuteRequest(method, endpoint, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -129,19 +83,15 @@ func (client *Client) newRequestDoCustom(method, urlStr string, body, v interfac
 	// Create a dummy HTTP response using the request body for response body
 	resp := &http.Response{
 		StatusCode: http.StatusOK,
-		Body:       io.NopCloser(bytes.NewBuffer(reqBody)),
+		Body:       io.NopCloser(bytes.NewBuffer(respBody)),
 	}
-	// Cache logic for successful GET requests
-	if client.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && method == http.MethodGet && v != nil && reflect.TypeOf(v).Kind() != reflect.Slice {
-		d, err := json.Marshal(v)
-		if err == nil {
-			resp.Body = io.NopCloser(bytes.NewReader(d))
-			client.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-			client.cache.Set(key, cache.CopyResponse(resp))
-		} else {
-			client.Logger.Printf("[ERROR] saving to cache error:%s, key:%s\n", err, key)
+
+	if v != nil {
+		if err := decodeJSON(respBody, v); err != nil {
+			return resp, err
 		}
 	}
+	unescapeHTML(v)
 
 	return resp, nil
 }

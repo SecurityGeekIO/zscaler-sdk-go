@@ -1,6 +1,7 @@
 package zscaler
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -460,7 +461,7 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 }
 */
 
-func (c *Client) getRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) (*http.Request, error) {
+func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) (*http.Request, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -516,9 +517,33 @@ func (c *Client) getRequest(method, endpoint string, body io.Reader, urlParams u
 }
 
 func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
-	req, err := c.getRequest(method, endpoint, body, urlParams, contentType)
+	req, err := c.buildRequest(method, endpoint, body, urlParams, contentType)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// Create cache key using the actual request
+	key := cache.CreateCacheKey(req)
+	if c.cacheEnabled {
+		if method != http.MethodGet {
+			c.cache.Delete(key)
+			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
+		}
+		resp := c.cache.Get(key)
+		inCache := resp != nil
+		if c.freshCache {
+			c.cache.Delete(key)
+			inCache = false
+			c.freshCache = false
+		}
+		if inCache {
+			respData, err := io.ReadAll(resp.Body)
+			if err == nil {
+				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+			}
+			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
+			return respData, req, nil
+		}
 	}
 
 	// Execute the request with retries
@@ -549,6 +574,13 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// Cache logic for successful GET requests
+	if c.cacheEnabled && method == http.MethodGet {
+		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+		c.cache.Set(key, cache.CopyResponse(resp))
 	}
 
 	return bodyBytes, req, nil
