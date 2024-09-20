@@ -5,8 +5,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcon/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon/services"
 )
 
 // TestGetAccountID verifies the retrieval of a specific account by ID

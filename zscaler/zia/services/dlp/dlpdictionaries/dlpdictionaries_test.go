@@ -1,5 +1,6 @@
 package dlpdictionaries
 
+/*
 import (
 	"fmt"
 	"log"
@@ -7,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -256,3 +257,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

@@ -4,21 +4,24 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestAccDepartmentManagement(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	// Step 1: Create the general ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	service := New(client)
+	// Step 2: Create a department-specific service using the ZIA client
+	departmentService := New(service.Client)
 
-	departments, err := service.GetAll()
+	// Step 3: Test fetching all departments
+	departments, err := departmentService.GetAll() // Use departmentService, not the general service
 	if err != nil {
 		t.Errorf("Error getting departments: %v", err)
 		return
@@ -27,21 +30,23 @@ func TestAccDepartmentManagement(t *testing.T) {
 		t.Errorf("No departments found")
 		return
 	}
+
+	// Step 4: Test getting departments by name
 	name := departments[0].Name
-	t.Log("Getting departments by name:" + name)
-	department, err := service.GetDepartmentsByName(name)
+	t.Log("Getting departments by name: " + name)
+	department, err := departmentService.GetDepartmentsByName(name) // Use departmentService
 	if err != nil {
-		t.Errorf("Error getting departments by name: %v", err)
+		t.Errorf("Error getting department by name: %v", err)
 		return
 	}
 	if department.Name != name {
-		t.Errorf("department name does not match: expected %s, got %s", name, department.Name)
+		t.Errorf("Department name does not match: expected %s, got %s", name, department.Name)
 		return
 	}
 
-	// Negative Test: Try to retrieve a department with a non-existent name
+	// Step 5: Negative test: Try to retrieve a non-existent department
 	nonExistentName := "ThisDepartmentDoesNotExist"
-	_, err = service.GetDepartmentsByName(nonExistentName)
+	_, err = departmentService.GetDepartmentsByName(nonExistentName) // Use departmentService
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -49,15 +54,18 @@ func TestAccDepartmentManagement(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	// Step 1: Create the general ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	service := New(client)
+	// Step 2: Create a department-specific service using the ZIA client
+	departmentService := New(service.Client)
 
-	departments, err := service.GetAll()
+	// Step 3: Fetch all departments
+	departments, err := departmentService.GetAll()
 	if err != nil {
 		t.Errorf("Error getting department: %v", err)
 		return
@@ -67,7 +75,7 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	// Validate department
+	// Step 4: Validate the departments' response
 	for _, department := range departments {
 		// Checking if essential fields are not empty
 		if department.ID == 0 {
@@ -80,14 +88,18 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestAllFieldsDepartments(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	// Step 1: Create the general ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	service := New(client)
-	departments, err := service.GetAll()
+	// Step 2: Create a department-specific service using the ZIA client
+	departmentService := New(service.Client)
+
+	// Step 3: Fetch all departments
+	departments, err := departmentService.GetAll()
 	if err != nil {
 		t.Errorf("Error getting all departments: %v", err)
 		return
@@ -98,14 +110,15 @@ func TestAllFieldsDepartments(t *testing.T) {
 		return
 	}
 
+	// Step 4: Get a specific department by ID
 	specificID := departments[0].ID
-	department, err := service.GetDepartments(specificID)
+	department, err := departmentService.GetDepartments(specificID)
 	if err != nil {
 		t.Errorf("Error getting department by ID: %v", err)
 		return
 	}
 
-	// Now check each field
+	// Step 5: Validate all fields
 	if department.ID == 0 {
 		t.Errorf("ID is empty")
 	}
@@ -115,13 +128,15 @@ func TestAllFieldsDepartments(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZiaClient()
+	// Step 1: Create the general ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
 
-	service := New(client)
+	// Step 2: Create a department-specific service using the ZIA client
+	departmentService := New(service.Client)
 
 	// Assuming a department with the name "Engineering" exists
 	knownName := "Engineering"
@@ -133,9 +148,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		cases.Title(language.English).String(knownName),
 	}
 
+	// Step 3: Test retrieving the department with different case variations
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve department with name variation: %s", variation)
-		department, err := service.GetDepartmentsByName(variation)
+		department, err := departmentService.GetDepartmentsByName(variation)
 		if err != nil {
 			t.Errorf("Error getting department with name variation '%s': %v", variation, err)
 			continue

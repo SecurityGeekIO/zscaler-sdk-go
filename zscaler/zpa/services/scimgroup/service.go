@@ -1,7 +1,7 @@
 package scimgroup
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 )
 
 type (

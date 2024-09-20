@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/idpcontroller"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/postureprofile"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/samlattribute"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/segmentgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/trustednetwork"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/postureprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/trustednetwork"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

@@ -3,7 +3,7 @@ package geo_coordinates
 import (
 	"fmt"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (

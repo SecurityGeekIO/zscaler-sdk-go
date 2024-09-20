@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const pageSize = 1000

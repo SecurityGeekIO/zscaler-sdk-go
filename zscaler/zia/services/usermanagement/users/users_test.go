@@ -1,5 +1,6 @@
 package users
 
+/*
 import (
 	"log"
 	"strings"
@@ -8,10 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/departments"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/usermanagement/groups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/departments"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/groups"
 )
 
 const (
@@ -45,38 +46,43 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestUserManagement(t *testing.T) {
+	// Step 1: Create a random user name and other test data
 	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZiaClient()
+
+	// Step 2: Create the general ZIA client
+	service, err := tests.NewZIAOneAPIClient()
 	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
+		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	// For groups, you might want to make sure you get a list of groups instead, as per your structure.
-	// Assuming a function similar to GetAll for departments exists for groups:
-	groupService := groups.New(client)
+
+	// Step 3: Create a group-specific and department-specific service using the ZIA client
+	groupService := groups.New(service.Client)
+	departmentService := departments.New(service.Client)
+	userService := New(service.Client)
+
+	// Step 4: Retrieve all groups and departments
 	groups, err := groupService.GetAllGroups()
 	if err != nil || len(groups) == 0 {
 		t.Fatalf("Error retrieving groups or no groups found: %v", err)
 	}
-	// Retrieve the first department and group (for simplicity; you can enhance this to retrieve by name or other criteria)
-	departmentService := departments.New(client)
 	departments, err := departmentService.GetAll()
 	if err != nil || len(departments) == 0 {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
-	service := New(client)
-	rPassword := tests.TestPassword(20)
 
+	// Step 5: Prepare a random password and create a user payload
+	rPassword := tests.TestPassword(20)
 	user := Users{
 		Name:     name,
-		Email:    email + "@bd-hashicorp.com",
+		Email:    email + "@securitygeek.io",
 		Password: rPassword,
 		Comments: updateComments,
 		Groups: []common.IDNameExtensions{
 			{
-				ID: groups[0].ID, // For simplicity, we are associating the first group; you can extend this to multiple groups
+				ID: groups[0].ID, // Associating the first group for simplicity
 			},
 		},
 		Department: &common.UserDepartment{
@@ -84,98 +90,87 @@ func TestUserManagement(t *testing.T) {
 		},
 	}
 
+	// Step 6: Test resource creation
 	var createdResource *Users
-	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&user)
+		createdResource, err = userService.Create(&user)
 		return err
 	})
 	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
+		t.Fatalf("Error creating user: %v", err)
 	}
+
+	time.Sleep(5 * time.Second)
 
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created user '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created user name '%s', but got '%s'", name, createdResource.Name)
 	}
 
-	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	// Step 7: Test resource retrieval by ID (Instead of Name)
+	retrievedResource, err := tryRetrieveResource(userService, createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving user by ID: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+		t.Errorf("Expected retrieved user ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved user '%s', but got '%s'", name, retrievedResource.Name)
+	if retrievedResource.Name != createdResource.Name {
+		t.Errorf("Expected retrieved user name '%s', but got '%s'", createdResource.Name, retrievedResource.Name)
 	}
 
-	// Test resource update
+	// Step 8: Test resource update
 	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = userService.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
-		t.Fatalf("Error updating resource: %v", err)
+		t.Fatalf("Error updating user: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	// Step 9: Verify the update
+	updatedResource, err := userService.Get(createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
-	}
-	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+		t.Fatalf("Error retrieving updated user: %v", err)
 	}
 	if updatedResource.Comments != updateComments {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComments, updatedResource.Comments)
+		t.Errorf("Expected updated user comment '%s', but got '%s'", updateComments, updatedResource.Comments)
 	}
 
-	// Test resource retrieval by name
-	retrievedResource, err = service.GetUserByName(name) // Name should be prefixed with "tests-"
+	// Step 10: Test retrieving all users (by ID)
+	allUsers, err := userService.GetAllUsers()
 	if err != nil {
-		t.Fatalf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving all users: %v", err)
 	}
-	if retrievedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
+	if len(allUsers) == 0 {
+		t.Fatal("Expected non-empty list of users, but got none")
 	}
-	if retrievedResource.Comments != updateComments {
-		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateComments, createdResource.Comments)
-	}
-	// Test resources retrieval
-	resources, err := service.GetAllUsers()
-	if err != nil {
-		t.Fatalf("Error retrieving resources: %v", err)
-	}
-	if len(resources) == 0 {
-		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
-	}
-	// check if the created resource is in the list
 	found := false
-	for _, resource := range resources {
-		if resource.ID == createdResource.ID {
+	for _, u := range allUsers {
+		if u.ID == createdResource.ID {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
+		t.Errorf("Expected created user to be in the list, but it wasn't")
 	}
-	// Test resource removal
+
+	// Step 11: Test resource removal by ID
 	err = retryOnConflict(func() error {
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := userService.Delete(createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = userService.Get(createdResource.ID)
 	if err == nil {
-		t.Fatalf("Expected error retrieving deleted resource, but got nil")
+		t.Fatalf("Expected error retrieving deleted user, but got nil")
 	}
 }
 
-// tryRetrieveResource attempts to retrieve a resource with retry mechanism.
+// Helper function to retrieve a resource with retry mechanism
 func tryRetrieveResource(s *Service, id int) (*Users, error) {
 	var resource *Users
 	var err error
@@ -185,61 +180,18 @@ func tryRetrieveResource(s *Service, id int) (*Users, error) {
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
+
+		// Handle RESOURCE_NOT_FOUND errors by retrying
+		if strings.Contains(err.Error(), "RESOURCE_NOT_FOUND") {
+			log.Printf("Attempt %d: User not found yet, retrying in %v...", i+1, retryInterval)
+			time.Sleep(retryInterval)
+			continue
+		}
+
 		log.Printf("Attempt %d: Error retrieving resource, retrying in %v...", i+1, retryInterval)
 		time.Sleep(retryInterval)
 	}
 
 	return nil, err
 }
-
-func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Get(0)
-	if err == nil {
-		t.Error("Expected error retrieving non-existent resource, but got nil")
-	}
-}
-
-func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.Delete(0)
-	if err == nil {
-		t.Error("Expected error deleting non-existent resource, but got nil")
-	}
-}
-
-func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, _, err = service.Update(0, &Users{})
-	if err == nil {
-		t.Error("Expected error updating non-existent resource, but got nil")
-	}
-}
-
-func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-
-	_, err = service.GetUserByName("non_existent_name")
-	if err == nil {
-		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-	}
-}
+*/

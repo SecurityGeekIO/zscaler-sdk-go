@@ -3,8 +3,8 @@ package applications
 import (
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
 const (

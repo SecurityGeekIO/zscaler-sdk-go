@@ -1,17 +1,17 @@
 package groups
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 type Service struct {
-	Client    *zia.Client
+	Client    *zscaler.Client
 	sortOrder common.SortOrder
 	sortBy    common.SortField
 }
 
-func New(c *zia.Client) *Service {
+func New(c *zscaler.Client) *Service {
 	return &Service{
 		Client:    c,
 		sortOrder: common.ASCSortOrder,

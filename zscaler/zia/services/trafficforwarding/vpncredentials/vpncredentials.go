@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -67,18 +68,26 @@ func Get(service *zscaler.Service, vpnCredentialID int) (*VPNCredentials, error)
 	return &vpnCredentials, nil
 }
 
-func GetVPNByType(service *zscaler.Service, vpnType string) (*VPNCredentials, error) {
+func GetVPNByType(service *zscaler.Service, vpnType string, includeOnlyWithoutLocation *bool, locationId *int, managedBy *int) ([]VPNCredentials, error) {
+	queryParams := url.Values{}
+	queryParams.Set("type", vpnType)
+
+	if includeOnlyWithoutLocation != nil {
+		queryParams.Set("includeOnlyWithoutLocation", strconv.FormatBool(*includeOnlyWithoutLocation))
+	}
+	if locationId != nil {
+		queryParams.Set("locationId", strconv.Itoa(*locationId))
+	}
+	if managedBy != nil {
+		queryParams.Set("managedBy", strconv.Itoa(*managedBy))
+	}
+
 	var vpnTypes []VPNCredentials
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?type=%s", vpnCredentialsEndpoint, url.QueryEscape(vpnType)), &vpnTypes)
+	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?%s", vpnCredentialsEndpoint, queryParams.Encode()), &vpnTypes)
 	if err != nil {
 		return nil, err
 	}
-	for _, vpn := range vpnTypes {
-		if strings.EqualFold(vpn.Type, vpnType) {
-			return &vpn, nil
-		}
-	}
-	return nil, fmt.Errorf("no VPN found with type: %s", vpnType)
+	return vpnTypes, nil
 }
 
 func GetByFQDN(service *zscaler.Service, vpnCredentialName string) (*VPNCredentials, error) {

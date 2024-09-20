@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/authdomain"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/microtenants"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/authdomain"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

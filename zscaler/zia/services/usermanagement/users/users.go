@@ -7,12 +7,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
-	usersEndpoint  = "/users"
-	enrollEndpoint = "/enroll"
+	usersEndpoint    = "/users"
+	enrollEndpoint   = "/enroll"
+	maxBulkDeleteIDs = 500
 )
 
 type Users struct {
@@ -138,6 +139,20 @@ func (service *Service) Delete(userID int) (*http.Response, error) {
 	}
 
 	return nil, nil
+}
+
+func BulkDelete(service *Service, ids []int) (*http.Response, error) {
+	if len(ids) > maxBulkDeleteIDs {
+		// Truncate the list to the first 100 IDs
+		ids = ids[:maxBulkDeleteIDs]
+		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+	}
+
+	// Define the payload
+	payload := map[string][]int{
+		"ids": ids,
+	}
+	return service.Client.BulkDelete(usersEndpoint+"/bulkDelete", payload)
 }
 
 func (service *Service) GetAllUsers() ([]Users, error) {

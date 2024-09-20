@@ -1,7 +1,7 @@
 package services
 
 /*
-import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zidentity"
 
 type Service struct {
 	Client *zscaler.Client // use the client from zidentity

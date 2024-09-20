@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/inspectioncontrol/inspection_custom_controls"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/inspectioncontrol/inspection_predefined_controls"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_custom_controls"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/inspectioncontrol/inspection_predefined_controls"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

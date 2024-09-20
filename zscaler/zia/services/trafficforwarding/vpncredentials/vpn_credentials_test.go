@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/trafficforwarding/staticips"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -83,12 +83,14 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		return err
 	})
 	if err != nil {
-		t.Fatalf("Error making POST request: %v", err)
+		t.Fatalf("Error creating VPN credential: %v", err)
 	}
 
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
+
+	t.Logf("Created VPN credential: ID=%d, Comments=%s", createdResource.ID, createdResource.Comments)
 
 	if createdResource.Comments != comment {
 		t.Errorf("Expected created resource comment '%s', but got '%s'", comment, createdResource.Comments)
@@ -97,8 +99,10 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 	// Test resource retrieval
 	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving VPN Credential resource: %v", err)
 	}
+
+	t.Logf("Retrieved VPN credential: ID=%d, Comments=%s", retrievedResource.ID, retrievedResource.Comments)
 
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
@@ -114,27 +118,37 @@ func TestTrafficForwardingVPNCreds(t *testing.T) {
 		return err
 	})
 	if err != nil {
-		t.Fatalf("Error updating resource: %v", err)
+		t.Fatalf("Error updating VPN credential: %v", err)
 	}
+
+	// Wait for propagation
+	time.Sleep(2 * time.Second)
 
 	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
+		t.Fatalf("Error retrieving updated VPN credential: %v", err)
 	}
+
+	t.Logf("Updated VPN credential: ID=%d, Comments=%s", updatedResource.ID, updatedResource.Comments)
 
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
 
 	if updatedResource.Comments != updateComment {
-		t.Errorf("Expected retrieved updated resource comment '%s', but got '%s'", updateComment, updatedResource.Comments)
+		t.Errorf("Expected updated VPN credential comment '%s', but got '%s'", updateComment, updatedResource.Comments)
 	}
 
-	retrievedResource, err = GetVPNByType(service, "IP")
+	retrievedResources, err := GetVPNByType(service, "IP", nil, nil, nil)
 	if err != nil {
-		t.Fatalf("Error retrieving resource by name: %v", err)
+		t.Fatalf("Error retrieving VPN credentials by type: %v", err)
 	}
 
+	if len(retrievedResources) == 0 {
+		t.Fatal("Expected at least one VPN credential, but got none")
+	}
+
+	// Continue with your assertions
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}

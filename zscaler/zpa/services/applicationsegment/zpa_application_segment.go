@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/applicationsegmentpra"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/browseraccess"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/browseraccess"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (

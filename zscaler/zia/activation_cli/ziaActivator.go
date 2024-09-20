@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/activation"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/activation"
 )
 
 func getEnvVarOrFail(k string) string {

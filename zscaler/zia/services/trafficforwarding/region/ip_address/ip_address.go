@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (

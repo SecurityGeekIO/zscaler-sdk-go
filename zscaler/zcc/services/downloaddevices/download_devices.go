@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
 )
 
 const (

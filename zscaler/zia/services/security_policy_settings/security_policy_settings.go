@@ -1,6 +1,6 @@
 package security_policy_settings
 
-import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 
 const (
 	securityEndpoint         = "/security"

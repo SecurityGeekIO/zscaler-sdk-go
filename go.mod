@@ -1,8 +1,11 @@
-module github.com/SecurityGeekIO/zscaler-sdk-go/v2
+module github.com/SecurityGeekIO/zscaler-sdk-go/v3
 
-go 1.22
+go 1.22.5
+
+toolchain go1.23.1
 
 require (
+	github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.72.1
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -14,7 +17,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/okta/okta-sdk-golang/v2 v2.20.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/text v0.17.0
+	golang.org/x/text v0.18.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

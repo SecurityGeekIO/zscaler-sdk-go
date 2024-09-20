@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -52,7 +52,6 @@ type Client struct {
 	stopTicker        chan bool
 }
 
-// NewOneAPIClient creates a new client using OAuth2 authentication for any service.
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
 func NewOneAPIClient(config *Configuration, service string) (*Service, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
@@ -266,6 +265,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
+/*
+// Previously working function - Keeping in case we need to rollback
 // ExecuteRequest performs an HTTP request with caching, authentication, and retry logic.
 func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
 	// Set default content type if not provided
@@ -365,6 +366,109 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 
 	return bodyBytes, nil
 }
+*/
+
+func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, error) {
+	// Set default content type if not provided
+	if contentType == "" {
+		contentType = contentTypeJSON
+	}
+
+	// Check if this is a Sandbox request
+	isSandboxRequest := strings.Contains(endpoint, "/zscsb") // Sandbox endpoints include /zscsb
+
+	// Build the full URL for Sandbox or OAuth2-based requests
+	fullURL := ""
+	if isSandboxRequest {
+		// For Sandbox, use the GetSandboxURL function
+		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
+		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token to the URL params
+	} else {
+		// Use the regular OAuth2 API URL
+		fullURL = fmt.Sprintf("%s%s", c.URL, endpoint)
+	}
+
+	// Add URL parameters to the endpoint
+	params := ""
+	if urlParams != nil {
+		params = urlParams.Encode()
+	}
+	if strings.Contains(endpoint, "?") && params != "" {
+		fullURL += "&" + params
+	} else if params != "" {
+		fullURL += "?" + params
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest(method, fullURL, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	if c.UserAgent != "" {
+		req.Header.Add("User-Agent", c.UserAgent)
+	}
+
+	// For Sandbox requests, skip OAuth2 token logic
+	if !isSandboxRequest {
+		// OAuth2 Authentication (only for non-Sandbox requests)
+		err = c.authenticate()
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+	}
+
+	// Execute the request and process the response (as previously discussed)
+	var resp *http.Response
+	for retry := 1; retry <= 5; retry++ {
+		start := time.Now()
+		reqID := uuid.New().String()
+
+		// Log the request
+		logger.LogRequest(c.Logger, req, reqID, nil, true)
+		resp, err = c.HTTPClient.Do(req)
+		logger.LogResponse(c.Logger, resp, start, reqID)
+		if err != nil {
+			return nil, err
+		}
+
+		// Handle non-2xx responses
+		if resp.StatusCode > 299 {
+			resp.Body.Close()
+			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+		}
+
+		// Break on success
+		if resp.StatusCode < 300 {
+			break
+		}
+	}
+
+	// Read and return the response body
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return bodyBytes, nil
+}
+
+// GetSandboxURL retrieves the sandbox URL for the ZIA service.
+func (c *Client) GetSandboxURL() string {
+	return "https://csbapi." + c.cloud + ".net"
+}
+
+// GetSandboxToken retrieves the sandbox token from the configuration or environment.
+func (c *Client) GetSandboxToken() string {
+	// Check if oauth2Credentials or the relevant fields are nil
+	if c.oauth2Credentials == nil || c.oauth2Credentials.Zscaler.Client.SandboxToken == "" {
+		// Fallback to environment variable if not set in the configuration
+		return os.Getenv("ZSCALER_SANDBOX_TOKEN")
+	}
+	// Return the token from the configuration
+	return c.oauth2Credentials.Zscaler.Client.SandboxToken
+}
 
 // Unified authentication function to refresh OAuth2 tokens
 func (c *Client) authenticate() error {
@@ -389,17 +493,4 @@ func containsInt(codes []int, code int) bool {
 		}
 	}
 	return false
-}
-func (c *Client) GetContentType() string {
-	return contentTypeJSON
-}
-
-// GetSandboxURL retrieves the sandbox URL for the ZIA service.
-func (c *Client) GetSandboxURL() string {
-	return "https://csbapi." + c.cloud + ".net"
-}
-
-// GetSandboxToken retrieves the sandbox token from the environment.
-func (c *Client) GetSandboxToken() string {
-	return os.Getenv("ZIA_SANDBOX_TOKEN")
 }

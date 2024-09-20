@@ -11,11 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zidentity"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zcon"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
 )
 
 const (
@@ -123,19 +122,19 @@ func NewZIAOneAPIClient() (*zscaler.Service, error) {
 	}
 
 	// Build the configuration using the environment variables
-	config, err := zidentity.NewConfiguration(
-		zidentity.WithClientID(clientID),
-		zidentity.WithClientSecret(clientSecret),
-		zidentity.WithVanityDomain(vanityDomain),
-		zidentity.WithZscalerCloud(zscalerCloud), // Optional, default can be set
-		// zidentity.WithUserAgentExtra("zscaler-sdk-go"),
+	config, err := zscaler.NewConfiguration(
+		zscaler.WithClientID(clientID),
+		zscaler.WithClientSecret(clientSecret),
+		zscaler.WithVanityDomain(vanityDomain),
+		zscaler.WithZscalerCloud(zscalerCloud), // Optional, default can be set
+		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating configuration: %v", err)
 	}
 
 	// Instantiate the OneAPI client and pass the service name (e.g., "zia")
-	client, err := zidentity.NewOneAPIClient(config, "zia")
+	client, err := zscaler.NewOneAPIClient(config, "zia")
 	if err != nil {
 		return nil, fmt.Errorf("error creating OneAPI client: %v", err)
 	}

@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/applicationsegmentpra"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/segmentgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -177,7 +177,7 @@ func TestCredentialController(t *testing.T) {
 	}
 
 	credController := PrivilegedApproval{
-		EmailIDs:  []string{"carol.kirk@bd-hashicorp.com"},
+		EmailIDs:  []string{"carol.kirk@securitygeek.io"},
 		StartTime: getStartTime(), // Dynamically generate valid start time
 		EndTime:   getEndTime(),   // Dynamically generate valid end time
 		Status:    "ACTIVE",

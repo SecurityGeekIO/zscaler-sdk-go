@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/reports/applications"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
 
 func TestGetDeviceApp(t *testing.T) {

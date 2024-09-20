@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
 
 // isValidMD5 checks if the given string is a valid MD5 hash.

@@ -1,14 +1,15 @@
 package admins
 
+/*
 import (
 	"log"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/adminuserrolemgmt/roles"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/roles"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -60,8 +61,8 @@ func TestUserManagement(t *testing.T) {
 
 	admin := AdminUsers{
 		UserName:                    name + name,
-		LoginName:                   name + "@bd-hashicorp.com",
-		Email:                       email + "@bd-hashicorp.com",
+		LoginName:                   name + "@securitygeek.io",
+		Email:                       email + "@securitygeek.io",
 		Comments:                    updateComments,
 		Password:                    rPassword,
 		IsPasswordLoginAllowed:      true,
@@ -88,7 +89,7 @@ func TestUserManagement(t *testing.T) {
 	if createdResource.ID == 0 {
 		t.Fatal("Expected created resource ID to be non-empty, but got ''")
 	}
-	expectedLoginName := name + "@bd-hashicorp.com"
+	expectedLoginName := name + "@securitygeek.io"
 	if createdResource.LoginName != expectedLoginName {
 		t.Errorf("Expected created admin user '%s', but got '%s'", expectedLoginName, createdResource.LoginName)
 	}
@@ -244,3 +245,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

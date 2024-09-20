@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -51,12 +51,14 @@ func scanFile(service *zscaler.Service, filename string, file io.Reader, force, 
 	if force != "" {
 		urlParams.Set("force", force)
 	}
+
 	// Determine the Content-Type based on the file extension
 	contentType := mime.TypeByExtension(filepath.Ext(filename))
 	if contentType == "" {
 		// If the content type cannot be determined, set it to a default value
 		contentType = "application/octet-stream"
 	}
+
 	// Create a buffer to store the gzipped file
 	var gzippedFile bytes.Buffer
 	gz := gzip.NewWriter(&gzippedFile)
@@ -66,11 +68,14 @@ func scanFile(service *zscaler.Service, filename string, file io.Reader, force, 
 	if err != nil {
 		return nil, err
 	}
+	gz.Close() // Ensure to close the gzip writer to flush the buffer
 
-	data, err := service.Client.GenericRequest(service.Client.GetSandboxURL(), endpoint, "POST", &gzippedFile, urlParams, contentType)
+	// Correct the argument order for ExecuteRequest
+	data, err := service.Client.ExecuteRequest("POST", endpoint, &gzippedFile, urlParams, contentType)
 	if err != nil {
 		return nil, err
 	}
+
 	var result ScanResult
 	err = json.Unmarshal(data, &result)
 	if err != nil {

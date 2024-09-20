@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v2/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )

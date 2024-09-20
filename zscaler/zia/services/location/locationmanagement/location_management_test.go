@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/trafficforwarding/staticips"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -89,6 +89,7 @@ func TestLocationManagement(t *testing.T) {
 		XFFForwardEnabled: true,
 		OFWEnabled:        true,
 		IPSControl:        true,
+		Profile:           "CORPORATE",
 		IPAddresses:       []string{ipAddress},
 	}
 
@@ -145,6 +146,7 @@ func TestLocationManagement(t *testing.T) {
 		IPSControl:        true,
 		IPAddresses:       []string{"10.5.0.0-10.5.255.255"},
 		ParentID:          createdResource.ID,
+		Profile:           "CORPORATE",
 	}
 
 	var createdSubLocation *Locations

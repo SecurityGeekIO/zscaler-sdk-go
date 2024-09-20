@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/trafficforwarding/staticips"
-	virtualipaddress "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zia/services/trafficforwarding/virtualipaddress"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
+	virtualipaddress "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/virtualipaddress"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 

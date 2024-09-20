@@ -16,8 +16,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -57,6 +57,7 @@ type Configuration struct {
 			PrivateKey   string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
 			AuthToken    *AuthToken `yaml:"authToken"`
 			AccessToken  *AuthToken `yaml:"accessToken"`
+			SandboxToken string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"` // New Sandbox token field
 			Cache        struct {
 				Enabled    bool  `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
 				DefaultTtl int32 `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
@@ -243,15 +244,18 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 }
 
 // GetAPIEndpoint sets the appropriate endpoint based on the service and sandbox mode.
+// GetAPIEndpoint sets the appropriate endpoint based on the service and sandbox mode.
 func GetAPIEndpoint(service, cloud string, sandboxEnabled bool) string {
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
 		baseURL = fmt.Sprintf("https://api.%s.zsapi.net", strings.ToLower(cloud))
 	}
 	if sandboxEnabled {
-		baseURL = fmt.Sprintf("https://csbapi.%s.net", strings.ToLower(cloud))
+		// Return the Sandbox base URL
+		return fmt.Sprintf("https://csbapi.%s.net/zscsb/submit", strings.ToLower(cloud))
 	}
 
+	// Standard services use the base URL logic
 	switch strings.ToLower(service) {
 	case "zia":
 		return fmt.Sprintf("%s/zia/api/v1", baseURL)
@@ -446,6 +450,13 @@ func WithVanityDomain(domain string) ConfigSetter {
 func WithZscalerCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cloud = cloud
+	}
+}
+
+// WithSandboxToken is a ConfigSetter that sets the Sandbox token for the Zscaler Client.
+func WithSandboxToken(token string) ConfigSetter {
+	return func(cfg *Configuration) {
+		cfg.Zscaler.Client.SandboxToken = token
 	}
 }
 
