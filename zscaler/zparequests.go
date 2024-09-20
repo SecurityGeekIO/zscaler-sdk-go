@@ -231,5 +231,12 @@ func (client *Client) injectMicrotentantID(body interface{}, q url.Values) url.V
 		q.Add("microtenantId", microTenantID)
 		return q
 	}
+
+	microTenantID = client.oauth2Credentials.Zscaler.Client.MicrotenantID
+	if microTenantID != "" {
+		q.Add("microtenantId", microTenantID)
+		return q
+	}
+
 	return q
 }
