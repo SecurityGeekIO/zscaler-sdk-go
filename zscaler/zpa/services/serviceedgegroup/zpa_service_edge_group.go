@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -104,9 +104,9 @@ type TrustedNetworks struct {
 	ZscalerCloud     string `json:"zscalerCloud,omitempty"`
 }
 
-func Get(service *services.Service, serviceEdgeGroupID string) (*ServiceEdgeGroup, *http.Response, error) {
+func Get(service *zscaler.Service, serviceEdgeGroupID string) (*ServiceEdgeGroup, *http.Response, error) {
 	v := new(ServiceEdgeGroup)
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
 	resp, err := service.Client.NewRequestDo("GET", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -114,8 +114,8 @@ func Get(service *services.Service, serviceEdgeGroupID string) (*ServiceEdgeGrou
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
+func GetByName(service *zscaler.Service, serviceEdgeGroupName string) (*ServiceEdgeGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + serviceEdgeGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeGroup](service.Client, relativeURL, common.Filter{Search: serviceEdgeGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -128,9 +128,9 @@ func GetByName(service *services.Service, serviceEdgeGroupName string) (*Service
 	return nil, resp, fmt.Errorf("no service edge group named '%s' was found", serviceEdgeGroupName)
 }
 
-func Create(service *services.Service, serviceEdge ServiceEdgeGroup) (*ServiceEdgeGroup, *http.Response, error) {
+func Create(service *zscaler.Service, serviceEdge ServiceEdgeGroup) (*ServiceEdgeGroup, *http.Response, error) {
 	v := new(ServiceEdgeGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -138,8 +138,8 @@ func Create(service *services.Service, serviceEdge ServiceEdgeGroup) (*ServiceEd
 	return v, resp, nil
 }
 
-func Update(service *services.Service, serviceEdgeGroupID string, serviceEdge *ServiceEdgeGroup) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+func Update(service *zscaler.Service, serviceEdgeGroupID string, serviceEdge *ServiceEdgeGroup) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, serviceEdge, nil)
 	if err != nil {
 		return nil, err
@@ -148,8 +148,8 @@ func Update(service *services.Service, serviceEdgeGroupID string, serviceEdge *S
 	return resp, nil
 }
 
-func Delete(service *services.Service, serviceEdgeGroupID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
+func Delete(service *zscaler.Service, serviceEdgeGroupID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+serviceEdgeGroupEndpoint, serviceEdgeGroupID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -158,8 +158,8 @@ func Delete(service *services.Service, serviceEdgeGroupID string) (*http.Respons
 	return resp, nil
 }
 
-func GetAll(service *services.Service) ([]ServiceEdgeGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serviceEdgeGroupEndpoint
+func GetAll(service *zscaler.Service) ([]ServiceEdgeGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + serviceEdgeGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServiceEdgeGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

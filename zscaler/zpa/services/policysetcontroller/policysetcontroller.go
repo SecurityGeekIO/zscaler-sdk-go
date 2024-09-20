@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -124,9 +124,9 @@ type Count struct {
 	Count string `json:"count"`
 }
 
-func GetByPolicyType(service *services.Service, policyType string) (*PolicySet, *http.Response, error) {
+func GetByPolicyType(service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {
 	v := new(PolicySet)
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + "/policySet/policyType/" + policyType)
+	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + "/policySet/policyType/" + policyType)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -135,9 +135,9 @@ func GetByPolicyType(service *services.Service, policyType string) (*PolicySet, 
 	return v, resp, nil
 }
 
-func GetPolicyRule(service *services.Service, policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
+func GetPolicyRule(service *zscaler.Service, policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
-	url := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
+	url := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -146,9 +146,9 @@ func GetPolicyRule(service *services.Service, policySetID, ruleId string) (*Poli
 }
 
 // POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
-func CreateRule(service *services.Service, rule *PolicyRule) (*PolicyRule, *http.Response, error) {
+func CreateRule(service *zscaler.Service, rule *PolicyRule) (*PolicyRule, *http.Response, error) {
 	v := new(PolicyRule)
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule", rule.PolicySetID)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule", rule.PolicySetID)
 	resp, err := service.Client.NewRequestDo("POST", path, common.Filter{MicroTenantID: service.MicroTenantID()}, rule, v)
 	if err != nil {
 		return nil, nil, err
@@ -157,7 +157,7 @@ func CreateRule(service *services.Service, rule *PolicyRule) (*PolicyRule, *http
 }
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func UpdateRule(service *services.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
+func UpdateRule(service *zscaler.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
 	} else {
@@ -173,7 +173,7 @@ func UpdateRule(service *services.Service, policySetID, ruleId string, policySet
 			}
 		}
 	}
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, policySetRule, nil)
 	if err != nil {
 		return nil, err
@@ -182,8 +182,8 @@ func UpdateRule(service *services.Service, policySetID, ruleId string, policySet
 }
 
 // DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
-func Delete(service *services.Service, policySetID, ruleId string) (*http.Response, error) {
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s", policySetID, ruleId)
+func Delete(service *zscaler.Service, policySetID, ruleId string) (*http.Response, error) {
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -191,8 +191,8 @@ func Delete(service *services.Service, policySetID, ruleId string) (*http.Respon
 	return resp, err
 }
 
-func GetByNameAndType(service *services.Service, policyType, ruleName string) (*PolicyRule, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
+func GetByNameAndType(service *zscaler.Service, policyType, ruleName string) (*PolicyRule, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/rules/policyType/%s", policyType)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PolicyRule](service.Client, relativeURL, common.Filter{Search: ruleName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -206,7 +206,7 @@ func GetByNameAndType(service *services.Service, policyType, ruleName string) (*
 	return nil, resp, fmt.Errorf("no policy rule named :%s found", ruleName)
 }
 
-func GetByNameAndTypes(service *services.Service, policyTypes []string, ruleName string) (p *PolicyRule, resp *http.Response, err error) {
+func GetByNameAndTypes(service *zscaler.Service, policyTypes []string, ruleName string) (p *PolicyRule, resp *http.Response, err error) {
 	for _, policyType := range policyTypes {
 		p, resp, err = GetByNameAndType(service, policyType, ruleName)
 		if err == nil {
@@ -217,8 +217,8 @@ func GetByNameAndTypes(service *services.Service, policyTypes []string, ruleName
 }
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}
-func Reorder(service *services.Service, policySetID, ruleId string, order int) (*http.Response, error) {
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
+func Reorder(service *zscaler.Service, policySetID, ruleId string, order int) (*http.Response, error) {
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func Reorder(service *services.Service, policySetID, ruleId string, order int) (
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
 // ruleIdOrders is a map[ruleID]Order
-func BulkReorder(service *services.Service, policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
+func BulkReorder(service *zscaler.Service, policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
 	policySet, resp, err := GetByPolicyType(service, policySetType)
 	if err != nil {
 		return resp, err
@@ -261,7 +261,7 @@ func BulkReorder(service *services.Service, policySetType string, ruleIdToOrder 
 		return i <= j
 	})
 	// Construct the URL path
-	path := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/%s/reorder", policySet.ID)
+	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/reorder", policySet.ID)
 	ruleIdsOrdered := []string{}
 	for _, r := range all {
 		ruleIdsOrdered = append(ruleIdsOrdered, r.ID)
@@ -288,8 +288,8 @@ func BulkReorder(service *services.Service, policySetType string, ruleIdToOrder 
 	return resp, nil
 }
 
-func GetAllByType(service *services.Service, policyType string) ([]PolicyRule, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.Config.CustomerID+"/policySet/rules/policyType/%s", policyType)
+func GetAllByType(service *zscaler.Service, policyType string) ([]PolicyRule, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/rules/policyType/%s", policyType)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[PolicyRule](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

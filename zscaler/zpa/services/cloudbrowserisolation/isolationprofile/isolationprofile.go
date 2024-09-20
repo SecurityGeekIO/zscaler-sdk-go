@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -27,8 +27,8 @@ type IsolationProfile struct {
 	IsolationURL       string `json:"isolationUrl"`
 }
 
-func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
+func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: profileName} // We only have the Search filter as per your example. You can add more filters if required.
@@ -48,8 +48,8 @@ func GetByName(service *services.Service, profileName string) (*IsolationProfile
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + isolationProfileEndpoint
+func GetAll(service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + isolationProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[IsolationProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

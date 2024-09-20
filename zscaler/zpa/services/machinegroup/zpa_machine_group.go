@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -44,9 +44,9 @@ type Machines struct {
 	SigningCert      map[string]interface{} `json:"signingCert,omitempty"`
 }
 
-func Get(service *services.Service, machineGroupID string) (*MachineGroup, *http.Response, error) {
+func Get(service *zscaler.Service, machineGroupID string) (*MachineGroup, *http.Response, error) {
 	v := new(MachineGroup)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+machineGroupEndpoint, machineGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+machineGroupEndpoint, machineGroupID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -54,8 +54,8 @@ func Get(service *services.Service, machineGroupID string) (*MachineGroup, *http
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, machineGroupName string) (*MachineGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
+func GetByName(service *zscaler.Service, machineGroupName string) (*MachineGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + machineGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[MachineGroup](service.Client, relativeURL, common.Filter{Search: machineGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -68,8 +68,8 @@ func GetByName(service *services.Service, machineGroupName string) (*MachineGrou
 	return nil, resp, fmt.Errorf("no machine group named '%s' was found", machineGroupName)
 }
 
-func GetAll(service *services.Service) ([]MachineGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + machineGroupEndpoint
+func GetAll(service *zscaler.Service) ([]MachineGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + machineGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[MachineGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

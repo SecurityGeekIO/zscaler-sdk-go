@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -98,9 +98,9 @@ type DebugMode struct {
 	FilePassword string `json:"filePassword,omitempty"`
 }
 
-func Get(service *services.Service, profileID string) (*IsolationProfile, *http.Response, error) {
+func Get(service *zscaler.Service, profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -109,7 +109,7 @@ func Get(service *services.Service, profileID string) (*IsolationProfile, *http.
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, profileName string) (*IsolationProfile, *http.Response, error) {
+func GetByName(service *zscaler.Service, profileName string) (*IsolationProfile, *http.Response, error) {
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
@@ -122,17 +122,17 @@ func GetByName(service *services.Service, profileName string) (*IsolationProfile
 	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
 }
 
-func Create(service *services.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
+func Create(service *zscaler.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, nil, cbiProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, nil, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *services.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
+func Update(service *zscaler.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
@@ -140,8 +140,8 @@ func Update(service *services.Service, profileID string, segmentGroupRequest *Is
 	return resp, err
 }
 
-func Delete(service *services.Service, profileID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
+func Delete(service *zscaler.Service, profileID string) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -149,8 +149,8 @@ func Delete(service *services.Service, profileID string) (*http.Response, error)
 	return resp, err
 }
 
-func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiProfileEndpoint
+func GetAll(service *zscaler.Service) ([]IsolationProfile, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiProfileEndpoint
 	var list []IsolationProfile
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

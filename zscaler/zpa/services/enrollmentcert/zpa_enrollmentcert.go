@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -41,9 +41,9 @@ type EnrollmentCert struct {
 	MicrotenantID           string `json:"microtenantId,omitempty"`
 }
 
-func Get(service *services.Service, id string) (*EnrollmentCert, *http.Response, error) {
+func Get(service *zscaler.Service, id string) (*EnrollmentCert, *http.Response, error) {
 	v := new(EnrollmentCert)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+enrollmentCertEndpoint, id)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+enrollmentCertEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -52,8 +52,8 @@ func Get(service *services.Service, id string) (*EnrollmentCert, *http.Response,
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, certName string) (*EnrollmentCert, *http.Response, error) {
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
+func GetByName(service *zscaler.Service, certName string) (*EnrollmentCert, *http.Response, error) {
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + enrollmentCertEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{Search: certName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -66,8 +66,8 @@ func GetByName(service *services.Service, certName string) (*EnrollmentCert, *ht
 	return nil, resp, fmt.Errorf("no signing certificate named '%s' was found", certName)
 }
 
-func GetAll(service *services.Service) ([]EnrollmentCert, *http.Response, error) {
-	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + enrollmentCertEndpoint
+func GetAll(service *zscaler.Service) ([]EnrollmentCert, *http.Response, error) {
+	relativeURL := mgmtConfigV2 + service.Client.GetCustomerID() + enrollmentCertEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[EnrollmentCert](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

@@ -144,7 +144,7 @@ type microTenantSample struct {
 }
 
 func getMicroTenantByName(client *zscaler.Client, microTenantName string) (*microTenantSample, *http.Response, error) {
-	relativeURL := "/mgmtconfig/v1/admin/customers/" + client.Config.CustomerID + "/microtenants"
+	relativeURL := "/mgmtconfig/v1/admin/customers/" + client.GetCustomerID() + "/microtenants"
 	list, resp, err := GetAllPagesGeneric[microTenantSample](client, relativeURL, microTenantName)
 	if err != nil {
 		return nil, resp, err

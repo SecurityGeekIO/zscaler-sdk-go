@@ -3,7 +3,7 @@ package platforms
 import (
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -19,9 +19,9 @@ type Platforms struct {
 	MacOS   string `json:"mac"`
 }
 
-func GetAllPlatforms(service *services.Service) (*Platforms, *http.Response, error) {
+func GetAllPlatforms(service *zscaler.Service) (*Platforms, *http.Response, error) {
 	v := new(Platforms)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + platformEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + platformEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err

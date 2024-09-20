@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -35,9 +35,9 @@ type ScimAttributeHeader struct {
 	Uniqueness      bool     `json:"uniqueness,omitempty"`
 }
 
-func Get(service *services.Service, idpId, scimAttrHeaderID string) (*ScimAttributeHeader, *http.Response, error) {
+func Get(service *zscaler.Service, idpId, scimAttrHeaderID string) (*ScimAttributeHeader, *http.Response, error) {
 	v := new(ScimAttributeHeader)
-	relativeURL := fmt.Sprintf("%s/idp/%s/scimattribute/%s", mgmtConfig+service.Client.Config.CustomerID, idpId, scimAttrHeaderID)
+	relativeURL := fmt.Sprintf("%s/idp/%s/scimattribute/%s", mgmtConfig+service.Client.GetCustomerID(), idpId, scimAttrHeaderID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -47,21 +47,21 @@ func Get(service *services.Service, idpId, scimAttrHeaderID string) (*ScimAttrib
 }
 
 // SearchValues searchs by features and fields for the API.
-func SearchValues(service *services.Service, idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
+func SearchValues(service *zscaler.Service, idpId, ScimAttrHeaderID, searchQuery string) ([]string, error) {
 	searchQuery = strings.Split(searchQuery, "@")[0]
-	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
+	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.GetCustomerID(), idpId, ScimAttrHeaderID)
 	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, searchQuery)
 	return l, err
 }
 
-func GetValues(service *services.Service, idpId, ScimAttrHeaderID string) ([]string, error) {
-	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.Config.CustomerID, idpId, ScimAttrHeaderID)
+func GetValues(service *zscaler.Service, idpId, ScimAttrHeaderID string) ([]string, error) {
+	relativeURL := fmt.Sprintf("%s/%s/scimattribute/idpId/%s/attributeId/%s", userConfig, service.Client.GetCustomerID(), idpId, ScimAttrHeaderID)
 	l, _, err := common.GetAllPagesGeneric[string](service.Client, relativeURL, "")
 	return l, err
 }
 
-func GetByName(service *services.Service, scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
+func GetByName(service *zscaler.Service, scimAttributeName, IdpId string) (*ScimAttributeHeader, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.GetCustomerID()+idpId, IdpId, scimAttrEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -74,8 +74,8 @@ func GetByName(service *services.Service, scimAttributeName, IdpId string) (*Sci
 	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimAttributeName)
 }
 
-func GetAllByIdpId(service *services.Service, IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.Config.CustomerID+idpId, IdpId, scimAttrEndpoint)
+func GetAllByIdpId(service *zscaler.Service, IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.GetCustomerID()+idpId, IdpId, scimAttrEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

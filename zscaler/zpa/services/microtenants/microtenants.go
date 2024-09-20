@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -93,9 +93,9 @@ type MicroTenantSummary struct {
 	Name string `json:"name"`
 }
 
-func Get(service *services.Service, microtenantID string) (*MicroTenant, *http.Response, error) {
+func Get(service *zscaler.Service, microtenantID string) (*MicroTenant, *http.Response, error) {
 	v := new(MicroTenant)
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, microtenantID)
+	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+microtenantsEndpoint, microtenantID)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -103,8 +103,8 @@ func Get(service *services.Service, microtenantID string) (*MicroTenant, *http.R
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, microTenantName string) (*MicroTenant, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + microtenantsEndpoint
+func GetByName(service *zscaler.Service, microTenantName string) (*MicroTenant, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + microtenantsEndpoint
 	list, resp, err := common.GetAllPagesGeneric[MicroTenant](service.Client, relativeURL, microTenantName)
 	if err != nil {
 		return nil, nil, err
@@ -117,9 +117,9 @@ func GetByName(service *services.Service, microTenantName string) (*MicroTenant,
 	return nil, resp, fmt.Errorf("no microtenant named '%s' was found", microTenantName)
 }
 
-func Create(service *services.Service, microTenant MicroTenant) (*MicroTenant, *http.Response, error) {
+func Create(service *zscaler.Service, microTenant MicroTenant) (*MicroTenant, *http.Response, error) {
 	v := new(MicroTenant)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, nil, microTenant, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+microtenantsEndpoint, nil, microTenant, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -127,8 +127,8 @@ func Create(service *services.Service, microTenant MicroTenant) (*MicroTenant, *
 	return v, resp, nil
 }
 
-func Update(service *services.Service, microTenantID string, microTenant *MicroTenant) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, microTenantID)
+func Update(service *zscaler.Service, microTenantID string, microTenant *MicroTenant) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+microtenantsEndpoint, microTenantID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, microTenant, nil)
 	if err != nil {
 		return nil, err
@@ -137,8 +137,8 @@ func Update(service *services.Service, microTenantID string, microTenant *MicroT
 	return resp, err
 }
 
-func Delete(service *services.Service, microTenantID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+microtenantsEndpoint, microTenantID)
+func Delete(service *zscaler.Service, microTenantID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+microtenantsEndpoint, microTenantID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -147,8 +147,8 @@ func Delete(service *services.Service, microTenantID string) (*http.Response, er
 	return resp, nil
 }
 
-func GetAll(service *services.Service) ([]MicroTenant, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + microtenantsEndpoint
+func GetAll(service *zscaler.Service) ([]MicroTenant, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + microtenantsEndpoint
 	list, resp, err := common.GetAllPagesGeneric[MicroTenant](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

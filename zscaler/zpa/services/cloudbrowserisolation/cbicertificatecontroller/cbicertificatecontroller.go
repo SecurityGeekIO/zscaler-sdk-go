@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -21,9 +21,9 @@ type CBICertificate struct {
 	IsDefault bool   `json:"isDefault,omitempty"`
 }
 
-func Get(service *services.Service, certificateID string) (*CBICertificate, *http.Response, error) {
+func Get(service *zscaler.Service, certificateID string) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
-	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
+	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -32,7 +32,7 @@ func Get(service *services.Service, certificateID string) (*CBICertificate, *htt
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, certificateName string) (*CBICertificate, *http.Response, error) {
+func GetByName(service *zscaler.Service, certificateName string) (*CBICertificate, *http.Response, error) {
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
@@ -45,7 +45,7 @@ func GetByName(service *services.Service, certificateName string) (*CBICertifica
 	return nil, resp, fmt.Errorf("no certificate named '%s' was found", certificateName)
 }
 
-func GetByNameOrID(service *services.Service, identifier string) (*CBICertificate, *http.Response, error) {
+func GetByNameOrID(service *zscaler.Service, identifier string) (*CBICertificate, *http.Response, error) {
 	// Retrieve all banners
 	list, resp, err := GetAll(service)
 	if err != nil {
@@ -66,17 +66,17 @@ func GetByNameOrID(service *services.Service, identifier string) (*CBICertificat
 	return nil, resp, fmt.Errorf("no isolation certificate named or with ID '%s' was found", identifier)
 }
 
-func Create(service *services.Service, cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
+func Create(service *zscaler.Service, cbiProfile *CBICertificate) (*CBICertificate, *http.Response, error) {
 	v := new(CBICertificate)
-	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiCertificateEndpoint, nil, cbiProfile, &v)
+	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.GetCustomerID()+cbiCertificateEndpoint, nil, cbiProfile, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *services.Service, certificateID string, certificateRequest *CBICertificate) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
+func Update(service *zscaler.Service, certificateID string, certificateRequest *CBICertificate) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, certificateRequest, nil)
 	if err != nil {
 		return nil, err
@@ -84,8 +84,8 @@ func Update(service *services.Service, certificateID string, certificateRequest 
 	return resp, err
 }
 
-func Delete(service *services.Service, certificateID string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiCertificatesEndpoint, certificateID)
+func Delete(service *zscaler.Service, certificateID string) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.GetCustomerID()+cbiCertificatesEndpoint, certificateID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -93,8 +93,8 @@ func Delete(service *services.Service, certificateID string) (*http.Response, er
 	return resp, err
 }
 
-func GetAll(service *services.Service) ([]CBICertificate, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiCertificatesEndpoint
+func GetAll(service *zscaler.Service) ([]CBICertificate, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiCertificatesEndpoint
 	var list []CBICertificate
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

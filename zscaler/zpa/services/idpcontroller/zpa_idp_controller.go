@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -62,9 +62,9 @@ type UserMetadata struct {
 	SpPostURL      string `json:"spPostUrl,omitempty"`
 }
 
-func Get(service *services.Service, IdpID string) (*IdpController, *http.Response, error) {
+func Get(service *zscaler.Service, IdpID string) (*IdpController, *http.Response, error) {
 	v := new(IdpController)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+idpControllerEndpoint, IdpID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+idpControllerEndpoint, IdpID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -73,8 +73,8 @@ func Get(service *services.Service, IdpID string) (*IdpController, *http.Respons
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, idpName string) (*IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
+func GetByName(service *zscaler.Service, idpName string) (*IdpController, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -87,8 +87,8 @@ func GetByName(service *services.Service, idpName string) (*IdpController, *http
 	return nil, resp, fmt.Errorf("no Idp-Controller named '%s' was found", idpName)
 }
 
-func GetAll(service *services.Service) ([]IdpController, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + idpControllerEndpoint)
+func GetAll(service *zscaler.Service) ([]IdpController, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.GetCustomerID() + idpControllerEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[IdpController](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

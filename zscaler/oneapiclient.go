@@ -262,7 +262,7 @@ func GetAPIEndpoint(service, cloud string, sandboxEnabled bool) string {
 	case "zia":
 		return fmt.Sprintf("%s/zia/api/v1", baseURL)
 	case "zpa":
-		return fmt.Sprintf("%s/zpa/api/v1", baseURL)
+		return fmt.Sprintf("%s/zpa", baseURL)
 	case "zcc":
 		return fmt.Sprintf("%s/zcc/papi/public", baseURL)
 	default:

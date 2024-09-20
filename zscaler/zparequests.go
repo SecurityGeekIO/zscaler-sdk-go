@@ -7,21 +7,75 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	"github.com/google/uuid"
+	"github.com/google/go-querystring/query"
 )
 
 const (
 	mgmtConfig = "/mgmtconfig/v1/admin/customers/"
 )
 
-func (client *Client) NewRequestDo(method, url string, options, body, v interface{}) (*http.Response, error) {
-	// Adjusting to match the ExecuteRequest signature
+func (client *Client) NewRequestDo(method, endpoint string, options, body, v interface{}) (*http.Response, error) {
+	// Call the custom request handler
+	// Handle query parameters from options and any additional logic
+	if options == nil {
+		options = struct{}{}
+	}
+	var params string
+	if options != nil {
+		switch opt := options.(type) {
+		case url.Values:
+			params = opt.Encode()
+		default:
+			q, err := query.Values(options)
+			if err != nil {
+				return nil, err
+			}
+			params = q.Encode()
+		}
+	}
+
+	if strings.Contains(endpoint, "?") && params != "" {
+		endpoint += "&" + params
+	} else if params != "" {
+		endpoint += "?" + params
+	}
+	resp, err := client.newRequestDoCustom(method, endpoint, body, v)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+func (client *Client) newRequestDoCustom(method, urlStr string, body, v interface{}) (*http.Response, error) {
+	// Authenticate before executing the request
+	err := client.authenticate()
+	if err != nil {
+		return nil, err
+	}
+	parts := strings.Split(urlStr, "?")
+	path := parts[0]
+	query := ""
+	if len(parts) > 1 {
+		query = parts[1]
+	}
+	q, err := url.ParseQuery(query)
+	if err != nil {
+		return nil, err
+	}
+	q = client.injectMicrotentantID(body, q)
+	query = q.Encode()
+	urlStr = path
+	if query != "" {
+		urlStr += "?" + query
+	}
+	// Use ExecuteRequest to handle the request
 	var bodyReader io.Reader
 	if body != nil {
 		bodyBytes, err := json.Marshal(body)
@@ -31,8 +85,7 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 		bodyReader = bytes.NewBuffer(bodyBytes)
 	}
 
-	// Execute the request using ExecuteRequest and capture the request object (req)
-	_, req, err := client.ExecuteRequest(method, url, bodyReader, nil, contentTypeJSON)
+	req, err := client.getRequest(method, urlStr, bodyReader, nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -67,13 +120,17 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 			return resp, nil
 		}
 	}
-
-	// Call the custom request handler
-	resp, err := client.newRequestDoCustom(method, url, options, body)
+	// Capture the three return values from ExecuteRequest
+	reqBody, _, err := client.ExecuteRequest(method, urlStr, bodyReader, nil, contentTypeJSON)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
+	// Create a dummy HTTP response using the request body for response body
+	resp := &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewBuffer(reqBody)),
+	}
 	// Cache logic for successful GET requests
 	if client.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && method == http.MethodGet && v != nil && reflect.TypeOf(v).Kind() != reflect.Slice {
 		d, err := json.Marshal(v)
@@ -85,96 +142,6 @@ func (client *Client) NewRequestDo(method, url string, options, body, v interfac
 			client.Logger.Printf("[ERROR] saving to cache error:%s, key:%s\n", err, key)
 		}
 	}
-	return resp, nil
-}
-
-func (client *Client) newRequestDoCustom(method, urlStr string, body, v interface{}) (*http.Response, error) {
-	// Authenticate before executing the request
-	err := client.authenticate()
-	if err != nil {
-		return nil, err
-	}
-
-	// Use ExecuteRequest to handle the request
-	var bodyReader io.Reader
-	if body != nil {
-		bodyBytes, err := json.Marshal(body)
-		if err != nil {
-			return nil, err
-		}
-		bodyReader = bytes.NewBuffer(bodyBytes)
-	}
-
-	// Capture the three return values from ExecuteRequest
-	reqBody, req, err := client.ExecuteRequest(method, urlStr, bodyReader, nil, contentTypeJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	// Log the request
-	reqID := uuid.NewString()
-	start := time.Now()
-	logger.LogRequest(client.Logger, req, reqID, nil, true)
-
-	// Create a dummy HTTP response using the request body for response body
-	resp := &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       io.NopCloser(bytes.NewBuffer(reqBody)),
-	}
-
-	logger.LogResponse(client.Logger, resp, start, reqID)
-
-	// Check for specific HTTP status codes (401/403) and re-authenticate if necessary
-	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		err = client.authenticate()
-		if err != nil {
-			return nil, err
-		}
-
-		// Retry the request after re-authentication
-		resp, err = client.do(req, v, start, reqID) // Remove reqBody from the arguments
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return resp, nil
-}
-
-func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqID string) (*http.Response, error) {
-	// Dynamically get the configured HTTP client to respect custom configurations
-	httpClient := getHTTPClient(client.Logger, client.rateLimiter, client.oauth2Credentials)
-
-	// Execute the HTTP request using the dynamically configured HTTP client
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Read the response body
-	respData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	resp.Body = io.NopCloser(bytes.NewBuffer(respData)) // Reset body for future reads
-
-	// Check for errors in the response
-	if err := checkErrorInResponse(resp, nil); err != nil {
-		return resp, err
-	}
-
-	// Decode the response if 'v' is provided
-	if v != nil {
-		if err := decodeJSON(respData, v); err != nil {
-			return resp, err
-		}
-	}
-
-	// Log the response
-	logger.LogResponse(client.Logger, resp, start, reqID)
-
-	// Unescape any HTML characters in the response
-	unescapeHTML(v)
 
 	return resp, nil
 }
@@ -224,7 +191,6 @@ func (client *Client) GetFullPath(endpoint string) (string, error) {
 	return fmt.Sprintf("%s%s%s", mgmtConfig, customerID, endpoint), nil
 }
 
-/*
 func getMicrotenantIDFromBody(body interface{}) string {
 	if body == nil {
 		return ""
@@ -267,4 +233,3 @@ func (client *Client) injectMicrotentantID(body interface{}, q url.Values) url.V
 	}
 	return q
 }
-*/

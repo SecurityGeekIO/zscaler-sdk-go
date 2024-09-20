@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -19,13 +19,13 @@ type AppSegmentSharedToMicrotenant struct {
 	MicroTenantID       string   `json:"microtenantId,omitempty"`
 }
 
-func AppSegmentMicrotenantShare(service *services.Service, applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
+func AppSegmentMicrotenantShare(service *zscaler.Service, applicationID string, appSegmentRequest AppSegmentSharedToMicrotenant) (*http.Response, error) {
 	microTenantID := appSegmentRequest.MicroTenantID
 	if microTenantID == "" && service.MicroTenantID() != nil {
 		microTenantID = *service.MicroTenantID()
 	}
 
-	relativeURL := fmt.Sprintf("%s%s%s/%s/share", mgmtConfig, service.Client.Config.CustomerID, appSegmentEndpoint, applicationID)
+	relativeURL := fmt.Sprintf("%s%s%s/%s/share", mgmtConfig, service.Client.GetCustomerID(), appSegmentEndpoint, applicationID)
 
 	// Add microTenantID to the filter if it's provided
 	filter := common.Filter{}

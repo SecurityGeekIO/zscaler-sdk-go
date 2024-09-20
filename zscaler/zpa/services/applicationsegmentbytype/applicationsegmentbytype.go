@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -29,7 +29,7 @@ type AppSegmentBaseAppDto struct {
 	MicroTenantName     string `json:"microtenantName,omitempty"`
 }
 
-func GetByApplicationType(service *services.Service, appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
+func GetByApplicationType(service *zscaler.Service, appName, applicationType string, expandAll bool) ([]AppSegmentBaseAppDto, *http.Response, error) {
 	validApplicationTypes := map[string]bool{
 		"BROWSER_ACCESS":       true,
 		"INSPECT":              true,
@@ -40,7 +40,7 @@ func GetByApplicationType(service *services.Service, appName, applicationType st
 		return nil, nil, fmt.Errorf("invalid applicationType '%s'. Valid types are 'BROWSER_ACCESS', 'INSPECT', 'SECURE_REMOTE_ACCESS'", applicationType)
 	}
 
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + applicationTypeEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + applicationTypeEndpoint
 
 	// Construct the URL with expandAll and applicationType parameters
 	query := url.Values{}

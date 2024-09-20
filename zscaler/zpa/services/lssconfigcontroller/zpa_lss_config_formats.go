@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 type LSSFormats struct {
@@ -13,7 +13,7 @@ type LSSFormats struct {
 	Json string `json:"json"`
 }
 
-func GetFormats(service *services.Service, logType string) (*LSSFormats, *http.Response, error) {
+func GetFormats(service *zscaler.Service, logType string) (*LSSFormats, *http.Response, error) {
 	v := new(LSSFormats)
 	relativeURL := fmt.Sprintf("%slssConfig/logType/formats", mgmtConfigTypesAndFormats)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, struct {

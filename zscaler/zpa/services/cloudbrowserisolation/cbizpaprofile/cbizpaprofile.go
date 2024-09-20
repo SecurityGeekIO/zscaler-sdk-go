@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -27,7 +27,7 @@ type ZPAProfiles struct {
 }
 
 // The current API does not seem to support search by ID
-func Get(service *services.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
+func Get(service *zscaler.Service, profileID string) (*ZPAProfiles, *http.Response, error) {
 	// First get all the profiles
 	profiles, resp, err := GetAll(service)
 	if err != nil {
@@ -45,7 +45,7 @@ func Get(service *services.Service, profileID string) (*ZPAProfiles, *http.Respo
 }
 
 // The current API does not seem to support search by Name
-func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
+func GetByName(service *zscaler.Service, profileName string) (*ZPAProfiles, *http.Response, error) {
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
@@ -58,8 +58,8 @@ func GetByName(service *services.Service, profileName string) (*ZPAProfiles, *ht
 	return nil, resp, fmt.Errorf("no zpa profile named '%s' was found", profileName)
 }
 
-func GetAll(service *services.Service) ([]ZPAProfiles, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + zpaProfileEndpoint
+func GetAll(service *zscaler.Service) ([]ZPAProfiles, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + zpaProfileEndpoint
 	var list []ZPAProfiles
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -18,7 +18,7 @@ type LSSStatusCodes struct {
 	ZPNSysAuthLog map[string]interface{} `json:"zpn_sys_auth_log"`
 }
 
-func GetStatusCodes(service *services.Service) (*LSSStatusCodes, *http.Response, error) {
+func GetStatusCodes(service *zscaler.Service) (*LSSStatusCodes, *http.Response, error) {
 	v := new(LSSStatusCodes)
 	relativeURL := fmt.Sprintf(mgmtConfigTypesAndFormats + lssStatusCodesEndpoint)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

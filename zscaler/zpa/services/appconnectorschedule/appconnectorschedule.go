@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -33,9 +33,9 @@ type AssistantSchedule struct {
 }
 
 // Get a Configured App Connector schedule frequency.
-func GetSchedule(service *services.Service) (*AssistantSchedule, *http.Response, error) {
+func GetSchedule(service *zscaler.Service) (*AssistantSchedule, *http.Response, error) {
 	v := new(AssistantSchedule)
-	path := fmt.Sprintf("%v", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint)
+	path := fmt.Sprintf("%v", mgmtConfig+service.Client.GetCustomerID()+scheduleEndpoint)
 	resp, err := service.Client.NewRequestDo("GET", path, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -44,9 +44,9 @@ func GetSchedule(service *services.Service) (*AssistantSchedule, *http.Response,
 }
 
 // Configure a App Connector schedule frequency to delete the in active connectors with configured frequency.
-func CreateSchedule(service *services.Service, assistantSchedule AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
+func CreateSchedule(service *zscaler.Service, assistantSchedule AssistantSchedule) (*AssistantSchedule, *http.Response, error) {
 	v := new(AssistantSchedule)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint, nil, assistantSchedule, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+scheduleEndpoint, nil, assistantSchedule, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +54,7 @@ func CreateSchedule(service *services.Service, assistantSchedule AssistantSchedu
 	return v, resp, nil
 }
 
-func UpdateSchedule(service *services.Service, schedulerID string, assistantSchedule *AssistantSchedule) (*http.Response, error) {
+func UpdateSchedule(service *zscaler.Service, schedulerID string, assistantSchedule *AssistantSchedule) (*http.Response, error) {
 	// Validate FrequencyInterval
 	validIntervals := map[string]bool{"5": true, "7": true, "14": true, "30": true, "60": true, "90": true}
 	if _, valid := validIntervals[assistantSchedule.FrequencyInterval]; !valid {
@@ -66,7 +66,7 @@ func UpdateSchedule(service *services.Service, schedulerID string, assistantSche
 		return nil, fmt.Errorf("cannot update a disabled schedule")
 	}
 
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+scheduleEndpoint, schedulerID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+scheduleEndpoint, schedulerID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, assistantSchedule, nil)
 	if err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -116,9 +116,9 @@ type AppServerGroups struct {
 	ID string `json:"id"`
 }
 
-func Get(service *services.Service, id string) (*AppSegmentPRA, *http.Response, error) {
+func Get(service *zscaler.Service, id string) (*AppSegmentPRA, *http.Response, error) {
 	v := new(AppSegmentPRA)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -126,8 +126,8 @@ func Get(service *services.Service, id string) (*AppSegmentPRA, *http.Response, 
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, praName string) (*AppSegmentPRA, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
+func GetByName(service *zscaler.Service, praName string) (*AppSegmentPRA, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentPraEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{Search: praName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -140,9 +140,9 @@ func GetByName(service *services.Service, praName string) (*AppSegmentPRA, *http
 	return nil, resp, fmt.Errorf("no pra application named '%s' was found", praName)
 }
 
-func Create(service *services.Service, appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
+func Create(service *zscaler.Service, appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
 	v := new(AppSegmentPRA)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -188,7 +188,7 @@ func appToListStringIDs(apps []AppsConfig) []string {
 	return result
 }
 
-func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
+func Update(service *zscaler.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
 	existingResource, _, err := Get(service, id)
 	if err != nil {
 		return nil, err
@@ -198,7 +198,7 @@ func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) 
 	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
 	appSegmentPra.CommonAppsDto.AppsConfig = newApps
 	appSegmentPra.CommonAppsDto.DeletedSraApps = appToListStringIDs(removedApps)
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {
 		return nil, err
@@ -206,8 +206,8 @@ func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) 
 	return resp, err
 }
 
-func Delete(service *services.Service, id string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
+func Delete(service *zscaler.Service, id string) (*http.Response, error) {
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -215,8 +215,8 @@ func Delete(service *services.Service, id string) (*http.Response, error) {
 	return resp, err
 }
 
-func GetAll(service *services.Service) ([]AppSegmentPRA, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
+func GetAll(service *zscaler.Service) ([]AppSegmentPRA, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + appSegmentPraEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

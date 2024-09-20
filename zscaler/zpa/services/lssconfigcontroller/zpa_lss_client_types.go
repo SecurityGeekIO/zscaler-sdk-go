@@ -3,7 +3,7 @@ package lssconfigcontroller
 import (
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -19,7 +19,7 @@ type LSSClientTypes struct {
 	ZPNClientTypeSlogger       string `json:"zpn_client_type_slogger,omitempty"`
 }
 
-func GetClientTypes(service *services.Service) (*LSSClientTypes, *http.Response, error) {
+func GetClientTypes(service *zscaler.Service) (*LSSClientTypes, *http.Response, error) {
 	v := new(LSSClientTypes)
 	relativeURL := mgmtConfigTypesAndFormats + lssClientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

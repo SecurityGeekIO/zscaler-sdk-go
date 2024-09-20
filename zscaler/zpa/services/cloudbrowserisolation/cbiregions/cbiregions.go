@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -19,7 +19,7 @@ type CBIRegions struct {
 }
 
 // The current API does not seem to support search by Name
-func GetByName(service *services.Service, cbiRegionName string) (*CBIRegions, *http.Response, error) {
+func GetByName(service *zscaler.Service, cbiRegionName string) (*CBIRegions, *http.Response, error) {
 	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
@@ -32,8 +32,8 @@ func GetByName(service *services.Service, cbiRegionName string) (*CBIRegions, *h
 	return nil, resp, fmt.Errorf("no region named '%s' was found", cbiRegionName)
 }
 
-func GetAll(service *services.Service) ([]CBIRegions, *http.Response, error) {
-	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiRegionsEndpoint
+func GetAll(service *zscaler.Service) ([]CBIRegions, *http.Response, error) {
+	relativeURL := cbiConfig + service.Client.GetCustomerID() + cbiRegionsEndpoint
 	var list []CBIRegions
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)
 	if err != nil {

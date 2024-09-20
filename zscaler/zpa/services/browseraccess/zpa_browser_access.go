@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -98,9 +98,9 @@ type AppServerGroups struct {
 	ID string `json:"id"`
 }
 
-func Get(service *services.Service, appID string) (*BrowserAccess, *http.Response, error) {
+func Get(service *zscaler.Service, appID string) (*BrowserAccess, *http.Response, error) {
 	v := new(BrowserAccess)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, appID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+browserAccessEndpoint, appID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -108,8 +108,8 @@ func Get(service *services.Service, appID string) (*BrowserAccess, *http.Respons
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, BaName string) (*BrowserAccess, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
+func GetByName(service *zscaler.Service, BaName string) (*BrowserAccess, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + browserAccessEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BrowserAccess](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -122,17 +122,17 @@ func GetByName(service *services.Service, BaName string) (*BrowserAccess, *http.
 	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
 }
 
-func Create(service *services.Service, browserAccess BrowserAccess) (*BrowserAccess, *http.Response, error) {
+func Create(service *zscaler.Service, browserAccess BrowserAccess) (*BrowserAccess, *http.Response, error) {
 	v := new(BrowserAccess)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, browserAccess, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+browserAccessEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, browserAccess, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func Update(service *services.Service, appID string, browserAccess *BrowserAccess) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, appID)
+func Update(service *zscaler.Service, appID string, browserAccess *BrowserAccess) (*http.Response, error) {
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+browserAccessEndpoint, appID)
 	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, browserAccess, nil)
 	if err != nil {
 		return nil, err
@@ -140,8 +140,8 @@ func Update(service *services.Service, appID string, browserAccess *BrowserAcces
 	return resp, err
 }
 
-func Delete(service *services.Service, appID string) (*http.Response, error) {
-	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+browserAccessEndpoint, appID)
+func Delete(service *zscaler.Service, appID string) (*http.Response, error) {
+	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+browserAccessEndpoint, appID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -149,8 +149,8 @@ func Delete(service *services.Service, appID string) (*http.Response, error) {
 	return resp, err
 }
 
-func GetAll(service *services.Service) ([]BrowserAccess, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + browserAccessEndpoint
+func GetAll(service *zscaler.Service) ([]BrowserAccess, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + browserAccessEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[BrowserAccess](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err

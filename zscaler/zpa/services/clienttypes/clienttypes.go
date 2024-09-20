@@ -3,7 +3,7 @@ package clienttypes
 import (
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -24,9 +24,9 @@ type ClientTypes struct {
 	ZPNClientTypePartner          string `json:"zpn_client_type_zapp_partner"`
 }
 
-func GetAllClientTypes(service *services.Service) (*ClientTypes, *http.Response, error) {
+func GetAllClientTypes(service *zscaler.Service) (*ClientTypes, *http.Response, error) {
 	v := new(ClientTypes)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + clientTypesEndpoint
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + clientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err

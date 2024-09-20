@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -25,9 +26,9 @@ type ScimGroup struct {
 	InternalID   string `json:"internalId,omitempty"`
 }
 
-func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, error) {
+func Get(service *zscaler.Service, scimGroupID string) (*ScimGroup, *http.Response, error) {
 	v := new(ScimGroup)
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint, scimGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint, scimGroupID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -36,14 +37,14 @@ func (service *Service) Get(scimGroupID string) (*ScimGroup, *http.Response, err
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Response, error) {
+func GetByName(service *zscaler.Service, scimName, idpId string) (*ScimGroup, *http.Response, error) {
 	// Construct the API endpoint URL with query parameters
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
 	// Fetch the pages
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
 		Search:    scimName,
-		SortBy:    string(service.sortBy),
-		SortOrder: string(service.sortOrder),
+		SortBy:    string(service.SortBy),
+		SortOrder: string(service.SortOrder),
 	})
 	if err != nil {
 		return nil, resp, err
@@ -59,11 +60,11 @@ func (service *Service) GetByName(scimName, idpId string) (*ScimGroup, *http.Res
 	return nil, resp, fmt.Errorf("no SCIM group named '%s' was found", scimName)
 }
 
-func (service *Service) GetAllByIdpId(idpId string) ([]ScimGroup, *http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.Config.CustomerID+scimGroupEndpoint+idpIdPath, idpId)
+func GetAllByIdpId(service *zscaler.Service, idpId string) ([]ScimGroup, *http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](service.Client, relativeURL, common.Filter{
-		SortBy:    string(service.sortBy),
-		SortOrder: string(service.sortOrder),
+		SortBy:    string(service.SortBy),
+		SortOrder: string(service.SortOrder),
 	})
 	if err != nil {
 		return nil, nil, err

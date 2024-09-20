@@ -118,7 +118,10 @@ func NewOneAPIClient(config *Configuration, service string) (*Service, error) {
 // startTokenRenewalTicker starts a ticker to renew the token before it expires.
 func (c *Client) startTokenRenewalTicker() {
 	if c.useOneAPI {
-		tokenExpiry := c.oauth2Credentials.Zscaler.Client.AuthToken.Expiry
+		tokenExpiry := time.Now()
+		if c.oauth2Credentials.Zscaler.Client.AuthToken != nil {
+			tokenExpiry = c.oauth2Credentials.Zscaler.Client.AuthToken.Expiry
+		}
 		renewalInterval := time.Until(tokenExpiry) - (time.Minute * 1) // Renew 1 minute before expiration
 
 		if renewalInterval > 0 {
@@ -457,7 +460,7 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 }
 */
 
-func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+func (c *Client) getRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) (*http.Request, error) {
 	if contentType == "" {
 		contentType = contentTypeJSON
 	}
@@ -494,7 +497,7 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 	// Create the HTTP request
 	req, err := http.NewRequest(method, fullURL, body)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
@@ -505,9 +508,17 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 	if !isSandboxRequest {
 		err = c.authenticate()
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+	}
+	return req, nil
+}
+
+func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+	req, err := c.getRequest(method, endpoint, body, urlParams, contentType)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Execute the request with retries
@@ -521,13 +532,16 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 		if err != nil {
 			return nil, nil, err
 		}
-
-		if resp.StatusCode > 299 {
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			err = c.authenticate()
+			if err != nil {
+				return nil, nil, err
+			}
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
+		} else if resp.StatusCode > 299 {
 			resp.Body.Close()
 			return nil, nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
-		}
-
-		if resp.StatusCode < 300 {
+		} else if resp.StatusCode < 300 {
 			break
 		}
 	}

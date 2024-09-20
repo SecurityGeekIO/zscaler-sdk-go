@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -61,9 +61,9 @@ func unmarshalRulesJson(rulesJsonStr string) ([]Rules, error) {
 	return rules, err
 }
 
-func Get(service *services.Service, customID string) (*InspectionCustomControl, *http.Response, error) {
+func Get(service *zscaler.Service, customID string) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -73,8 +73,8 @@ func Get(service *services.Service, customID string) (*InspectionCustomControl, 
 	return v, resp, err
 }
 
-func GetByName(service *services.Service, controlName string) (*InspectionCustomControl, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
+func GetByName(service *zscaler.Service, controlName string) (*InspectionCustomControl, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customControlsEndpoint
 	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -89,9 +89,9 @@ func GetByName(service *services.Service, controlName string) (*InspectionCustom
 	return nil, resp, fmt.Errorf("no custom inspection control named '%s' was found", controlName)
 }
 
-func Create(service *services.Service, customControls InspectionCustomControl) (*InspectionCustomControl, *http.Response, error) {
+func Create(service *zscaler.Service, customControls InspectionCustomControl) (*InspectionCustomControl, *http.Response, error) {
 	v := new(InspectionCustomControl)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, nil, customControls, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, nil, customControls, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -99,8 +99,8 @@ func Create(service *services.Service, customControls InspectionCustomControl) (
 	return v, resp, nil
 }
 
-func Update(service *services.Service, customID string, customControls *InspectionCustomControl) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
+func Update(service *zscaler.Service, customID string, customControls *InspectionCustomControl) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
 	resp, err := service.Client.NewRequestDo("PUT", relativeURL, nil, customControls, nil)
 	if err != nil {
 		return nil, err
@@ -109,8 +109,8 @@ func Update(service *services.Service, customID string, customControls *Inspecti
 	return resp, err
 }
 
-func Delete(service *services.Service, customID string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+customControlsEndpoint, customID)
+func Delete(service *zscaler.Service, customID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+customControlsEndpoint, customID)
 	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, nil, nil, nil)
 	if err != nil {
 		return nil, err
@@ -119,8 +119,8 @@ func Delete(service *services.Service, customID string) (*http.Response, error) 
 	return resp, nil
 }
 
-func GetAll(service *services.Service) ([]InspectionCustomControl, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + customControlsEndpoint
+func GetAll(service *zscaler.Service) ([]InspectionCustomControl, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + customControlsEndpoint
 	list, resp, err := common.GetAllPagesGeneric[InspectionCustomControl](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

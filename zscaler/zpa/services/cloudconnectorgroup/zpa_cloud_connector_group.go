@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -44,9 +44,9 @@ type CloudConnectors struct {
 	MicroTenantName string                 `json:"microtenantName,omitempty"`
 }
 
-func Get(service *services.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
+func Get(service *zscaler.Service, cloudConnectorGroupID string) (*CloudConnectorGroup, *http.Response, error) {
 	v := new(CloudConnectorGroup)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint + "/" + cloudConnectorGroupID
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -55,8 +55,8 @@ func Get(service *services.Service, cloudConnectorGroupID string) (*CloudConnect
 	return v, resp, nil
 }
 
-func GetByName(service *services.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
+func GetByName(service *zscaler.Service, cloudConnectorGroupName string) (*CloudConnectorGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -69,8 +69,8 @@ func GetByName(service *services.Service, cloudConnectorGroupName string) (*Clou
 	return nil, resp, fmt.Errorf("no application named '%s' was found", cloudConnectorGroupName)
 }
 
-func GetAll(service *services.Service) ([]CloudConnectorGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + cloudConnectorGroupEndpoint
+func GetAll(service *zscaler.Service) ([]CloudConnectorGroup, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + cloudConnectorGroupEndpoint
 	list, resp, err := common.GetAllPagesGeneric[CloudConnectorGroup](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
