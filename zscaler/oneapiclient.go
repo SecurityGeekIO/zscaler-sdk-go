@@ -483,6 +483,11 @@ func WithUserAgentExtra(userAgent string) ConfigSetter {
 func WithDebug(debug bool) ConfigSetter {
 	return func(c *Configuration) {
 		c.Debug = debug
+		// Automatically set the environment variables if debug is enabled
+		if debug {
+			_ = os.Setenv("ZSCALER_SDK_LOG", "true")
+			_ = os.Setenv("ZSCALER_SDK_VERBOSE", "true")
+		}
 	}
 }
 
