@@ -7,7 +7,7 @@ import (
 )
 
 func TestGREInternalIPRanges(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

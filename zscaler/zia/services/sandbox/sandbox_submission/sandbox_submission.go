@@ -71,7 +71,7 @@ func scanFile(service *zscaler.Service, filename string, file io.Reader, force, 
 	gz.Close() // Ensure to close the gzip writer to flush the buffer
 
 	// Correct the argument order for ExecuteRequest
-	data, err := service.Client.ExecuteRequest("POST", endpoint, &gzippedFile, urlParams, contentType)
+	data, _, err := service.Client.ExecuteRequest("POST", endpoint, &gzippedFile, urlParams, contentType) // Ignore the req value
 	if err != nil {
 		return nil, err
 	}

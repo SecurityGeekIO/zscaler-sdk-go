@@ -11,7 +11,7 @@ import (
 )
 
 func TestDLPEDMLite(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestDLPEDMLite(t *testing.T) {
 }
 
 func TestGetDLPProfileLiteById(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -79,7 +79,7 @@ func TestGetDLPProfileLiteById(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -107,7 +107,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -138,7 +138,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestEDMFields(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

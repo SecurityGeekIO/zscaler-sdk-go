@@ -10,7 +10,7 @@ import (
 )
 
 func TestApplicationServer_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -38,7 +38,7 @@ func TestApplicationServer_Get(t *testing.T) {
 }
 
 func TestApplicationServer_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -76,7 +76,7 @@ func TestApplicationServer_Create(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 
 func TestApplicationServer_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -118,7 +118,7 @@ func TestApplicationServer_GetByName(t *testing.T) {
 }
 
 func TestApplicationServer_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -145,7 +145,7 @@ func TestApplicationServer_Update(t *testing.T) {
 }
 
 func TestApplicationServer_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -164,7 +164,7 @@ func TestApplicationServer_Delete(t *testing.T) {
 }
 
 func TestApplicationServer_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

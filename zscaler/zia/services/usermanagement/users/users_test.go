@@ -52,7 +52,7 @@ func TestUserManagement(t *testing.T) {
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	// Step 2: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

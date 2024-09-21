@@ -11,7 +11,7 @@ import (
 )
 
 func TestService_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -251,7 +251,7 @@ func TestService_Get(t *testing.T) {
 
 /*
 	func TestServerGroup_GetByName(t *testing.T) {
-		client, mux, server := tests.NewZpaClientMock()
+		client, mux, server := tests.NewOneAPIClientMock()
 		defer server.Close()
 		mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup", func(w http.ResponseWriter, r *http.Request) {
 			// Get the query parameter "name" from the request
@@ -305,7 +305,7 @@ func TestService_Get(t *testing.T) {
 	}
 */
 func TestServerGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -351,7 +351,7 @@ func TestServerGroup_Create(t *testing.T) {
 }
 
 func TestServerGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -391,7 +391,7 @@ func TestServerGroup_Update(t *testing.T) {
 }
 
 func TestServerGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -410,7 +410,7 @@ func TestServerGroup_Delete(t *testing.T) {
 }
 
 func TestServerGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

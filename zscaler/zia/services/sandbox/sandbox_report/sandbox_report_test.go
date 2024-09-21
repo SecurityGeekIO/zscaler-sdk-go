@@ -1,6 +1,5 @@
 package sandbox_report
 
-/*
 import (
 	"fmt"
 	"strings"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestGetRatingQuota(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -27,7 +26,7 @@ func TestGetRatingQuota(t *testing.T) {
 }
 
 func TestGetReportMD5Hash(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -56,4 +55,3 @@ func TestGetReportMD5Hash(t *testing.T) {
 		}
 	}
 }
-*/

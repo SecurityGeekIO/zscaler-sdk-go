@@ -39,7 +39,7 @@ func cleanResources() {
 		return
 	}
 
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -63,7 +63,7 @@ func cleanResources() {
 func TestGRETunnelInfo(t *testing.T) {
 	ipAddress, _ := acctest.RandIpAddress("104.239.248.0/24")
 	comment := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

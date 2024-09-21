@@ -6,15 +6,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestGetAllClientTypes(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	clientTypes, _, err := GetClientTypes(service)
 	if err != nil {
@@ -43,11 +41,10 @@ func TestGetAllClientTypes(t *testing.T) {
 }
 
 func TestClientTypesStatusCodeCheck(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Fetch the client types and the HTTP response
 	_, httpResponse, err := GetClientTypes(service)
@@ -62,11 +59,10 @@ func TestClientTypesStatusCodeCheck(t *testing.T) {
 }
 
 func TestClientTypesErrorResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Fetch the client types and the HTTP response
 	clientTypes, httpResponse, err := GetClientTypes(service)

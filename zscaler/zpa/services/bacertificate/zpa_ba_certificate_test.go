@@ -13,16 +13,14 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestBACertificates(t *testing.T) {
-	// Initialize the ZPA client
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
 	// Certificate generation
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -65,7 +63,6 @@ func TestBACertificates(t *testing.T) {
 	fullCert := string(certPEM) + string(keyPEM)
 
 	// Create the certificate object
-	service := services.New(client)
 	baCertificate := BaCertificate{
 		CertBlob:    fullCert,
 		Name:        template.Subject.CommonName,
@@ -163,26 +160,20 @@ func TestBACertificates(t *testing.T) {
 		}
 	})
 
-	// Test for Create to cover the missed branch
-	t.Run("TestCreateWithError", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid_customer_id" // Force an error
-		_, _, err := Create(service, baCertificate)
-		if err == nil {
-			t.Errorf("Expected error while creating certificate with invalid customer ID, got nil")
-		}
-		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
-	})
-
 	// Test for Delete to cover the missed branch
 	t.Run("TestDeleteWithError", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid_customer_id" // Force an error
+		// Temporarily change the client configuration to trigger an error
+		originalCustomerID := service.Client.GetCustomerID()
+
+		// Apply the WithZPACustomerID setter to temporarily set an invalid customer ID
+		zscaler.WithZPACustomerID("invalid_customer_id")
+
 		_, err := Delete(service, createdCert.ID)
 		if err == nil {
 			t.Errorf("Expected error while deleting certificate with invalid customer ID, got nil")
 		}
-		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
+		// Reset the customer ID using the original value
+		zscaler.WithZPACustomerID(originalCustomerID)
 	})
 }
 

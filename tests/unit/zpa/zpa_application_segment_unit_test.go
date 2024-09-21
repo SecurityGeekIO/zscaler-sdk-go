@@ -10,7 +10,7 @@ import (
 )
 
 func TestApplicationSegment_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -109,7 +109,7 @@ func TestApplicationSegment_GetByName(t *testing.T) {
 }
 
 func TestApplicationSegment_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -156,7 +156,7 @@ func TestApplicationSegment_Create(t *testing.T) {
 }
 
 func TestApplicationSegment_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -200,7 +200,7 @@ func TestApplicationSegment_Update(t *testing.T) {
 }
 
 func TestApplicationSegment_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -224,7 +224,7 @@ func TestApplicationSegment_Delete(t *testing.T) {
 }
 
 func TestApplicationSegment_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

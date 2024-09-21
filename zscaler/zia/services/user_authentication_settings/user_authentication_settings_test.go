@@ -37,7 +37,7 @@ func cleanResources() {
 		return
 	}
 
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -64,7 +64,7 @@ func cleanResources() {
 }
 
 func TestUserAuthenticationSettings(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

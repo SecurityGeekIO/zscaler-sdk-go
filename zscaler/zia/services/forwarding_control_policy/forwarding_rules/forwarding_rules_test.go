@@ -47,7 +47,7 @@ func TestForwardingRulesDirect(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	randomSrcIPAddress, _ := acctest.RandIpAddress("192.168.100.0/24")
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -187,7 +187,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*ForwardingRules, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -200,7 +200,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -213,7 +213,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -226,7 +226,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

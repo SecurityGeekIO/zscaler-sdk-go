@@ -10,7 +10,7 @@ import (
 )
 
 func TestBaCertificate_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -40,7 +40,7 @@ func TestBaCertificate_Get(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 /*
 func TestBaCertificate_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/clientlessCertificate/issued", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
@@ -82,7 +82,7 @@ func TestBaCertificate_GetByName(t *testing.T) {
 }
 */
 func TestBaCertificate_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

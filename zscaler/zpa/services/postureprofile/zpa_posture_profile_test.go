@@ -5,20 +5,16 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestPostureProfiles(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(service)
@@ -76,13 +72,10 @@ func TestPostureProfiles(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	profiles, _, err := GetAll(service)
 	if err != nil {
@@ -110,13 +103,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming a profile with the name "CrowdStrike_ZPA_ZTA_40" exists
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -145,7 +135,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 /*
 func TestPostureProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -177,13 +167,10 @@ func TestPostureProfileNamesWithSpaces(t *testing.T) {
 */
 
 func TestPostureProfileByPostureUDID(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Use GetByName to fetch a known Posture Profile
 	knownName := "CrowdStrike_ZPA_ZTA_40"
@@ -208,11 +195,10 @@ func TestPostureProfileByPostureUDID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

@@ -6,20 +6,16 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestAccessRedirectionPolicy(t *testing.T) {
 	policyType := "REDIRECTION_POLICY"
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	svcEdgeGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	svcEdgeGroup, _, err := serviceedgegroup.Create(service, serviceedgegroup.ServiceEdgeGroup{

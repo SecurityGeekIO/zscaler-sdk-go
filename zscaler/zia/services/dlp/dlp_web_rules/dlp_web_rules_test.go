@@ -49,7 +49,7 @@ func TestDLPWebRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -225,7 +225,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -237,7 +237,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -249,7 +249,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
@@ -261,7 +261,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}

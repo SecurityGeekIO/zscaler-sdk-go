@@ -70,9 +70,9 @@ func TestMain(m *testing.M) {
 // sweep the resources before running integration tests
 func sweep() error {
 	log.Println("[INFO] Sweeping ZIA test resources")
-	service, err := tests.NewZIAOneAPIClient() // This returns a *zscaler.Service
+	service, err := tests.NewOneAPIClient() // This returns a *zscaler.Service
 	if err != nil {
-		log.Printf("[ERROR] Failed to instantiate ZIA client: %v", err)
+		log.Printf("[ERROR] Failed to instantiate OneAPI client: %v", err)
 		return err
 	}
 

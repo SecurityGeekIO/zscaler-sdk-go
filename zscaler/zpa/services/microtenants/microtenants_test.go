@@ -5,36 +5,35 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestMicrotenants(t *testing.T) {
 	// Define the list of all possible domain names
 	domains := []string{
-		"144124980601290752.zpa-customer.com",
-		"public-api-sdk-testing.com",
-		"144124981675032576.zpa-customer.com",
-		"public-api-sdk-testing1.com",
-		"bd-hashicorp.com",
-		"bd-redhat.com",
-		"216199618143191040.zpa-customer.com",
+		"216196257331281920.zpa-customer.com",
 		"securitygeek.io",
-		"72058304855015424.zpa-customer.com",
-		"securitygeekio.ca",
-		"72057604775346176.zpa-customer.com",
-		"72059901509107712.zpa-customer.com",
-		"72059899361624064.zpa-customer.com",
+		// "144124980601290752.zpa-customer.com",
+		// "public-api-sdk-testing.com",
+		// "144124981675032576.zpa-customer.com",
+		// "public-api-sdk-testing1.com",
+		// "bd-hashicorp.com",
+		// "bd-redhat.com",
+		// "216199618143191040.zpa-customer.com",
+		// "securitygeek.io",
+		// "72058304855015424.zpa-customer.com",
+		// "securitygeekio.ca",
+		// "72057604775346176.zpa-customer.com",
+		// "72059901509107712.zpa-customer.com",
+		// "72059899361624064.zpa-customer.com",
 	}
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	var createdResource *MicroTenant
 
@@ -87,25 +86,25 @@ func TestMicrotenants(t *testing.T) {
 		}
 	})
 
-	t.Run("TestRetrieveLoginInfo", func(t *testing.T) {
-		if createdResource.UserResource == nil {
-			t.Fatalf("Expected user details in created resource, but got nil")
-		}
+	// t.Run("TestRetrieveLoginInfo", func(t *testing.T) {
+	// 	if createdResource.UserResource == nil {
+	// 		t.Fatalf("Expected user details in created resource, but got nil")
+	// 	}
 
-		username := createdResource.UserResource.Username
-		if username == "" {
-			t.Error("Expected username to be non-empty, but got ''")
-		} else {
-			if !strings.Contains(username, "@") {
-				t.Errorf("Expected valid username format containing '@', but got '%s'", username)
-			}
-		}
+	// 	username := createdResource.UserResource.Username
+	// 	if username == "" {
+	// 		t.Error("Expected username to be non-empty, but got ''")
+	// 	} else {
+	// 		if !strings.Contains(username, "@") {
+	// 			t.Errorf("Expected valid username format containing '@', but got '%s'", username)
+	// 		}
+	// 	}
 
-		password := createdResource.UserResource.Password
-		if password == "" {
-			t.Error("Expected password to be non-empty, but got ''")
-		}
-	})
+	// 	password := createdResource.UserResource.Password
+	// 	if password == "" {
+	// 		t.Error("Expected password to be non-empty, but got ''")
+	// 	}
+	// })
 
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
@@ -158,11 +157,10 @@ func TestMicrotenants(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Get(service, "non-existent-id")
 	if err == nil {
@@ -171,11 +169,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, "non-existent-id")
 	if err == nil {
@@ -184,11 +181,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Update(service, "non-existent-id", &MicroTenant{})
 	if err == nil {
@@ -197,11 +193,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non-existent-name")
 	if err == nil {

@@ -54,7 +54,7 @@ func TestZPAGateways(t *testing.T) {
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	rPort := strconv.Itoa(acctest.RandIntRange(1000, 9999))
 
-	zpaClient, err := tests.NewZpaClient()
+	zpaClient, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
@@ -195,7 +195,7 @@ func TestZPAGateways(t *testing.T) {
 		}
 	}()
 
-	ziaService, err := tests.NewZIAOneAPIClient()
+	ziaService, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

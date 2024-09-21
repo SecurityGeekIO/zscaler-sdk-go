@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
@@ -65,40 +64,34 @@ func getRandomTimeZone() (string, error) {
 func TestCredentialController(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	//updateName := "tests-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
-	// create segment group for testing
-	segGroupService := services.New(client)
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
 	}
-	createdSegGroup, _, err := segmentgroup.Create(segGroupService, &appGroup)
+	createdSegGroup, _, err := segmentgroup.Create(service, &appGroup)
 	if err != nil {
 		t.Errorf("Error creating segment group: %v", err)
 		return
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentgroup.Get(segGroupService, createdSegGroup.ID)
+		_, _, getErr := segmentgroup.Get(service, createdSegGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentgroup.Delete(segGroupService, createdSegGroup.ID)
+			_, err := segmentgroup.Delete(service, createdSegGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
 		}
 	}()
 
-	// create pra application segment for testing
-	praSegmentService := services.New(client)
 	praAppSeg := applicationsegmentpra.AppSegmentPRA{
 		Name:            name,
 		Description:     name,
@@ -145,14 +138,14 @@ func TestCredentialController(t *testing.T) {
 			},
 		},
 	}
-	createdpraAppSeg, _, err := applicationsegmentpra.Create(praSegmentService, praAppSeg)
+	createdpraAppSeg, _, err := applicationsegmentpra.Create(service, praAppSeg)
 	if err != nil {
 		t.Errorf("Error creating pra application segment: %v", err)
 		return
 	}
 
 	// Assuming the praSegmentService.Get correctly returns the payload as described
-	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(praSegmentService, createdpraAppSeg.ID)
+	retrievedpraAppSeg, _, err := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
 	if err != nil {
 		t.Errorf("Error retrieving created pra application segment: %v", err)
 		return
@@ -160,11 +153,11 @@ func TestCredentialController(t *testing.T) {
 
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := applicationsegmentpra.Get(praSegmentService, createdpraAppSeg.ID)
+		_, _, getErr := applicationsegmentpra.Get(service, createdpraAppSeg.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := applicationsegmentpra.Delete(praSegmentService, createdpraAppSeg.ID)
+			_, err := applicationsegmentpra.Delete(service, createdpraAppSeg.ID)
 			if err != nil {
 				t.Errorf("Error deleting pra application segment: %v", err)
 			}
@@ -272,11 +265,10 @@ func TestCredentialController(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
@@ -285,11 +277,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Update(service, "non_existent_id", &PrivilegedApproval{})
 	if err == nil {
@@ -298,11 +289,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, "non_existent_id")
 	if err == nil {
@@ -311,11 +301,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteExpiredResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	resp, err := DeleteExpired(service)
 	if err != nil {

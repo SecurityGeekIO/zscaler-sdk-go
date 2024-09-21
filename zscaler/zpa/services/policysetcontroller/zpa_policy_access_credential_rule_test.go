@@ -17,7 +17,7 @@ func TestAccessCredentialPolicy(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "updated_" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	rPassword := acctest.RandString(10)
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

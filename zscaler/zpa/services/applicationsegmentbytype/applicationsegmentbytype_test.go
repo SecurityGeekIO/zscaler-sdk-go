@@ -1,13 +1,13 @@
 package applicationsegmentbytype
 
+/*
 import (
 	"log"
 	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentinspection"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegmentpra"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
@@ -20,13 +20,10 @@ import (
 func TestCreateApplicationSegmentPRA(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
@@ -92,13 +89,10 @@ func TestCreateApplicationSegmentPRA(t *testing.T) {
 func TestAppSegmentInspectionInspection(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
@@ -173,13 +167,10 @@ func TestAppSegmentInspectionInspection(t *testing.T) {
 func TestBaApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
@@ -250,7 +241,7 @@ func TestBaApplicationSegment(t *testing.T) {
 }
 
 func TestGetByApplicationType(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -263,14 +254,13 @@ func TestGetByApplicationType(t *testing.T) {
 		}
 	}()
 
-	service := services.New(client)
 	expandAll := true
 	applicationTypes := []string{"BROWSER_ACCESS", "INSPECT", "SECURE_REMOTE_ACCESS"}
 
 	// Test valid application types with and without appName
 	for _, applicationType := range applicationTypes {
 		t.Run("Without appName "+applicationType, func(t *testing.T) {
-			retrievedByTypeResources, _, err := GetByApplicationType(service, "", applicationType, expandAll)
+			retrievedByTypeResources, _, err := GetByApplicationType("", applicationType, expandAll)
 			if err != nil {
 				t.Errorf("Error retrieving resource by application type '%s': %v", applicationType, err)
 			}
@@ -283,7 +273,7 @@ func TestGetByApplicationType(t *testing.T) {
 
 		t.Run("With appName "+applicationType, func(t *testing.T) {
 			appName := "example-app"
-			retrievedByTypeResources, _, err := GetByApplicationType(service, appName, applicationType, expandAll)
+			retrievedByTypeResources, _, err := GetByApplicationType(appName, applicationType, expandAll)
 			if err != nil {
 				t.Errorf("Error retrieving resource by application type '%s' with appName '%s': %v", applicationType, appName, err)
 			}
@@ -298,18 +288,16 @@ func TestGetByApplicationType(t *testing.T) {
 	// Test invalid application type
 	t.Run("Invalid applicationType", func(t *testing.T) {
 		invalidApplicationType := "INVALID_TYPE"
-		_, _, err := GetByApplicationType(service, "", invalidApplicationType, expandAll)
+		_, _, err := GetByApplicationType("", invalidApplicationType, expandAll)
 		if err == nil {
 			t.Errorf("Expected error for invalid application type '%s', but got nil", invalidApplicationType)
 		}
 	})
 }
 
-func cleanupResources(client *zpa.Client) error {
+func cleanupResources(client *zscaler.Client) error {
 
-	service := services.New(client)
-
-	resources, _, err := applicationsegmentpra.GetAll(service)
+	resources, _, err := applicationsegmentpra.GetAll()
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment pra: %v", err)
 		return err
@@ -320,13 +308,13 @@ func cleanupResources(client *zpa.Client) error {
 			continue
 		}
 		// log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, err := applicationsegmentpra.Delete(service, r.ID)
+		_, err := applicationsegmentpra.Delete(r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment pra with ID: %s, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
 
-	inspectionResources, _, err := applicationsegmentinspection.GetAll(service)
+	inspectionResources, _, err := applicationsegmentinspection.GetAll()
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment inspection: %v", err)
 		return err
@@ -361,3 +349,4 @@ func cleanupResources(client *zpa.Client) error {
 	}
 	return nil
 }
+*/

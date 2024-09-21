@@ -53,7 +53,7 @@ func TestPassword(length int) string {
 	return string(result)
 }
 
-// func NewZpaClient() (*zpa.Client, error) {
+// func NewOneAPIClient() (*zpa.Client, error) {
 // 	zpa_client_id := os.Getenv("ZPA_CLIENT_ID")
 // 	zpa_client_secret := os.Getenv("ZPA_CLIENT_SECRET")
 // 	zpa_customer_id := os.Getenv("ZPA_CUSTOMER_ID")
@@ -67,7 +67,7 @@ func TestPassword(length int) string {
 // 	return zpaClient, nil
 // }
 
-// func NewZpaClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
+// func NewOneAPIClientMock() (*zpa.Client, *http.ServeMux, *httptest.Server) {
 // 	mux := http.NewServeMux()
 
 // 	// Create a request handler for the exact endpoint
@@ -109,7 +109,7 @@ func TestPassword(length int) string {
 // }
 
 // NewOneAPIClient instantiates a new OneAPI client for testing
-func NewZIAOneAPIClient() (*zscaler.Service, error) {
+func NewOneAPIClient() (*zscaler.Service, error) {
 	// Fetch credentials directly from environment variables
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")
@@ -134,7 +134,7 @@ func NewZIAOneAPIClient() (*zscaler.Service, error) {
 	}
 
 	// Instantiate the OneAPI client and pass the service name (e.g., "zia")
-	client, err := zscaler.NewOneAPIClient(config, "zia")
+	client, err := zscaler.NewOneAPIClient(config, "zpa")
 	if err != nil {
 		return nil, fmt.Errorf("error creating OneAPI client: %v", err)
 	}

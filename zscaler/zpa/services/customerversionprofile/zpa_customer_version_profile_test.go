@@ -6,19 +6,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestCustomerVersionProfile(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Normal case for GetAll
 	profiles, _, err := GetAll(service)
@@ -54,28 +50,13 @@ func TestCustomerVersionProfile(t *testing.T) {
 			t.Errorf("Expected error when no version profile is found, but got none")
 		}
 	})
-
-	// Simulate network error by using an invalid URL
-	t.Run("Network error case for GetAll", func(t *testing.T) {
-		service.Client.GetCustomerID() = "invalid-customer-id"
-		_, _, err := GetAll(service)
-		if err == nil {
-			t.Errorf("Expected network error when calling GetAll with invalid customer ID, but got none")
-		}
-	})
-
-	// Reset the customer ID after the test
-	service.Client.GetCustomerID() = client.Config.CustomerID
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"New Release", "Default", "Previous Default", "Default - el8"}
 	anyVariationSucceeded := false

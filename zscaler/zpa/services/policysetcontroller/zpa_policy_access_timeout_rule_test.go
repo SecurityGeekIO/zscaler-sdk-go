@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -14,12 +13,10 @@ import (
 
 func TestAccessTimeoutPolicy(t *testing.T) {
 	policyType := "TIMEOUT_POLICY"
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {
@@ -38,6 +35,7 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 	if len(samlsList) == 0 {
 		t.Error("Expected retrieved saml attributes to be non-empty, but got empty slice")
 	}
+
 	accessPolicySet, _, err := GetByPolicyType(service, policyType)
 	if err != nil {
 		t.Errorf("Error getting access timeout policy set: %v", err)
@@ -79,7 +77,6 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		}
 		// Test resource creation
 		createdResource, _, err := CreateRule(service, &accessPolicyRule)
-		// Check if the request was successful
 		if err != nil {
 			t.Errorf("Error making POST request: %v", err)
 			continue
@@ -123,11 +120,18 @@ func TestAccessTimeoutPolicy(t *testing.T) {
 		}
 		time.Sleep(5 * time.Second)
 	}
+
+	// Log the rule IDs to see what we are passing to the BulkReorder function
+	t.Logf("Rule IDs before reordering: %v", ruleIDs)
+
 	// Reorder the rules after all have been created and updated
 	ruleIdToOrder := make(map[string]int)
 	for i, id := range ruleIDs {
 		ruleIdToOrder[id] = len(ruleIDs) - i // Reverse the order
 	}
+
+	// Log the ordering map
+	t.Logf("Reordering map: %v", ruleIdToOrder)
 
 	_, err = BulkReorder(service, policyType, ruleIdToOrder)
 	if err != nil {

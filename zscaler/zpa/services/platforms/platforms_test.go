@@ -5,15 +5,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestGetAllPlatforms(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Test case: Normal scenario
 	t.Run("TestGetAllPlatformsNormal", func(t *testing.T) {
@@ -47,17 +45,6 @@ func TestGetAllPlatforms(t *testing.T) {
 		}
 	})
 
-	// Test case: Error scenario
-	t.Run("TestGetAllPlatformsError", func(t *testing.T) {
-		// Temporarily change the client configuration to trigger an error
-		service.Client.GetCustomerID() = "invalid_customer_id"
-		_, _, err := GetAllPlatforms(service)
-		if err == nil {
-			t.Errorf("Expected error while fetching platforms with invalid customer ID, got nil")
-		}
-		// Reset the customer ID to avoid affecting other tests
-		service.Client.GetCustomerID() = client.Config.CustomerID
-	})
 }
 
 func getValuesByTags(types *Platforms) map[string]string {

@@ -5,17 +5,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestSAMLAttribute(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	attributes, _, err := GetAll(service)
 	if err != nil {
@@ -40,13 +36,10 @@ func TestSAMLAttribute(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	attributes, _, err := GetAll(service)
 	if err != nil {
@@ -71,13 +64,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestNonExistentSAMLAttributeName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 	_, _, err = GetByName(service, "NonExistentName")
 	if err == nil {
 		t.Errorf("Expected error when getting non-existent SAML attribute by name, got none")
@@ -85,13 +75,10 @@ func TestNonExistentSAMLAttributeName(t *testing.T) {
 }
 
 func TestEmptyResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)
@@ -104,13 +91,10 @@ func TestEmptyResponse(t *testing.T) {
 }
 
 func TestGetSAMLAttributeByID(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
@@ -135,13 +119,10 @@ func TestGetSAMLAttributeByID(t *testing.T) {
 }
 
 func TestAllFieldsOfSAMLAttribute(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 	attributes, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting all SAML attributes: %v", err)
@@ -179,13 +160,10 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 }
 
 func TestResponseHeadersAndFormat(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 	_, resp, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting SAML attributes: %v", err)

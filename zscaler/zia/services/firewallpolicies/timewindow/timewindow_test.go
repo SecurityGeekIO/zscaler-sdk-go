@@ -10,7 +10,7 @@ import (
 )
 
 func TestTimeWindow_data(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -46,7 +46,7 @@ func TestTimeWindow_data(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -75,7 +75,7 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

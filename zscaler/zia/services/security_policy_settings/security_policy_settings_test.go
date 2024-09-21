@@ -42,7 +42,7 @@ func retryOnConflict(operation func() error) error {
 }
 
 func TestSecurityPolicySettings(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

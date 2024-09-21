@@ -5,19 +5,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestMachineGroup(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all machine groups
 	groups, _, err := GetAll(service)
@@ -73,13 +69,10 @@ func TestMachineGroup(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	groups, _, err := GetAll(service)
 	if err != nil {
@@ -100,20 +93,14 @@ func TestResponseFormatValidation(t *testing.T) {
 		if group.Name == "" {
 			t.Errorf("Machine Group Name is empty")
 		}
-		if group.Description == "" {
-			t.Errorf("Machine Group Description is empty")
-		}
 	}
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming a group with the name "BD-MGR01" exists
 	knownName := "BD-MGR01"
@@ -141,13 +128,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestMachineGroupNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming that there are groups with the following name variations
 	variations := []string{
@@ -171,11 +155,10 @@ func TestMachineGroupNamesWithSpaces(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

@@ -14,7 +14,7 @@ func isValidMD5(hash string) bool {
 }
 
 func TestUpdateBaAdvancedSettings(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -41,7 +41,7 @@ func TestUpdateBaAdvancedSettings(t *testing.T) {
 }
 
 func TestValidateMD5Hashes(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -86,7 +86,7 @@ func TestValidateMD5Hashes(t *testing.T) {
 }
 
 func TestGetBaAdvancedSettings(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -102,7 +102,7 @@ func TestGetBaAdvancedSettings(t *testing.T) {
 }
 
 func TestGetFileHashCount(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -118,7 +118,7 @@ func TestGetFileHashCount(t *testing.T) {
 }
 
 func TestEmptyHashList(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

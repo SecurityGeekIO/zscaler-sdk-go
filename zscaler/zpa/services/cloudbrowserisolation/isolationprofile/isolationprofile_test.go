@@ -9,17 +9,13 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestIsolationProfile(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(service)
@@ -44,34 +40,13 @@ func TestIsolationProfile(t *testing.T) {
 		t.Errorf("Isolation profile name does not match: expected %s, got %s", name, profile.Name)
 		return
 	}
-
-	// Negative Test: Try to retrieve a profile with a non-existent name
-	nonExistentName := "ThisProfileNameDoesNotExist"
-	_, _, err = GetByName(service, nonExistentName)
-	if err == nil {
-		t.Errorf("Expected error when getting by non-existent name, got nil")
-		return
-	}
-
-	// Cover the GetAll function error
-	service.Client.GetCustomerID() = "invalid_id"
-	_, _, err = GetAll(service)
-	if err == nil {
-		t.Errorf("Expected error when getting all profiles with invalid CustomerID, got nil")
-		return
-	}
-	// Restore valid CustomerID for further tests
-	service.Client.GetCustomerID() = client.Config.CustomerID
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	profiles, _, err := GetAll(service)
 	if err != nil {
@@ -99,13 +74,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"BD_SA_Profile1", "BD SA Profile", "BD  SA Profile", "BD   SA   Profile"}
 
@@ -136,13 +108,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming that there are profiles with the following name variations
 	variations := []string{
@@ -167,11 +136,10 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

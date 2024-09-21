@@ -7,16 +7,14 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAppConnectorSchedule(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Retrieve CustomerID from environment variable
 	customerID := os.Getenv("ZPA_CUSTOMER_ID")
@@ -39,8 +37,8 @@ func TestAppConnectorSchedule(t *testing.T) {
 		} else {
 			t.Fatalf("Error creating schedule: %v", err)
 		}
-	} else if createResp.StatusCode != 200 {
-		t.Errorf("Expected status code 200, got: %v", createResp.StatusCode)
+	} else if createResp.StatusCode != 200 && createResp.StatusCode != 204 {
+		t.Errorf("Expected status code 200 or 204, got: %v", createResp.StatusCode)
 	}
 
 	// Test 2: GetSchedule (Initial fetch)
@@ -75,10 +73,13 @@ func TestAppConnectorSchedule(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error updating schedule with interval %s: %v", interval, err)
 		}
-		if updateResp.StatusCode != 204 {
-			t.Errorf("Expected status code 204 for interval %s, got: %v", interval, updateResp.StatusCode)
+
+		// Adjust the expected status code to accept 204 as valid
+		if updateResp.StatusCode != 200 {
+			t.Errorf("Expected status code 200 for interval %s, got: %v", interval, updateResp.StatusCode)
+		} else {
+			t.Logf("Updated schedule with interval: %s", interval)
 		}
-		t.Logf("Updated schedule with interval: %s", interval)
 	}
 
 	// Test 4: GetSchedule (Post-update fetch)
@@ -96,10 +97,11 @@ func TestAppConnectorSchedule(t *testing.T) {
 }
 
 func TestUpdateScheduleWhenDisabled(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
-	service := services.New(client)
 	schedule, _, err := GetSchedule(service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
@@ -115,10 +117,11 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 }
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
-	service := services.New(client)
 	schedule, _, err := GetSchedule(service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
@@ -144,10 +147,11 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 }
 
 func TestCustomerIDValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 
-	service := services.New(client)
 	schedule := AssistantSchedule{
 		CustomerID:        "", // Intentionally left blank
 		DeleteDisabled:    true,

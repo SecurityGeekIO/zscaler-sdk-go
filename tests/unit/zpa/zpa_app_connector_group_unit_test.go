@@ -10,7 +10,7 @@ import (
 )
 
 func TestAppConnectorGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
@@ -37,7 +37,7 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 }
 
 func TestAppConnectorGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
@@ -86,7 +86,7 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 }
 
 func TestAppConnectorGroup_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
@@ -127,7 +127,7 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 }
 
 func TestAppConnectorGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		// Write a JSON response
@@ -167,7 +167,7 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 }
 
 func TestAppConnectorGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -185,7 +185,7 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 }
 
 func TestAppConnectorGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/isolationprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
@@ -16,13 +15,10 @@ import (
 func TestAccessIsolationPolicyIsolateV2(t *testing.T) {
 	policyType := "ISOLATION_POLICY"
 	isolationProfileID := "BD_SA_Profile1"
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {

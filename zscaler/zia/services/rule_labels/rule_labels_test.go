@@ -46,7 +46,7 @@ func TestRuleLabels(t *testing.T) {
 	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -165,7 +165,7 @@ func tryRetrieveResource(service *zscaler.Service, id int) (*RuleLabels, error) 
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -177,7 +177,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -200,7 +200,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

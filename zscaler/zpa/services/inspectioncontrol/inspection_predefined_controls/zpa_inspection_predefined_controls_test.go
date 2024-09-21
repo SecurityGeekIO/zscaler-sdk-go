@@ -4,17 +4,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestInspectionPredefinedControls(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Corrected this line to include the version
 	controls, err := GetAll(service, "OWASP_CRS/3.3.0")
@@ -49,12 +45,10 @@ func TestInspectionPredefinedControls(t *testing.T) {
 }
 
 func TestGetAllByGroup(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	version := "OWASP_CRS/3.3.0"
 
@@ -94,13 +88,10 @@ func TestGetAllByGroup(t *testing.T) {
 
 func TestGetControlGroup(t *testing.T) {
 	t.Run("TestValidControlGroup", func(t *testing.T) {
-		client, err := tests.NewZpaClient()
+		service, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
-
-		service := services.New(client)
-
 		version := "OWASP_CRS/3.3.0"
 		groupName := "Protocol Issues"
 
@@ -115,12 +106,10 @@ func TestGetControlGroup(t *testing.T) {
 	})
 
 	t.Run("TestNonExistentControlGroup", func(t *testing.T) {
-		client, err := tests.NewZpaClient()
+		service, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}
-
-		service := services.New(client)
 
 		version := "OWASP_CRS/3.3.0"
 		nonExistentGroupName := "ThisControlGroupNameDoesNotExist"

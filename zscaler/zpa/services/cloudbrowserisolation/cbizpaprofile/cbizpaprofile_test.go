@@ -7,19 +7,15 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestCBIZPAProfile(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all profiles
 	profiles, _, err := GetAll(service)
@@ -75,13 +71,10 @@ func TestCBIZPAProfile(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	profiles, _, err := GetAll(service)
 	if err != nil {
@@ -112,13 +105,10 @@ func TestResponseFormatValidation(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"BD_SA_Profile1", "BD SA Profile", "BD  SA Profile", "BD   SA   Profile"}
 
@@ -152,14 +142,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestProfileNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
-
 	// Assuming that there are profiles with the following name variations
 	variations := []string{
 		"BD SA Profile",     // Single space
@@ -186,11 +172,10 @@ func TestProfileNamesWithSpaces(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

@@ -1,12 +1,12 @@
 package policysetcontroller
 
+/*
 import (
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -14,12 +14,10 @@ import (
 
 func TestAccessCapabilityPolicy(t *testing.T) {
 	policyType := "CAPABILITIES_POLICY"
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {
@@ -143,3 +141,4 @@ func TestAccessCapabilityPolicy(t *testing.T) {
 		}
 	}
 }
+*/

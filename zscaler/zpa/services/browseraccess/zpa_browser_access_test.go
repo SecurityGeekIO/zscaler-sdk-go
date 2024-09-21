@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
@@ -16,12 +15,10 @@ func TestBaApplicationSegment(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	segmentGroupName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	appGroup := segmentgroup.SegmentGroup{
 		Name:        segmentGroupName,
@@ -179,12 +176,10 @@ func TestBaApplicationSegment(t *testing.T) {
 }
 
 func TestRetrieveNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
-
 	_, _, err = Get(service, "non-existent-id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
@@ -192,11 +187,10 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 }
 
 func TestDeleteNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Delete(service, "non-existent-id")
 	if err == nil {
@@ -205,11 +199,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 }
 
 func TestUpdateNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, err = Update(service, "non-existent-id", &BrowserAccess{})
 	if err == nil {
@@ -218,11 +211,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non-existent-name")
 	if err == nil {

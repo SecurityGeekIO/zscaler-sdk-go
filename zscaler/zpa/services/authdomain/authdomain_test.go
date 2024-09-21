@@ -4,15 +4,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestGetAllAuthDomains(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	domains, resp, err := GetAllAuthDomains(service)
 	if err != nil {

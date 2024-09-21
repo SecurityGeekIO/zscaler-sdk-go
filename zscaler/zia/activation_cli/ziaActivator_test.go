@@ -24,7 +24,7 @@ func TestActivationCLI(t *testing.T) {
 	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
 
 	// Create the ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestActivationStatuses(t *testing.T) {
 	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
 
 	// Create the ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -100,7 +100,7 @@ func TestSuccessfulActivationAndLogout(t *testing.T) {
 	checkEnvVarForTest(t, "ZSCALER_VANITY_DOMAIN")
 
 	// Create the ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

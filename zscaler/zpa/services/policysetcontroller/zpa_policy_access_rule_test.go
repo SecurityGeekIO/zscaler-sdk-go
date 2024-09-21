@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/postureprofile"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
@@ -15,12 +14,10 @@ import (
 
 func TestPolicyAccessRule(t *testing.T) {
 	policyType := "ACCESS_POLICY"
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	idpList, _, err := idpcontroller.GetAll(service)
 	if err != nil {

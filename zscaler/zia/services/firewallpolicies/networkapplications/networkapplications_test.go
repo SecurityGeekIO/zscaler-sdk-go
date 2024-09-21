@@ -12,7 +12,7 @@ import (
 )
 
 func TestNetworkApplications(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -55,7 +55,7 @@ func TestNetworkApplications(t *testing.T) {
 }
 
 func TestFilteringByParentCategory(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -87,7 +87,7 @@ func TestFilteringByParentCategory(t *testing.T) {
 }
 
 func TestLocaleSpecificResponse(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -115,7 +115,7 @@ func TestLocaleSpecificResponse(t *testing.T) {
 }
 
 func TestDeprecatedApplications(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -141,7 +141,7 @@ func TestDeprecatedApplications(t *testing.T) {
 }
 
 func TestDescriptionField(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -160,7 +160,7 @@ func TestDescriptionField(t *testing.T) {
 }
 
 func TestInvalidLocaleResponses(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -178,7 +178,7 @@ func TestInvalidLocaleResponses(t *testing.T) {
 }
 
 func TestRandomizedLocaleSpecificResponse(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -210,7 +210,7 @@ func TestRandomizedLocaleSpecificResponse(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

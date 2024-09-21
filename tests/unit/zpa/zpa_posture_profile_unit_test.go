@@ -10,7 +10,7 @@ import (
 )
 
 func TestPostureProfile_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -39,7 +39,7 @@ func TestPostureProfile_Get(t *testing.T) {
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestPostureProfile_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -81,7 +81,7 @@ func TestPostureProfile_GetByName(t *testing.T) {
 }
 
 func TestPostureProfile_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

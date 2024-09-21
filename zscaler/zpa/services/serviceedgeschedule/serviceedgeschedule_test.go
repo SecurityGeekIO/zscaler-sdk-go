@@ -7,17 +7,14 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAppConnectorSchedule(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
-
 	// Retrieve CustomerID from environment variable
 	customerID := os.Getenv("ZPA_CUSTOMER_ID")
 	if customerID == "" {
@@ -96,10 +93,10 @@ func TestAppConnectorSchedule(t *testing.T) {
 }
 
 func TestUpdateScheduleWhenDisabled(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
-
-	service := services.New(client)
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	schedule, _, err := GetSchedule(service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
@@ -115,10 +112,10 @@ func TestUpdateScheduleWhenDisabled(t *testing.T) {
 }
 
 func TestFrequencyIntervalBoundaries(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
-
-	service := services.New(client)
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	schedule, _, err := GetSchedule(service)
 	require.NoError(t, err, "Error getting schedule")
 	require.NotNil(t, schedule, "Schedule should not be nil")
@@ -144,10 +141,10 @@ func TestFrequencyIntervalBoundaries(t *testing.T) {
 }
 
 func TestCustomerIDValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
-	require.NoError(t, err, "Error creating client")
-
-	service := services.New(client)
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
 	schedule := AssistantSchedule{
 		CustomerID:        "", // Intentionally left blank
 		DeleteDisabled:    true,

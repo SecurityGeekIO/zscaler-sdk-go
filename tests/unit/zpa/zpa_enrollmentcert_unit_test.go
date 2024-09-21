@@ -10,7 +10,7 @@ import (
 )
 
 func TestEnrollmentCert_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -38,7 +38,7 @@ func TestEnrollmentCert_Get(t *testing.T) {
 }
 
 func TestEnrollmentCert_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -80,7 +80,7 @@ func TestEnrollmentCert_GetByName(t *testing.T) {
 }
 
 func TestEnrollmentCert_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

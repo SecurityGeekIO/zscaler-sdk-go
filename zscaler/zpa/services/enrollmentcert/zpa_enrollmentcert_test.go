@@ -6,19 +6,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestEnrollmentCert(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	certificates, _, err := GetAll(service)
 	if err != nil {
@@ -81,11 +77,10 @@ func TestEnrollmentCert(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
@@ -94,13 +89,10 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"Root", "Client", "Connector", "Service Edge", "Isolation Client"}
 

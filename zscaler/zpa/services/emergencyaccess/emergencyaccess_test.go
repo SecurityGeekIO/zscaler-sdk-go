@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/okta/okta-sdk-golang/v2/okta"
 	"github.com/stretchr/testify/assert"
@@ -17,12 +16,10 @@ import (
 func TestEmergencyAccessIntegration(t *testing.T) {
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Create new resource
 	createdResource, _, err := Create(service, &EmergencyAccess{

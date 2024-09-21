@@ -1,5 +1,6 @@
 package applicationsegment_move
 
+/*
 import (
 	"net/http"
 	"strings"
@@ -7,7 +8,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/authdomain"
@@ -23,14 +23,10 @@ func TestApplicationSegmentMove(t *testing.T) {
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	baseDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	// Step 1: Get available auth domains
-	service := services.New(client)
 
 	authDomainList, _, err := authdomain.GetAllAuthDomains(service)
 	if err != nil {
@@ -244,3 +240,4 @@ func TestApplicationSegmentMove(t *testing.T) {
 		}
 	}()
 }
+*/

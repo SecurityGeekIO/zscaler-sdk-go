@@ -10,7 +10,7 @@ import (
 )
 
 func TestSegmentGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -51,7 +51,7 @@ func TestSegmentGroup_Get(t *testing.T) {
 
 /*
 	func TestSegmentGroup_GetByName(t *testing.T) {
-		client, mux, server := tests.NewZpaClientMock()
+		client, mux, server := tests.NewOneAPIClientMock()
 		defer server.Close()
 		mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/segmentGroup", func(w http.ResponseWriter, r *http.Request) {
 			// Get the query parameter "name" from the request
@@ -105,7 +105,7 @@ func TestSegmentGroup_Get(t *testing.T) {
 	}
 */
 func TestSegmentGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -151,7 +151,7 @@ func TestSegmentGroup_Create(t *testing.T) {
 }
 
 func TestSegmentGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -190,7 +190,7 @@ func TestSegmentGroup_Update(t *testing.T) {
 }
 
 func TestSegmentGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -209,7 +209,7 @@ func TestSegmentGroup_Delete(t *testing.T) {
 }
 
 func TestSegmentGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

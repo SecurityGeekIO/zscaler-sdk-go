@@ -4,18 +4,14 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 func TestTrustedNetworks(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Test to retrieve all networks
 	networks, _, err := GetAll(service)
@@ -73,13 +69,10 @@ func TestTrustedNetworks(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	networks, _, err := GetAll(service)
 	if err != nil {
@@ -108,7 +101,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 /*
 	func TestCaseSensitivityOfGetByName(t *testing.T) {
-		client, err := tests.NewZpaClient()
+		client, err := tests.NewOneAPIClient()
 		if err != nil {
 			t.Errorf("Error creating client: %v", err)
 			return
@@ -142,13 +135,10 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 */
 func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Assuming that there are networks with the following name variations
 	variations := []string{
@@ -173,13 +163,10 @@ func TestTrustedNetworkNamesWithSpaces(t *testing.T) {
 }
 
 func TestTrustedNetworksByNetID(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating client: %v", err)
 	}
-
-	service := services.New(client)
 
 	// Fetch the list of all Trusted Networks
 	networks, _, err := GetAll(service)
@@ -210,11 +197,10 @@ func TestTrustedNetworksByNetID(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

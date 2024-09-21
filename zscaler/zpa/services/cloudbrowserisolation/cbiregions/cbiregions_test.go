@@ -6,17 +6,15 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func TestGetAllRegions(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// 1. First GetAll regions and ensure a response is returned.
 	regions, resp, err := GetAll(service)
@@ -41,13 +39,10 @@ func TestGetAllRegions(t *testing.T) {
 }
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
-
-	service := services.New(client)
 
 	requiredNames := []string{"Frankfurt", "Ireland", "Washington", "Singapore"}
 
@@ -92,11 +87,10 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 }
 
 func TestGetByNameNonExistentResource(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {

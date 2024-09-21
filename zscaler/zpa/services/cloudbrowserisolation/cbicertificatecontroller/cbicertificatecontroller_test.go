@@ -13,12 +13,10 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestCBICertificates(t *testing.T) {
-	// Initialize the ZPA client
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
@@ -63,9 +61,6 @@ func TestCBICertificates(t *testing.T) {
 		t.Fatalf("Failed to generate random string for certificate name: %v", err)
 	}
 	certName := fmt.Sprintf("test-rootCA %s", randomName)
-
-	// Create the certificate object
-	service := services.New(client)
 
 	cbiCertificate := CBICertificate{
 		PEM:  string(rootCertPEM),

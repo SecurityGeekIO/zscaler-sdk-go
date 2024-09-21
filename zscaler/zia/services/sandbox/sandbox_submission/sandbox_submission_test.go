@@ -1,11 +1,11 @@
 package sandbox_submission
 
-/*
 import (
 	"net/http"
+	"os"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestSandboxSubmission(t *testing.T) {
@@ -17,10 +17,31 @@ func TestSandboxDiscan(t *testing.T) {
 }
 
 func runSandboxTest(t *testing.T, isSubmit bool) {
-	service, err := tests.NewZIAOneAPIClient()
+	// Retrieve environment variables for Zscaler Cloud and Sandbox Token
+	cloud := os.Getenv("ZSCALER_CLOUD")
+	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN")
+
+	// Ensure environment variables are set, otherwise fail the test
+	if cloud == "" {
+		t.Fatalf("Environment variable ZSCALER_CLOUD is not set")
+	}
+	if sandboxToken == "" {
+		t.Fatalf("Environment variable ZSCALER_SANDBOX_TOKEN is not set")
+	}
+
+	// Step 1: Configure Zscaler Sandbox client with cloud and token from environment variables
+	config, err := zscaler.NewConfiguration(
+		zscaler.WithSandboxToken(sandboxToken),
+		zscaler.WithZscalerCloud(cloud), // Pass Zscaler Cloud configuration
+	)
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
-		return
+		t.Fatalf("Error creating configuration: %v", err)
+	}
+
+	// Step 2: Create the ZIA OneAPI client using the configuration
+	service, err := zscaler.NewOneAPIClient(config, "zia") // Specify the service (in this case "zia")
+	if err != nil {
+		t.Fatalf("Error creating OneAPI client: %v", err)
 	}
 
 	baseURL := "https://github.com/SecurityGeekIO/malware-samples/raw/main/"
@@ -50,8 +71,10 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 
 		var scanResult *ScanResult
 		if isSubmit {
-			scanResult, err = SubmitFile(service, fileName, resp.Body, "")
+			// Use the service object for the SubmitFile test
+			scanResult, err = SubmitFile(service, fileName, resp.Body, "1") // Force set to "0"
 		} else {
+			// Use the service object for the Discan test
 			scanResult, err = Discan(service, fileName, resp.Body)
 		}
 
@@ -62,4 +85,3 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 		t.Logf("File submitted successfully: %+v", scanResult)
 	}
 }
-*/

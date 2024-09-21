@@ -11,7 +11,7 @@ import (
 
 func TestAccDepartmentManagement(t *testing.T) {
 	// Step 1: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -55,7 +55,7 @@ func TestAccDepartmentManagement(t *testing.T) {
 
 func TestResponseFormatValidation(t *testing.T) {
 	// Step 1: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -89,7 +89,7 @@ func TestResponseFormatValidation(t *testing.T) {
 
 func TestAllFieldsDepartments(t *testing.T) {
 	// Step 1: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -129,7 +129,7 @@ func TestAllFieldsDepartments(t *testing.T) {
 
 func TestCaseSensitivityOfGetByName(t *testing.T) {
 	// Step 1: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

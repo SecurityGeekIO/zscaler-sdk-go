@@ -6,15 +6,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestGetAllStatusCodes(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	statusCodes, resp, err := GetStatusCodes(service)
 	if err != nil {
@@ -40,11 +38,10 @@ func TestGetAllStatusCodes(t *testing.T) {
 }
 
 func TestStatusCodesErrorResponse(t *testing.T) {
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZPA client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	// Fetch the client types and the HTTP response
 	statusCodes, httpResponse, err := GetStatusCodes(service)

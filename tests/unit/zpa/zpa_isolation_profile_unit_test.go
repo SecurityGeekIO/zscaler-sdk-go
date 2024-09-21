@@ -12,7 +12,7 @@ import (
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestIsolationProfile_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -54,7 +54,7 @@ func TestIsolationProfile_GetByName(t *testing.T) {
 }
 
 func TestIsolationProfile_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

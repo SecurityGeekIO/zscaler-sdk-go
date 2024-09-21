@@ -8,7 +8,7 @@ import (
 
 func TestAccGroupManagement(t *testing.T) {
 	// Step 1: Create the general ZIA client
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

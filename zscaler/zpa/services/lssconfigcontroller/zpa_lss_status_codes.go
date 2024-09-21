@@ -25,6 +25,6 @@ func GetStatusCodes(service *zscaler.Service) (*LSSStatusCodes, *http.Response, 
 	if err != nil {
 		return nil, nil, err
 	}
-	service.Client.Config.Logger.Printf("[INFO] got LSSStatusCodes:%#v", v)
+	service.Client.Logger.Printf("[INFO] got LSSStatusCodes:%#v", v)
 	return v, resp, nil
 }

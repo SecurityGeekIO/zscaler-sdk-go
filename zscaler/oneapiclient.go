@@ -246,7 +246,6 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 }
 
 // GetAPIEndpoint sets the appropriate endpoint based on the service and sandbox mode.
-// GetAPIEndpoint sets the appropriate endpoint based on the service and sandbox mode.
 func GetAPIEndpoint(service, cloud string, sandboxEnabled bool) string {
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
@@ -306,6 +305,8 @@ func readConfigFromEnvironment(c Configuration) *Configuration {
 	return &c
 }
 
+type ConfigSetter func(*Configuration)
+
 // ConfigSetter type defines a function that modifies a Config struct.
 // WithClientID sets the ClientID in the Config.
 func WithClientID(clientID string) ConfigSetter {
@@ -352,8 +353,6 @@ func WithZPAMicrotenantID(microtenantID string) ConfigSetter {
 		c.Zscaler.Client.MicrotenantID = microtenantID
 	}
 }
-
-type ConfigSetter func(*Configuration)
 
 func WithCache(cache bool) ConfigSetter {
 	return func(c *Configuration) {

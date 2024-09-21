@@ -45,7 +45,7 @@ func retryOnConflict(operation func() error) error {
 func TestURLCategories(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateDescription := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -188,7 +188,7 @@ func tryRetrieveResource(s *zscaler.Service, id string) (*URLCategory, error) {
 }
 
 func TestGetURLQuota(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -215,7 +215,7 @@ func TestGetURLQuota(t *testing.T) {
 }
 
 func TestGetURLLookup(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
@@ -247,7 +247,7 @@ func TestGetURLLookup(t *testing.T) {
 }
 
 func TestGetAllLite(t *testing.T) {
-	service, err := tests.NewZIAOneAPIClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return

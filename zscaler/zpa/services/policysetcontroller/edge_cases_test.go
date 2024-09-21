@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 )
 
 func TestNonExistentResourceOperations(t *testing.T) {
@@ -14,11 +13,10 @@ func TestNonExistentResourceOperations(t *testing.T) {
 		"CLIENTLESS_SESSION_PROTECTION_POLICY", "REDIRECTION_POLICY", "SIEM_POLICY",
 	}
 
-	client, err := tests.NewZpaClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client) // Ensure this New() function is correctly pointing to your service constructor
 
 	for _, policyType := range policyTypes {
 		t.Run(policyType, func(t *testing.T) {

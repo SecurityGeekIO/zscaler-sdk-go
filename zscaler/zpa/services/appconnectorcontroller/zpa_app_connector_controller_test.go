@@ -85,7 +85,7 @@ func TestAppConnectorController(t *testing.T) {
 		return
 	}
 
-	client, err := tests.NewZpaClient()
+	client, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 		return
