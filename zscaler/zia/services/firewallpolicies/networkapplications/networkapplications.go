@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	networkApplicationsEndpoint = "/networkApplications"
+	networkApplicationsEndpoint = "/zia/api/v1/networkApplications"
 )
 
 type NetworkApplications struct {

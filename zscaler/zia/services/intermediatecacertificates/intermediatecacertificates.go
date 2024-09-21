@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	intermediateCaCertificatesEndpoint = "/intermediateCaCertificate"
+	intermediateCaCertificatesEndpoint = "/zia/api/v1/intermediateCaCertificate"
 	intCADownloadAttestationEndpoint   = "/intermediateCaCertificate/downloadAttestation"
 	intCADownloadCSREndpoint           = "/intermediateCaCertificate/downloadCsr"
 	intCADownloadPublicKeyEndpoint     = "/intermediateCaCertificate/downloadPublicKey"

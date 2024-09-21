@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	networkAppGroupsEndpoint = "/networkApplicationGroups"
+	networkAppGroupsEndpoint = "/zia/api/v1/networkApplicationGroups"
 )
 
 type NetworkApplicationGroups struct {

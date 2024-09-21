@@ -3,7 +3,7 @@ package sandbox_settings
 import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 
 const (
-	advancedSettingsEndpoint = "/behavioralAnalysisAdvancedSettings"
+	advancedSettingsEndpoint = "/zia/api/v1/behavioralAnalysisAdvancedSettings"
 	fileHashCountEndpoint    = "/fileHashCount"
 )
 

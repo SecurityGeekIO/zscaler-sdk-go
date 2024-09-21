@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	locationLiteEndpoint = "/locations/lite"
+	locationLiteEndpoint = "/zia/api/v1/locations/lite"
 )
 
 type LocationLite struct {

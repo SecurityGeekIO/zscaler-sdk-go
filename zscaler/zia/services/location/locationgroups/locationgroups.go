@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	locationGroupEndpoint = "/locations/groups"
+	locationGroupEndpoint = "/zia/api/v1/locations/groups"
 )
 
 type LocationGroup struct {

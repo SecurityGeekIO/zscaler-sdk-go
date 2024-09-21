@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ipSourceGroupsEndpoint = "/ipSourceGroups"
+	ipSourceGroupsEndpoint = "/zia/api/v1/ipSourceGroups"
 )
 
 type IPSourceGroups struct {

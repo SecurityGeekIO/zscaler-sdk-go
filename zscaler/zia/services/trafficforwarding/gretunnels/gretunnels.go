@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	greTunnelsEndpoint = "/greTunnels"
-	// IpGreTunnelInfoEndpoint = "/orgProvisioning/ipGreTunnelInfo".
+	greTunnelsEndpoint = "/zia/api/v1/greTunnels"
+	// IpGreTunnelInfoEndpoint = "/zia/api/v1/orgProvisioning/ipGreTunnelInfo".
 )
 
 type GreTunnels struct {

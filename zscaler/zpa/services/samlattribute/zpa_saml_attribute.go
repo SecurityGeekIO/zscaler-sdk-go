@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	mgmtConfig            = "/mgmtconfig/v2/admin/customers/"
-	mgmtConfigV1          = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfig            = "/zpa/mgmtconfig/v2/admin/customers/"
+	mgmtConfigV1          = "/zpa/mgmtconfig/v1/admin/customers/"
 	samlAttributeEndpoint = "/samlAttribute"
 )
 

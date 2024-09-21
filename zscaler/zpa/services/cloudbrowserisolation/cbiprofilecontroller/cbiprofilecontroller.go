@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	cbiConfig          = "/cbiconfig/cbi/api/customers/"
+	cbiConfig          = "/zpa/cbiconfig/cbi/api/customers/"
 	cbiProfileEndpoint = "/profiles"
 )
 

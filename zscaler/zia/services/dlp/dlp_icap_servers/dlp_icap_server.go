@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	dlpIcapServersEndpoint = "/icapServers"
+	dlpIcapServersEndpoint = "/zia/api/v1/icapServers"
 )
 
 type DLPICAPServers struct {

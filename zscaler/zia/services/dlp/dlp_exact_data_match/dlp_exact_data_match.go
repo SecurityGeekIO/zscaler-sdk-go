@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	dlpEDMSchemaEndpoint = "/dlpExactDataMatchSchemas"
+	dlpEDMSchemaEndpoint = "/zia/api/v1/dlpExactDataMatchSchemas"
 )
 
 type DLPEDMSchema struct {

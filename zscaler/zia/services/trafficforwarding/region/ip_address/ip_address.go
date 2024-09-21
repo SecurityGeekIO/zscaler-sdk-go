@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	byIPAdddressEndpoint = "/region/byIPAddress"
+	byIPAdddressEndpoint = "/zia/api/v1/region/byIPAddress"
 )
 
 type ByIPAddress struct {

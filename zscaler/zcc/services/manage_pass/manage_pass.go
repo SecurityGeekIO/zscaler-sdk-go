@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	managePassEndpoint = "/public/v1/managePass"
+	managePassEndpoint = "/zcc/papi/public/v1/managePass"
 )
 
 type ManagePass struct {

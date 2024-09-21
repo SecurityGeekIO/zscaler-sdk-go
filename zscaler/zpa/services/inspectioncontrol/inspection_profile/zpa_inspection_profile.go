@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	mgmtConfig                = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfig                = "/zpa/mgmtconfig/v1/admin/customers/"
 	inspectionProfileEndpoint = "/inspectionProfile"
 	defaultVersion            = "OWASP_CRS/3.3.0"
 )

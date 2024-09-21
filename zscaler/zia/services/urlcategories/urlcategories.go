@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	urlCategoriesEndpoint = "/urlCategories"
+	urlCategoriesEndpoint = "/zia/api/v1/urlCategories"
 	urlQuotaHandler       = "urlQuota"
 	urlLookupEndpoint     = "/urlLookup"
 )

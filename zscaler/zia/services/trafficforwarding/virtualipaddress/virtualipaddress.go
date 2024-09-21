@@ -13,7 +13,7 @@ import (
 
 const (
 	vipsEndpoint               = "/vips"
-	vipRecommendedListEndpoint = "/vips/recommendedList"
+	vipRecommendedListEndpoint = "/zia/api/v1/vips/recommendedList"
 )
 
 type ZscalerVIPs struct {

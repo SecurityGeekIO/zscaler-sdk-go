@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	getOtpEndpoint = "/public/v1/getOtp"
+	getOtpEndpoint = "/zcc/papi/public/v1/getOtp"
 )
 
 type OtpResponse struct {

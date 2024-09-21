@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	mgmtConfig       = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfig       = "/zpa/mgmtconfig/v1/admin/customers/"
 	userConfig       = "/userconfig/v1/customers"
 	idpId            = "/idp"
 	scimAttrEndpoint = "/scimattribute"

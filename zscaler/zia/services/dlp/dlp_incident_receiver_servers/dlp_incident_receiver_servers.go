@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	dlpIncidentReceiverEndpoint = "/incidentReceiverServers"
+	dlpIncidentReceiverEndpoint = "/zia/api/v1/incidentReceiverServers"
 )
 
 type IncidentReceiverServers struct {

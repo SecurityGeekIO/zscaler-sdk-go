@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	getPasswordsEndpoint = "/public/v1/getPasswords"
+	getPasswordsEndpoint = "/zcc/papi/public/v1/getPasswords"
 )
 
 type Passwords struct {

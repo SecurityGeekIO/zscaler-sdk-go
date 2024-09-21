@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	reportQuotaEndpoint = "/sandbox/report/quota"
+	reportQuotaEndpoint = "/zia/api/v1/sandbox/report/quota"
 	reportMD5Endpoint   = "/sandbox/report/"
 )
 

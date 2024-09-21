@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	eventlogEntryReportEndpoint = "/eventlogEntryReport"
+	eventlogEntryReportEndpoint = "/zia/api/v1/eventlogEntryReport"
 )
 
 type EventLogEntryReportTaskInfo struct {

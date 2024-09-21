@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	staticIPEndpoint = "/staticIP"
+	staticIPEndpoint = "/zia/api/v1/staticIP"
 )
 
 // Gets all provisioned static IP addresses.

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfig              = "/zpa/mgmtconfig/v1/admin/customers/"
 	applicationTypeEndpoint = "/application/getAppsByType"
 )
 

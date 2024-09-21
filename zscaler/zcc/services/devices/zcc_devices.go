@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	getDevicesEndpoint = "/public/v1/getDevices"
+	getDevicesEndpoint = "/zcc/papi/public/v1/getDevices"
 )
 
 type GetDevices struct {

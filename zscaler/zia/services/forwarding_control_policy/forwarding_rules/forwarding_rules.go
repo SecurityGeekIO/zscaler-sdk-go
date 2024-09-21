@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	forwardingRulesEndpoint = "/forwardingRules"
+	forwardingRulesEndpoint = "/zia/api/v1/forwardingRules"
 )
 
 type ForwardingRules struct {

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	appServicesGroupLiteEndpoint = "/appServiceGroups/lite"
+	appServicesGroupLiteEndpoint = "/zia/api/v1/appServiceGroups/lite"
 )
 
 type ApplicationServicesGroupLite struct {

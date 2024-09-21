@@ -245,8 +245,37 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	return &tokenResponse, nil
 }
 
-// GetAPIEndpoint sets the appropriate endpoint based on the service and sandbox mode.
-func GetAPIEndpoint(service, cloud string, sandboxEnabled bool) string {
+// getServiceHTTPClient returns the appropriate http client for the current service
+func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
+	service := detectServiceType(endpoint)
+	switch service {
+	case "zpa":
+		return client.ZPAHTTPClient
+	case "zia":
+		return client.ZIAHTTPClient
+	case "zcc":
+		return client.ZCCHTTPClient
+	default:
+		return client.HTTPClient
+	}
+}
+
+func detectServiceType(endpoint string) string {
+	path := strings.TrimPrefix(endpoint, "/")
+	// Detect the service type based on the endpoint prefix
+	if strings.HasPrefix(path, "zia") {
+		return "zia"
+	} else if strings.HasPrefix(path, "zpa") {
+		return "zpa"
+	} else if strings.HasPrefix(endpoint, "zcc") {
+		return "zcc"
+	}
+
+	panic("unsupported service")
+}
+
+// GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
+func GetAPIBaseURL(cloud string, sandboxEnabled bool) string {
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
 		baseURL = fmt.Sprintf("https://api.%s.zsapi.net", strings.ToLower(cloud))
@@ -256,17 +285,7 @@ func GetAPIEndpoint(service, cloud string, sandboxEnabled bool) string {
 		return fmt.Sprintf("https://csbapi.%s.net/zscsb/submit", strings.ToLower(cloud))
 	}
 
-	// Standard services use the base URL logic
-	switch strings.ToLower(service) {
-	case "zia":
-		return fmt.Sprintf("%s/zia/api/v1", baseURL)
-	case "zpa":
-		return fmt.Sprintf("%s/zpa", baseURL)
-	case "zcc":
-		return fmt.Sprintf("%s/zcc/papi/public", baseURL)
-	default:
-		return baseURL
-	}
+	return baseURL
 }
 
 func readConfigFromFile(location string, c Configuration) (*Configuration, error) {

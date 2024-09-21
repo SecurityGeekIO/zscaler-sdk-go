@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	vpnCredentialsEndpoint = "/vpnCredentials"
+	vpnCredentialsEndpoint = "/zia/api/v1/vpnCredentials"
 	maxBulkDeleteIDs       = 100
 )
 

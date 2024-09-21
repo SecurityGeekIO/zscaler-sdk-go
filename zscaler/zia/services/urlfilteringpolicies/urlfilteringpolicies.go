@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	urlFilteringPoliciesEndpoint = "/urlFilteringRules"
+	urlFilteringPoliciesEndpoint = "/zia/api/v1/urlFilteringRules"
 )
 
 type URLFilteringRule struct {

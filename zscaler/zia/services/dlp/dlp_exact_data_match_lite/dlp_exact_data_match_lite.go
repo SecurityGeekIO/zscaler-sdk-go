@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	dlpEDMELiteEndpoint = "/dlpExactDataMatchSchemas/lite"
+	dlpEDMELiteEndpoint = "/zia/api/v1/dlpExactDataMatchSchemas/lite"
 )
 
 // Gets a list of active EDM templates (or EDM profiles) and their criteria, only.

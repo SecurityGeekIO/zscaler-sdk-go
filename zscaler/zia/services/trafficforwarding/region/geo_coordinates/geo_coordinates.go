@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	geoCoordinatesEndpoint = "/region/byGeoCoordinates"
+	geoCoordinatesEndpoint = "/zia/api/v1/region/byGeoCoordinates"
 )
 
 type GeoCoordinates struct {

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	downloadDevicesEndpoint = "/public/v1/downloadDevices"
+	downloadDevicesEndpoint = "/zcc/papi/public/v1/downloadDevices"
 )
 
 type DownloadDevicesQueryParams struct {

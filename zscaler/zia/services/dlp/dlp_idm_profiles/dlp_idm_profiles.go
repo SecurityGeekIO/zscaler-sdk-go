@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	dlpIDMProfileEndpoint = "/idmprofile"
+	dlpIDMProfileEndpoint = "/zia/api/v1/idmprofile"
 )
 
 type DLPIDMProfile struct {

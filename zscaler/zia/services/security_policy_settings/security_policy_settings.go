@@ -4,7 +4,7 @@ import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 
 const (
 	securityEndpoint         = "/security"
-	securityAdvancedEndpoint = "/security/advanced"
+	securityAdvancedEndpoint = "/zia/api/v1/security/advanced"
 )
 
 // TODO: because there isn't an endpoint to get all Urls, we need to have all action types here.

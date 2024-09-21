@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ruleLabelsEndpoint = "/ruleLabels"
+	ruleLabelsEndpoint = "/zia/api/v1/ruleLabels"
 )
 
 type RuleLabels struct {

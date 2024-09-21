@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	mgmtConfigV1           = "/mgmtconfig/v1/admin/customers/"
-	mgmtConfigV2           = "/mgmtconfig/v2/admin/customers/"
+	mgmtConfigV1           = "/zpa/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2           = "/zpa/mgmtconfig/v2/admin/customers/"
 	postureProfileEndpoint = "/posture"
 )
 

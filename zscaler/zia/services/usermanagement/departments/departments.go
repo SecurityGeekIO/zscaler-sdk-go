@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	departmentEndpoint = "/departments"
+	departmentEndpoint = "/zia/api/v1/departments"
 )
 
 type Department struct {

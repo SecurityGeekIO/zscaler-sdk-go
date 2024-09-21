@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	cbiProfileEndpoint = "/browserIsolation/profiles"
+	cbiProfileEndpoint = "/zia/api/v1/browserIsolation/profiles"
 )
 
 type IsolationProfile struct {

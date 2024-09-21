@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ipGreTunnelInfoEndpoint = "/orgProvisioning/ipGreTunnelInfo"
+	ipGreTunnelInfoEndpoint = "/zia/api/v1/orgProvisioning/ipGreTunnelInfo"
 )
 
 type GRETunnelInfo struct {

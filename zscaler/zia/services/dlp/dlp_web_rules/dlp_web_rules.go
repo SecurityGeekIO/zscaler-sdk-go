@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	webDlpRulesEndpoint = "/webDlpRules"
+	webDlpRulesEndpoint = "/zia/api/v1/webDlpRules"
 )
 
 type WebDLPRules struct {

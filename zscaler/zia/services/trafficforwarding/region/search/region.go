@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	regionSearchEndpoint = "/region/search"
+	regionSearchEndpoint = "/zia/api/v1/region/search"
 )
 
 type Regions struct {

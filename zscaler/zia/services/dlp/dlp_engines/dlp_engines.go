@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	dlpEnginesEndpoint    = "/dlpEngines"
-	dlpEngineLiteEndpoint = "/dlpEngines/lite"
+	dlpEnginesEndpoint    = "/zia/api/v1/dlpEngines"
+	dlpEngineLiteEndpoint = "/zia/api/v1/dlpEngines/lite"
 )
 
 type DLPEngines struct {

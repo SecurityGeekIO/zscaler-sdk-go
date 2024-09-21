@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	zpaGatewaysEndpoint = "/zpaGateways"
+	zpaGatewaysEndpoint = "/zia/api/v1/zpaGateways"
 )
 
 type ZPAGateways struct {

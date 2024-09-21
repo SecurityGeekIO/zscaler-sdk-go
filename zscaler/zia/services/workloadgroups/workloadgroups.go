@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	workloadGroupsEndpoint = "/workloadGroups"
+	workloadGroupsEndpoint = "/zia/api/v1/workloadGroups"
 )
 
 type WorkloadGroup struct {

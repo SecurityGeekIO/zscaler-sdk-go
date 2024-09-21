@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	networkServiceGroupsEndpoint = "/networkServiceGroups"
+	networkServiceGroupsEndpoint = "/zia/api/v1/networkServiceGroups"
 )
 
 type NetworkServiceGroups struct {

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	dlpNotificationTemplatesEndpoint = "/dlpNotificationTemplates"
+	dlpNotificationTemplatesEndpoint = "/zia/api/v1/dlpNotificationTemplates"
 )
 
 type DlpNotificationTemplates struct {

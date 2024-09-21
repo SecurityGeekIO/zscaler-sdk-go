@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	adminUsersEndpoint = "/adminUsers"
+	adminUsersEndpoint = "/zia/api/v1/adminUsers"
 )
 
 type AdminUsers struct {

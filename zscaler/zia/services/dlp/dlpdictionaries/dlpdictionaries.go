@@ -12,7 +12,7 @@ import (
 
 const (
 	dlpDictionariesEndpoint          = "/dlpDictionaries"
-	dlpPredefinedIdentifiersEndpoint = "/predefinedIdentifiers"
+	dlpPredefinedIdentifiersEndpoint = "/zia/api/v1/predefinedIdentifiers"
 )
 
 type DlpDictionary struct {

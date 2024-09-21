@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	activationStatusEndpoint = "/status"
-	activationEndpoint       = "/status/activate"
+	activationStatusEndpoint = "/zia/api/v1/status"
+	activationEndpoint       = "/zia/api/v1/status/activate"
 )
 
 type Activation struct {

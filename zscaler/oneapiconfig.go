@@ -36,70 +36,70 @@ const (
 // Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
-	cloud             string
-	URL               string
-	HTTPClient        *http.Client
-	Logger            logger.Logger
-	UserAgent         string
-	freshCache        bool
-	cacheEnabled      bool
-	cache             cache.Cache
-	cacheTtl          time.Duration
-	cacheCleanwindow  time.Duration
-	cacheMaxSizeMB    int
-	rateLimiter       *rl.RateLimiter
-	useOneAPI         bool
-	oauth2Credentials *Configuration
-	stopTicker        chan bool
+	cloud              string
+	HTTPClient         *http.Client
+	ZPAHTTPClient      *http.Client
+	ZIAHTTPClient      *http.Client
+	ZCCHTTPClient      *http.Client
+	Logger             logger.Logger
+	UserAgent          string
+	freshCache         bool
+	cacheEnabled       bool
+	cache              cache.Cache
+	cacheTtl           time.Duration
+	cacheCleanwindow   time.Duration
+	cacheMaxSizeMB     int
+	zpaRateLimiter     *rl.RateLimiter
+	ziaRateLimiter     *rl.RateLimiter
+	zccRateLimiter     *rl.RateLimiter
+	defaultRateLimiter *rl.RateLimiter
+	useOneAPI          bool
+	oauth2Credentials  *Configuration
+	stopTicker         chan bool
 }
 
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
-func NewOneAPIClient(config *Configuration, service string) (*Service, error) {
+func NewOneAPIClient(config *Configuration) (*Service, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 
-	// Default rate limits, can be overridden for specific services
-	var rateLimiter *rl.RateLimiter
+	// ZIA-specific rate limits:
+	// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
+	ziaRateLimiter := rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
 
-	switch service {
-	case "zia":
-		// ZIA-specific rate limits:
-		// GET: 20 requests per 10s (2/sec), POST/PUT: 10 requests per 10s (1/sec), DELETE: 1 request per 61s
-		rateLimiter = rl.NewRateLimiter(20, 10, 10, 61) // Adjusted for ZIA based on official limits and +1 sec buffer
+	// ZPA-specific rate limits:
+	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
 
-	case "zpa":
-		// ZPA-specific rate limits:
-		rateLimiter = rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
+	// ZCC-specific rate limits:
+	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
-	case "zcc":
-		// ZCC-specific rate limits:
-		rateLimiter = rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
-
-	default:
-		// Default case for unknown or unhandled services
-		logger.Printf("[INFO] Default rate limit applied for service: %s", service)
-		rateLimiter = rl.NewRateLimiter(2, 1, 1, 1) // Default limits
-	}
+	// Default case for unknown or unhandled services
+	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
 
 	// Pass the config to getHTTPClient so it can access proxy settings
-	httpClient := getHTTPClient(logger, rateLimiter, config)
-
-	// Build the API endpoint based on the service and cloud parameters
-	url := GetAPIEndpoint(service, config.Zscaler.Client.Cloud, false)
+	httpClient := getHTTPClient(logger, defaultRateLimiter, config)
+	ziaHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
+	zpaHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
+	zccHttpClient := getHTTPClient(logger, defaultRateLimiter, config)
 
 	cli := &Client{
-		cloud:             config.Zscaler.Client.Cloud,
-		HTTPClient:        httpClient,
-		URL:               url,
-		Logger:            logger,
-		UserAgent:         config.UserAgent,
-		cacheEnabled:      config.Zscaler.Client.Cache.Enabled,
-		cacheTtl:          time.Minute * 10,
-		cacheCleanwindow:  time.Minute * 8,
-		cacheMaxSizeMB:    0,
-		rateLimiter:       rateLimiter,
-		useOneAPI:         true,
-		oauth2Credentials: config,
-		stopTicker:        make(chan bool),
+		cloud:              config.Zscaler.Client.Cloud,
+		HTTPClient:         httpClient,
+		ZIAHTTPClient:      ziaHttpClient,
+		ZPAHTTPClient:      zpaHttpClient,
+		ZCCHTTPClient:      zccHttpClient,
+		Logger:             logger,
+		UserAgent:          config.UserAgent,
+		cacheEnabled:       config.Zscaler.Client.Cache.Enabled,
+		cacheTtl:           time.Minute * 10,
+		cacheCleanwindow:   time.Minute * 8,
+		cacheMaxSizeMB:     0,
+		zccRateLimiter:     zccRateLimiter,
+		ziaRateLimiter:     ziaRateLimiter,
+		zpaRateLimiter:     zpaRateLimiter,
+		defaultRateLimiter: defaultRateLimiter,
+		useOneAPI:          true,
+		oauth2Credentials:  config,
+		stopTicker:         make(chan bool),
 	}
 
 	// Initialize cache
@@ -293,9 +293,9 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		if c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
 			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
 		}
-		fullURL = fmt.Sprintf("%s%s", c.URL, endpoint)
+		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
 	} else {
-		fullURL = fmt.Sprintf("%s%s", c.URL, endpoint)
+		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
 	}
 
 	// Add URL parameters to the endpoint
@@ -366,7 +366,8 @@ func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlPara
 		start := time.Now()
 		reqID := uuid.New().String()
 		logger.LogRequest(c.Logger, req, reqID, nil, true)
-		resp, err = c.HTTPClient.Do(req)
+		httpClient := c.getServiceHTTPClient(endpoint)
+		resp, err = httpClient.Do(req)
 		logger.LogResponse(c.Logger, resp, start, reqID)
 		if err != nil {
 			return nil, nil, err

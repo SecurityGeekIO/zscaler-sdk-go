@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	groupsEndpoint = "/groups"
+	groupsEndpoint = "/zia/api/v1/groups"
 )
 
 type Groups struct {

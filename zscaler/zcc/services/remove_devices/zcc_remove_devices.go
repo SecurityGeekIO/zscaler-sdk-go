@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	softRemoveDevicesEndpoint  = "/public/v1/removeDevices"
-	forceRemoveDevicesEndpoint = "/public/v1/forceRemoveDevices"
+	softRemoveDevicesEndpoint  = "/zcc/papi/public/v1/removeDevices"
+	forceRemoveDevicesEndpoint = "/zcc/papi/public/v1/forceRemoveDevices"
 )
 
 type RemoveDevicesResponse struct {

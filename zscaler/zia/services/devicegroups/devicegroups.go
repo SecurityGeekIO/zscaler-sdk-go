@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	deviceGroupEndpoint = "/deviceGroups"
-	devicesEndpoint     = "/deviceGroups/devices"
+	deviceGroupEndpoint = "/zia/api/v1/deviceGroups"
+	devicesEndpoint     = "/zia/api/v1/deviceGroups/devices"
 )
 
 type DeviceGroups struct {

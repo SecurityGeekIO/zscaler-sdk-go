@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	firewallRulesEndpoint = "/firewallFilteringRules"
+	firewallRulesEndpoint = "/zia/api/v1/firewallFilteringRules"
 )
 
 type FirewallFilteringRules struct {

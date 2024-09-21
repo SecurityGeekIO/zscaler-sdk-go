@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	timeWindowEndpoint = "/timeWindows"
+	timeWindowEndpoint = "/zia/api/v1/timeWindows"
 )
 
 type TimeWindow struct {

@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	mgmtConfig                = "/mgmtconfig/v2/admin/customers/"
-	mgmtConfigTypesAndFormats = "/mgmtconfig/v2/admin/"
+	mgmtConfig                = "/zpa/mgmtconfig/v2/admin/customers/"
+	mgmtConfigTypesAndFormats = "/zpa/mgmtconfig/v2/admin/"
 	lssConfigEndpoint         = "/lssConfig"
 )
 

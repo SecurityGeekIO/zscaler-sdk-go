@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	exemptedUrlsEndpoint = "/authSettings/exemptedUrls"
+	exemptedUrlsEndpoint = "/zia/api/v1/authSettings/exemptedUrls"
 )
 
 type ExemptedUrls struct {

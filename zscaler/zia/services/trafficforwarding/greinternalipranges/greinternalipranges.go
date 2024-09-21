@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	greTunnelIPRangeEndpoint = "/greTunnels/availableInternalIpRanges"
+	greTunnelIPRangeEndpoint = "/zia/api/v1/greTunnels/availableInternalIpRanges"
 )
 
 type GREInternalIPRange struct {

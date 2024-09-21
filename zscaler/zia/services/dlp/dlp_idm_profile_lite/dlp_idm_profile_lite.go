@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	dlpIDMProfileLiteEndpoint = "/idmprofile/lite"
+	dlpIDMProfileLiteEndpoint = "/zia/api/v1/idmprofile/lite"
 )
 
 // Gets a list of active IDM templates (or IDM profiles) and their criteria, only.

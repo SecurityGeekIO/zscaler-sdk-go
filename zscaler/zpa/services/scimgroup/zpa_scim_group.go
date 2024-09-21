@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	userConfig        = "/userconfig/v1/customers/"
+	userConfig        = "/zpa/userconfig/v1/customers/"
 	scimGroupEndpoint = "/scimgroup"
 	idpIdPath         = "/idpId"
 )

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	vipGroupByDatacenterEndpoint = "/vips/groupByDatacenter"
+	vipGroupByDatacenterEndpoint = "/zia/api/v1/vips/groupByDatacenter"
 )
 
 type DatacenterVIPS struct {
