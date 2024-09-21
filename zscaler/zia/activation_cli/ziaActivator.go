@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// Instantiate the ZIA client with the service name "zia"
-	cli, err := zscaler.NewOneAPIClient(config, "zia")
+	cli, err := zscaler.NewOneAPIClient(config)
 	if err != nil {
 		log.Fatalf("[ERROR] Failed Initializing ZIA client: %v\n", err)
 	}

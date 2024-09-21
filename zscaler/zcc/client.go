@@ -18,6 +18,8 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
 )
 
+const contentTypeJSON = "application/json"
+
 type Client struct {
 	Config *Config
 }
@@ -61,7 +63,7 @@ func (client *Client) authenticate() error {
 			return fmt.Errorf("[ERROR] Failed to signin the user %s=%s, err: %v", ZCC_CLIENT_ID, client.Config.ClientID, err)
 		}
 
-		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Content-Type", contentTypeJSON)
 		if client.Config.UserAgent != "" {
 			req.Header.Add("User-Agent", client.Config.UserAgent)
 		}
@@ -176,7 +178,7 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	}
 
 	req.Header.Set("auth-token", client.Config.AuthToken.AccessToken)
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", contentTypeJSON)
 
 	if client.Config.UserAgent != "" {
 		req.Header.Add("User-Agent", client.Config.UserAgent)

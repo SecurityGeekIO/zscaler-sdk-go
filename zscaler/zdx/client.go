@@ -21,6 +21,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const contentTypeJSON = "application/json"
+
 type Client struct {
 	Config *Config
 }
@@ -68,7 +70,7 @@ func (client *Client) authenticate() error {
 			return fmt.Errorf("[ERROR] Failed to sign in the user %s=%s, err: %v", ZDX_API_KEY_ID, maskedAPIKeyID, err)
 		}
 
-		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Content-Type", contentTypeJSON)
 		if client.Config.UserAgent != "" {
 			req.Header.Add("User-Agent", client.Config.UserAgent)
 		}
@@ -192,7 +194,7 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.Config.AuthToken.AccessToken))
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", contentTypeJSON)
 
 	if client.Config.UserAgent != "" {
 		req.Header.Add("User-Agent", client.Config.UserAgent)

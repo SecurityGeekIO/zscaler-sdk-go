@@ -39,7 +39,7 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 	}
 
 	// Step 2: Create the ZIA OneAPI client using the configuration
-	service, err := zscaler.NewOneAPIClient(config, "zia") // Specify the service (in this case "zia")
+	service, err := zscaler.NewOneAPIClient(config) // Specify the service (in this case "zia")
 	if err != nil {
 		t.Fatalf("Error creating OneAPI client: %v", err)
 	}

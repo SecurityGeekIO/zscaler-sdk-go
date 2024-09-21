@@ -127,7 +127,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	resp, err := c.Request(endpoint, "POST", data, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (c *Client) Read(endpoint string, o interface{}) error {
 
 // Update ...
 func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", "application/json")
+	return c.updateGeneric(endpoint, o, "PUT", contentTypeJSON)
 }
 
 // Update ...
@@ -199,7 +199,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 
 // Delete ...
 func (c *Client) Delete(endpoint string) error {
-	_, err := c.Request(endpoint, "DELETE", nil, "application/json")
+	_, err := c.Request(endpoint, "DELETE", nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}

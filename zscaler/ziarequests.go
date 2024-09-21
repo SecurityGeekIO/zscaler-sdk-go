@@ -24,7 +24,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	}
 
 	// Adjusting to handle the extra return value from ExecuteRequest
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 
 // Read ...
 func (c *Client) Read(endpoint string, o interface{}) error {
-	resp, _, err := c.ExecuteRequest("GET", endpoint, nil, nil, "application/json")
+	resp, _, err := c.ExecuteRequest("GET", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (c *Client) Read(endpoint string, o interface{}) error {
 
 // UpdateWithPut sends an update (PUT request) with the given object.
 func (c *Client) UpdateWithPut(endpoint string, o interface{}) (interface{}, error) {
-	return c.updateGeneric(endpoint, o, "PUT", "application/json")
+	return c.updateGeneric(endpoint, o, "PUT", contentTypeJSON)
 }
 
 // Update sends an update (PATCH request) with the given object.
@@ -93,7 +93,7 @@ func (c *Client) updateGeneric(endpoint string, o interface{}, method, contentTy
 
 // Delete sends a DELETE request to the specified endpoint.
 func (c *Client) Delete(endpoint string) error {
-	_, _, err := c.ExecuteRequest("DELETE", endpoint, nil, nil, "application/json")
+	_, _, err := c.ExecuteRequest("DELETE", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 		return nil, err
 	}
 
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("POST", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]b
 	}
 
 	// Explicitly set the contentType as "application/json"
-	resp, _, err := c.ExecuteRequest("PUT", endpoint, bytes.NewReader(data), nil, "application/json")
+	resp, _, err := c.ExecuteRequest("PUT", endpoint, bytes.NewReader(data), nil, contentTypeJSON)
 	if err != nil {
 		return nil, err
 	}

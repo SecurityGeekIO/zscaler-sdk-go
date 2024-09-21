@@ -450,7 +450,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 }
 
 func (c *Client) Logout() error {
-	_, err := c.Request(zconAPIAuthURL, "DELETE", nil, "application/json")
+	_, err := c.Request(zconAPIAuthURL, "DELETE", nil, contentTypeJSON)
 	if err != nil {
 		return err
 	}

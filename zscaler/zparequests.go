@@ -44,10 +44,6 @@ func (client *Client) NewRequestDo(method, endpoint string, options, body, v int
 		endpoint += "?" + params
 	}
 
-	err := client.authenticate()
-	if err != nil {
-		return nil, err
-	}
 	parts := strings.Split(endpoint, "?")
 	path := parts[0]
 	query := ""
