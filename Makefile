@@ -70,11 +70,11 @@ coverage: test
 
 sweep\:zpa:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZPA_SDK_TEST_SWEEP=true go test ./zpa/sweep -v -sweep=true
+	ZPA_SDK_TEST_SWEEP=true go test ./zscaler/zpa/sweep -v -sweep=true
 
 sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZIA_SDK_TEST_SWEEP=true go test ./zia/sweep -v -sweep=true
+	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
@@ -98,18 +98,18 @@ test\:integration\:zcon:
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
 	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
-	@go tool cover -html=zdxcoverage.out -o zdxcoverage.html
+	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
 	@go tool cover -func zdxcoverage.out | grep total:
 
 test\:integration\:zpa:
 	@echo "$(COLOR_ZSCALER)Running zpa integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zpa/... -parallel 10 -timeout 60m
-	@go tool cover -html=zpacoverage.out -o zpacoverage.html
+	go test -v -failfast -race -cover -coverprofile=zpacoverage.out -covermode=atomic ./zscaler/zpa/... -parallel 10 -timeout 60m
+	go tool cover -html=zpacoverage.out -o zpacoverage.html
 	@go tool cover -func zpacoverage.out | grep total:
 
 test\:integration\:zia:
 	@echo "$(COLOR_ZSCALER)Running zia integration tests...$(COLOR_NONE)"
-	@go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zia/... ./zia/activation_cli/... -parallel 10 -timeout 60m
+	go test -v -failfast -race -cover -coverprofile=ziacoverage.out -covermode=atomic ./zscaler/zia/... ./zscaler/zia/activation_cli/... -parallel 10 -timeout 60m
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 

@@ -4,16 +4,16 @@ project_name: zscaler-sdk-go
 
 release:
   github:
-    owner: SecurityGeekIO
+    owner: zscaler
     name: zscaler-sdk-go
   draft: true
-  name_template: "{{.Tag}}"
+  name_template: '{{.Tag}}'
 
 # No builds section needed as we are not building any binaries
 
 archives:
   - id: default
-    name_template: "{{ .ProjectName }}_{{ .Version }}"
+    name_template: '{{ .ProjectName }}_{{ .Version }}'
     format: tar.gz
     files:
       - src: license*
@@ -26,10 +26,10 @@ archives:
       - src: "**/*.md"
 
 snapshot:
-  name_template: "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
+  name_template: '{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}'
 
 checksum:
-  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
   algorithm: sha256
 
 dist: dist
@@ -38,7 +38,7 @@ builds:
   - skip: true
 
 source:
-  name_template: "{{ .ProjectName }}-{{ .Version }}"
+  name_template: '{{ .ProjectName }}-{{ .Version }}'
   format: tar.gz
 
 gomod:

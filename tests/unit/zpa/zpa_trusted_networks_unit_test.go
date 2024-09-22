@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/trustednetwork"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/trustednetwork"
 )
 
 func TestTrustedNetworks_Get(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -39,7 +39,7 @@ func TestTrustedNetworks_Get(t *testing.T) {
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestTrustedNetworks_GetByName(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -81,7 +81,7 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 }
 
 func TestTrustedNetworks_GetAll(t *testing.T) {
-	client, mux, server := tests.NewZpaClientMock()
+	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
 
 	service := services.New(client)

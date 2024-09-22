@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/devices"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/reports/devices"
 	"github.com/olekukonko/tablewriter"
 )
 
