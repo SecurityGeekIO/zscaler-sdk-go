@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	locationsEndpoint   = "/locations"
+	locationsEndpoint   = "/zia/api/v1/locations"
 	subLocationEndpoint = "/zia/api/v1/sublocations"
 	maxBulkDeleteIDs    = 100
 )

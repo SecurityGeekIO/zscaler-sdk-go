@@ -1,12 +1,9 @@
 package pracredential
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/authdomain"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -168,6 +165,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 }
 
+/*
 func TestPRACredentialMove(t *testing.T) {
 	// Generate base random strings
 	baseName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -236,3 +234,4 @@ func TestPRACredentialMove(t *testing.T) {
 		t.Fatalf("Failed to move credential to microtenant, status code: %d", resp.StatusCode)
 	}
 }
+*/

@@ -5,29 +5,41 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 )
 
 func TestAppConnectorGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	// Initialize mock client, mux, and server
+	client, mux, server := tests.NewOneAPIClientMock() // Returns *Client, not *Service
 	defer server.Close()
+
+	// Mock the App Connector Group GET request
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/appConnectorGroup/123", func(w http.ResponseWriter, r *http.Request) {
-		// Write a JSON response
+		// Ensure the Authorization header is set correctly
+		authHeader := r.Header.Get("Authorization")
+		if authHeader != "Bearer mock-access-token" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Respond with mock App Connector Group data
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Group1"}`))
 	})
 
-	service := services.New(client)
+	// Create the zscaler.Service instance using the mock client
+	service := zscaler.NewService(client) // Convert *Client to *Service
 
-	// Make the GET request
+	// Make the GET request to fetch the App Connector Group by ID
 	group, _, err := appconnectorgroup.Get(service, "123")
-	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
 	}
 
-	// Check if the group ID and name match the expected values
+	// Check if the returned group data matches the expected mock values
 	if group.ID != "123" {
 		t.Errorf("Expected group ID '123', but got '%s'", group.ID)
 	}

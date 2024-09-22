@@ -11,7 +11,7 @@ import (
 
 const (
 	mgmtConfig       = "/zpa/mgmtconfig/v1/admin/customers/"
-	userConfig       = "/userconfig/v1/customers"
+	userConfig       = "/zpa/userconfig/v1/customers"
 	idpId            = "/idp"
 	scimAttrEndpoint = "/scimattribute"
 )
@@ -74,6 +74,7 @@ func GetByName(service *zscaler.Service, scimAttributeName, IdpId string) (*Scim
 	return nil, resp, fmt.Errorf("no scim named '%s' was found", scimAttributeName)
 }
 
+// mgmtconfig/v1/admin/customers/{customerId}/idp/{idpId}/scimattribute
 func GetAllByIdpId(service *zscaler.Service, IdpId string) ([]ScimAttributeHeader, *http.Response, error) {
 	relativeURL := fmt.Sprintf("%s/%s%s", mgmtConfig+service.Client.GetCustomerID()+idpId, IdpId, scimAttrEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[ScimAttributeHeader](service.Client, relativeURL, "")

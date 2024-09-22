@@ -129,7 +129,7 @@ func TestLocationManagement(t *testing.T) {
 	}
 
 	// Pause the test for 30 seconds before creating the sub-location
-	time.Sleep(30 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	// Create sub-location
 	subLocation := Locations{
@@ -144,7 +144,7 @@ func TestLocationManagement(t *testing.T) {
 		XFFForwardEnabled: true,
 		OFWEnabled:        true,
 		IPSControl:        true,
-		IPAddresses:       []string{"10.5.0.0-10.5.255.255"},
+		IPAddresses:       []string{"10.6.0.0-10.6.255.255"},
 		ParentID:          createdResource.ID,
 		Profile:           "CORPORATE",
 	}

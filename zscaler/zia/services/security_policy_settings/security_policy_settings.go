@@ -3,7 +3,7 @@ package security_policy_settings
 import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 
 const (
-	securityEndpoint         = "/security"
+	securityEndpoint         = "/zia/api/v1/security"
 	securityAdvancedEndpoint = "/zia/api/v1/security/advanced"
 )
 

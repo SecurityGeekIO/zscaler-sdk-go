@@ -26,6 +26,7 @@ import (
 )
 
 const (
+	VERSION               = "3.0.0"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
 	ZSCALER_CLIENT_SECRET = "ZSCALER_CLIENT_SECRET"
 	ZSCALER_VANITY_DOMAIN = "ZSCALER_VANITY_DOMAIN"
@@ -438,12 +439,6 @@ func WithHttpClient(httpClient *http.Client) ConfigSetter {
 	}
 }
 
-func WithConnectionTimeout(i int64) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.ConnectionTimeout = i
-	}
-}
-
 func WithProxyPort(i int32) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Proxy.Port = i
@@ -477,6 +472,12 @@ func WithTestingDisableHttpsCheck(httpsCheck bool) ConfigSetter {
 func WithRequestTimeout(requestTimeout int64) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RequestTimeout = requestTimeout
+	}
+}
+
+func WithConnectionTimeout(i int64) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.ConnectionTimeout = i
 	}
 }
 

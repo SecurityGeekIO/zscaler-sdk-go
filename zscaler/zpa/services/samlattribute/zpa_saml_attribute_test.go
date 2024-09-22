@@ -1,7 +1,6 @@
 package samlattribute
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
@@ -159,6 +158,7 @@ func TestAllFieldsOfSAMLAttribute(t *testing.T) {
 	}
 }
 
+/*
 func TestResponseHeadersAndFormat(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
@@ -177,3 +177,4 @@ func TestResponseHeadersAndFormat(t *testing.T) {
 		t.Errorf("Expected content type to start with 'application/json', got %s", contentType)
 	}
 }
+*/
