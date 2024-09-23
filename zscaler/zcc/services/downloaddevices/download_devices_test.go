@@ -5,15 +5,13 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
 )
 
 func TestDownloadDevices(t *testing.T) {
-	client, err := tests.NewZccClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZCC client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	osTypes := "1,2"           // iOS and Android
 	registrationTypes := "1,4" // Registered and Unregistered

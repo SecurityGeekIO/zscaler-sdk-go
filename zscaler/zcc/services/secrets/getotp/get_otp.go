@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -29,7 +29,7 @@ type GetOtpQuery struct {
 	Udid string `json:"udid,omitempty" url:"udid,omitempty"`
 }
 
-func GetOtp(service *services.Service, udid string) (*OtpResponse, error) {
+func GetOtp(service *zscaler.Service, udid string) (*OtpResponse, error) {
 	queryParams := url.Values{}
 	if udid != "" {
 		queryParams.Set("udid", udid)
@@ -42,7 +42,7 @@ func GetOtp(service *services.Service, udid string) (*OtpResponse, error) {
 	}
 
 	var otpResponse OtpResponse
-	_, err := service.Client.NewRequestDo("GET", fullURL, nil, nil, &otpResponse)
+	_, err := service.Client.NewZccRequestDo("GET", fullURL, nil, nil, &otpResponse)
 	if err != nil {
 		return nil, err
 	}

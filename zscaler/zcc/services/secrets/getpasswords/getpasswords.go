@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -26,7 +26,7 @@ type GetPasswordsQueryParams struct {
 	OsType   string `url:"osType"`
 }
 
-func GetPasswords(service *services.Service, username, osType string) (*Passwords, error) {
+func GetPasswords(service *zscaler.Service, username, osType string) (*Passwords, error) {
 	queryParams := url.Values{}
 	if username != "" {
 		queryParams.Set("username", username)
@@ -42,7 +42,7 @@ func GetPasswords(service *services.Service, username, osType string) (*Password
 	}
 
 	var passwords Passwords
-	_, err := service.Client.NewRequestDo("GET", fullURL, nil, nil, &passwords)
+	_, err := service.Client.NewZccRequestDo("GET", fullURL, nil, nil, &passwords)
 	if err != nil {
 		return nil, err
 	}

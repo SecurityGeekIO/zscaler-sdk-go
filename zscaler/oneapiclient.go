@@ -268,7 +268,7 @@ func detectServiceType(endpoint string) string {
 		return "zia"
 	} else if strings.HasPrefix(path, "zpa") {
 		return "zpa"
-	} else if strings.HasPrefix(endpoint, "zcc") {
+	} else if strings.HasPrefix(endpoint, "/zcc") {
 		return "zcc"
 	}
 
