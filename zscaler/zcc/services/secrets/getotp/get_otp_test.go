@@ -5,16 +5,14 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
 )
 
 func TestGetOtp(t *testing.T) {
-	client, err := tests.NewZccClient()
+	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Fatalf("Failed to create ZCC client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-	service := services.New(client)
 
 	deviceList, err := devices.GetAll(service, "", "")
 	if err != nil {

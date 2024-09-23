@@ -86,18 +86,18 @@ test\:all:
 
 test\:integration\:zcc:
 	@echo "$(COLOR_ZSCALER)Running zcc integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zcc/... -parallel 1 -timeout 60m
+	go test -v -race -cover -coverprofile=zcccoverage.out -covermode=atomic ./zscaler/zcc/... -parallel 1 -timeout 60m
 	go tool cover -html=zcccoverage.out -o zcccoverage.html
 
 
 test\:integration\:zcon:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zcon/... -parallel 20 -timeout 60m
+	go test -v -race -cover -coverprofile=zconcoverage.out -covermode=atomic ./zscaler/zcon/... -parallel 20 -timeout 60m
 	go tool cover -html=zconcoverage.out -o zconcoverage.html
 
 test\:integration\:zdx:
 	@echo "$(COLOR_ZSCALER)Running zcon integration tests...$(COLOR_NONE)"
-	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zdx/... -parallel 4 -timeout 60m
+	go test -v -race -cover -coverprofile=zdxcoverage.out -covermode=atomic ./zscaler/zdx/... -parallel 4 -timeout 60m
 	go tool cover -html=zdxcoverage.out -o zdxcoverage.html
 	@go tool cover -func zdxcoverage.out | grep total:
 

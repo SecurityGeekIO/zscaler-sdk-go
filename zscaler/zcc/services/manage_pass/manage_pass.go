@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -31,13 +31,13 @@ type ManagePassResponseContract struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-func UpdateManagePass(service *services.Service, managePass *ManagePass) (*ManagePassResponseContract, error) {
+func UpdateManagePass(service *zscaler.Service, managePass *ManagePass) (*ManagePassResponseContract, error) {
 	body, err := json.Marshal(managePass)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal manage pass request: %w", err)
 	}
 
-	resp, err := service.Client.NewRequestDo("POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
+	resp, err := service.Client.NewZccRequestDo("POST", managePassEndpoint, nil, bytes.NewBuffer(body), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update manage pass: %w", err)
 	}

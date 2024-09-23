@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
 )
@@ -72,7 +71,7 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 		zscaler.WithClientSecret(clientSecret),
 		zscaler.WithVanityDomain(vanityDomain),
 		zscaler.WithZscalerCloud(zscalerCloud), // Optional, default can be set
-		zscaler.WithDebug(false),
+		zscaler.WithDebug(true),
 		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)
 	if err != nil {
@@ -124,19 +123,6 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 	}
 
 	return nil
-}
-
-func NewZccClient() (*zcc.Client, error) {
-	clientID := os.Getenv("ZCC_CLIENT_ID")
-	clientSecret := os.Getenv("ZCC_CLIENT_SECRET")
-	cloud := os.Getenv("ZCC_CLOUD")
-	config, err := zcc.NewConfig(clientID, clientSecret, cloud, "zscaler-sdk-go")
-	if err != nil {
-		log.Printf("[ERROR] creating config failed: %v\n", err)
-		return nil, err
-	}
-	zccClient := zcc.NewClient(config)
-	return zccClient, nil
 }
 
 func NewZdxClient() (*zdx.Client, error) {

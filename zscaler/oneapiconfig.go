@@ -282,8 +282,9 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 
 	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
 	isZPARequest := strings.Contains(endpoint, "/zpa")
+	isZCCRequest := strings.Contains(endpoint, "/zcc")
 
-	// Build the full URL for Sandbox, ZPA, or OAuth2-based requests
+	// Build the full URL for Sandbox, ZPA, ZCC, or OAuth2-based requests
 	fullURL := ""
 	if isSandboxRequest {
 		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
@@ -293,6 +294,8 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		if c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
 			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
 		}
+		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
+	} else if isZCCRequest {
 		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
 	} else {
 		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)

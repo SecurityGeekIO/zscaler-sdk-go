@@ -3,7 +3,7 @@ package remove_devices
 import (
 	"fmt"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/common"
 )
 
@@ -25,12 +25,12 @@ type RemoveDevicesRequest struct {
 }
 
 // SoftRemoveDevices soft removes the enrolled devices from the portal
-func SoftRemoveDevices(service *services.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+func SoftRemoveDevices(service *zscaler.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
 	pagination := common.NewPagination(pageSize)
 	fullURL := fmt.Sprintf("%s?pageSize=%d", softRemoveDevicesEndpoint, pagination.PageSize)
 
 	var response RemoveDevicesResponse
-	_, err := service.Client.NewRequestDo("POST", fullURL, nil, &request, &response)
+	_, err := service.Client.NewZccRequestDo("POST", fullURL, nil, &request, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func SoftRemoveDevices(service *services.Service, request RemoveDevicesRequest, 
 }
 
 // ForceRemoveDevices force removes the enrolled devices from the portal
-func ForceRemoveDevices(service *services.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
+func ForceRemoveDevices(service *zscaler.Service, request RemoveDevicesRequest, pageSize int) (*RemoveDevicesResponse, error) {
 	pagination := common.NewPagination(pageSize)
 	fullURL := fmt.Sprintf("%s?pageSize=%d", forceRemoveDevicesEndpoint, pagination.PageSize)
 

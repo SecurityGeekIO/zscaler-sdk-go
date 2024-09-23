@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 const (
@@ -17,13 +17,13 @@ type DownloadDevicesQueryParams struct {
 	RegistrationTypes string `url:"registrationTypes,omitempty"`
 }
 
-func DownloadDevices(service *services.Service, osTypes, registrationTypes string, writer io.Writer) error {
+func DownloadDevices(service *zscaler.Service, osTypes, registrationTypes string, writer io.Writer) error {
 	queryParams := DownloadDevicesQueryParams{
 		OSTypes:           osTypes,
 		RegistrationTypes: registrationTypes,
 	}
 
-	resp, err := service.Client.NewRequestDo("GET", downloadDevicesEndpoint, queryParams, nil, nil)
+	resp, err := service.Client.NewZccRequestDo("GET", downloadDevicesEndpoint, queryParams, nil, nil)
 	if err != nil {
 		return err
 	}
