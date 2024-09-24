@@ -72,6 +72,7 @@ func NewOneAPIClient() (*zscaler.Service, error) {
 		zscaler.WithVanityDomain(vanityDomain),
 		zscaler.WithZscalerCloud(zscalerCloud), // Optional, default can be set
 		zscaler.WithDebug(true),
+		zscaler.WithTestingDisableHttpsCheck(true),
 		// zscaler.WithUserAgentExtra("zscaler-sdk-go"),
 	)
 	if err != nil {

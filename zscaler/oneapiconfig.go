@@ -290,8 +290,8 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 		fullURL = fmt.Sprintf("%s%s", c.GetSandboxURL(), endpoint)
 		urlParams.Set("api_token", c.GetSandboxToken()) // Append Sandbox token
 	} else if isZPARequest {
-		// Append customerId for ZPA requests
-		if c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
+		// Only append customerId to query parameters if it's not already in the URL path
+		if !strings.Contains(endpoint, fmt.Sprintf("/customers/%s", c.oauth2Credentials.Zscaler.Client.CustomerID)) && c.oauth2Credentials.Zscaler.Client.CustomerID != "" {
 			urlParams.Set("customerId", c.oauth2Credentials.Zscaler.Client.CustomerID)
 		}
 		fullURL = fmt.Sprintf("%s%s", GetAPIBaseURL(c.cloud, isSandboxRequest), endpoint)
