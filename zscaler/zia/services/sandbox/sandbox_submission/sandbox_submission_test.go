@@ -1,6 +1,7 @@
 package sandbox_submission
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -72,10 +73,10 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 		var scanResult *ScanResult
 		if isSubmit {
 			// Use the service object for the SubmitFile test
-			scanResult, err = SubmitFile(service, fileName, resp.Body, "1") // Force set to "0"
+			scanResult, err = SubmitFile(context.Background(), service, fileName, resp.Body, "1") // Force set to "0"
 		} else {
 			// Use the service object for the Discan test
-			scanResult, err = Discan(service, fileName, resp.Body)
+			scanResult, err = Discan(context.Background(), service, fileName, resp.Body)
 		}
 
 		if err != nil {

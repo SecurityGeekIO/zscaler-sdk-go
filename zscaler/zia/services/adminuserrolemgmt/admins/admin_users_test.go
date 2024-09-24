@@ -182,7 +182,7 @@ func TestUserManagement(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(service *zscaler.Service, id int) (*AdminUsers, error) {
+func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*AdminUsers, error) {
 	var resource *AdminUsers
 	var err error
 

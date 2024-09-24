@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestPostureProfile_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	posture, _, err := postureprofile.Get(service, "123")
+	posture, _, err := postureprofile.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -65,7 +66,7 @@ func TestPostureProfile_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	profile, _, err := postureprofile.GetByName(service, "Posture1")
+	profile, _, err := postureprofile.GetByName(context.Background(), service, "Posture1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -98,7 +99,7 @@ func TestPostureProfile_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	profiles, _, err := postureprofile.GetAll(service)
+	profiles, _, err := postureprofile.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

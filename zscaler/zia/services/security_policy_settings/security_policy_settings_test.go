@@ -1,6 +1,7 @@
 package security_policy_settings
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -49,7 +50,7 @@ func TestSecurityPolicySettings(t *testing.T) {
 	}
 
 	// Backup initial settings
-	initialSettings, err := GetListUrls(service)
+	initialSettings, err := GetListUrls(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error fetching initial settings: %v", err)
 	}
@@ -65,14 +66,14 @@ func TestSecurityPolicySettings(t *testing.T) {
 	}
 
 	err = retryOnConflict(func() error {
-		_, err := UpdateListUrls(service, newSettings)
+		_, err := UpdateListUrls(context.Background(), service, newSettings)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating settings: %v", err)
 	}
 
-	updatedSettings, err := GetListUrls(service)
+	updatedSettings, err := GetListUrls(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error fetching updated settings: %v", err)
 	}
@@ -88,7 +89,7 @@ func TestSecurityPolicySettings(t *testing.T) {
 
 	// Restore initial settings
 	err = retryOnConflict(func() error {
-		_, err := UpdateListUrls(service, *initialSettings)
+		_, err := UpdateListUrls(context.Background(), service, *initialSettings)
 		return err
 	})
 	if err != nil {
@@ -96,7 +97,7 @@ func TestSecurityPolicySettings(t *testing.T) {
 	}
 
 	// Verify if the settings were restored
-	finalSettings, err := GetListUrls(service)
+	finalSettings, err := GetListUrls(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error fetching final settings: %v", err)
 	}

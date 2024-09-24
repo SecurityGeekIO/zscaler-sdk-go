@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestIdpController_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	idp, _, err := idpcontroller.Get(service, "123")
+	idp, _, err := idpcontroller.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -66,7 +67,7 @@ func TestIdpController_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	idp, _, err := idpcontroller.GetByName(service, "Idp1")
+	idp, _, err := idpcontroller.GetByName(context.Background(), service, "Idp1")
 	// Check if the request was successful
 	if err != nil {
 		t.Fatalf("Error making GetByName request: %v", err)
@@ -99,7 +100,7 @@ func TestIdpController_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	idps, _, err := idpcontroller.GetAll(service)
+	idps, _, err := idpcontroller.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

@@ -333,7 +333,7 @@ func (c *Client) buildRequest(method, endpoint string, body io.Reader, urlParams
 	return req, nil
 }
 
-func (c *Client) ExecuteRequest(method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
 	req, err := c.buildRequest(method, endpoint, body, urlParams, contentType)
 	if err != nil {
 		return nil, nil, err

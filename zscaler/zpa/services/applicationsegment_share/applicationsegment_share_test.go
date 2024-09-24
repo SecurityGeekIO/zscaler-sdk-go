@@ -51,7 +51,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		var createdMicrotenant *microtenants.MicroTenant
 		var err error
 		for i := 0; i < 3; i++ { // Retry up to 3 times
-			createdMicrotenant, _, err = microtenants.Create(service, microtenant)
+			createdMicrotenant, _, err = microtenants.Create(context.Background(), service, microtenant)
 			if err == nil {
 				break
 			}
@@ -71,7 +71,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to create microtenant A: %v", err)
 	}
 	defer func() {
-		_, err := microtenants.Delete(service, microtenantAID.ID)
+		_, err := microtenants.Delete(context.Background(), service, microtenantAID.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant A: %v", err)
 		}
@@ -83,13 +83,13 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to create microtenant B: %v", err)
 	}
 	defer func() {
-		_, err := microtenants.Delete(service, microtenantBID.ID)
+		_, err := microtenants.Delete(context.Background(), service, microtenantBID.ID)
 		if err != nil {
 			t.Errorf("Error deleting microtenant B: %v", err)
 		}
 	}()
 
-	appConnGroupA, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
+	appConnGroupA, _, err := appconnectorgroup.Create(context.Background(), service, appconnectorgroup.AppConnectorGroup{
 		Name:                     baseName + "-microtenantA-appconn",
 		Description:              baseDescription + "-microtenantA-appconn",
 		Enabled:                  true,
@@ -114,7 +114,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Error creating app connector group A: %v", err)
 	}
 
-	serverGroupA, _, err := servergroup.Create(service, &servergroup.ServerGroup{
+	serverGroupA, _, err := servergroup.Create(context.Background(), service, &servergroup.ServerGroup{
 		Name:             baseName + "-microtenantA-server",
 		Description:      baseDescription + "-microtenantA-server",
 		Enabled:          true,
@@ -128,7 +128,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Error creating server group A: %v", err)
 	}
 
-	segGroupA, _, err := segmentgroup.Create(service, &segmentgroup.SegmentGroup{
+	segGroupA, _, err := segmentgroup.Create(context.Background(), service, &segmentgroup.SegmentGroup{
 		Name:          baseName + "-microtenantA-seg",
 		Description:   baseDescription + "-microtenantA-seg",
 		Enabled:       true,
@@ -164,7 +164,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 			},
 		},
 	}
-	createdAppSegment, _, err := applicationsegment.Create(service, appSegment)
+	createdAppSegment, _, err := applicationsegment.Create(context.Background(), service, appSegment)
 	if err != nil {
 		t.Fatalf("Error creating application segment: %v", err)
 	}

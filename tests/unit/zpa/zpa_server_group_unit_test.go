@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -128,7 +129,7 @@ func TestService_Get(t *testing.T) {
 
 	// Call the Get method
 	groupID := "groupID"
-	serverGroup, resp, err := servergroup.Get(service, groupID)
+	serverGroup, resp, err := servergroup.Get(context.Background(), service, groupID)
 	// Check the error
 	if err != nil {
 		t.Errorf("Error calling Get: %s", err)
@@ -335,7 +336,7 @@ func TestServerGroup_Create(t *testing.T) {
 	}
 
 	// Make the Create request
-	createdGroup, _, err := servergroup.Create(service, group)
+	createdGroup, _, err := servergroup.Create(context.Background(), service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Create request: %v", err)
@@ -383,7 +384,7 @@ func TestServerGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := servergroup.Update(service, "123", group)
+	_, err := servergroup.Update(context.Background(), service, "123", group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -402,7 +403,7 @@ func TestServerGroup_Delete(t *testing.T) {
 	})
 
 	// Make the Delete request
-	_, err := servergroup.Delete(service, "123")
+	_, err := servergroup.Delete(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -452,7 +453,7 @@ func TestServerGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := servergroup.GetAll(service)
+	groups, _, err := servergroup.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

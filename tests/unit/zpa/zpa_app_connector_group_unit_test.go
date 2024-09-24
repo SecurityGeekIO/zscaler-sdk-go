@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -34,7 +35,7 @@ func TestAppConnectorGroup_Get(t *testing.T) {
 	service := zscaler.NewService(client) // Convert *Client to *Service
 
 	// Make the GET request to fetch the App Connector Group by ID
-	group, _, err := appconnectorgroup.Get(service, "123")
+	group, _, err := appconnectorgroup.Get(context.Background(), service, "123")
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
 	}
@@ -82,7 +83,7 @@ func TestAppConnectorGroup_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdGroup, _, err := appconnectorgroup.Create(service, group)
+	createdGroup, _, err := appconnectorgroup.Create(context.Background(), service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -123,7 +124,7 @@ func TestAppConnectorGroup_GetByName(t *testing.T) {
 	service := services.New(client)
 
 	// Make the GetByName request
-	group, _, err := appconnectorgroup.GetByName(service, "Group1")
+	group, _, err := appconnectorgroup.GetByName(context.Background(), service, "Group1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -171,7 +172,7 @@ func TestAppConnectorGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := appconnectorgroup.Update(service, "123", &group)
+	_, err := appconnectorgroup.Update(context.Background(), service, "123", &group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -189,7 +190,7 @@ func TestAppConnectorGroup_Delete(t *testing.T) {
 	service := services.New(client)
 
 	// Make the Delete request
-	_, err := appconnectorgroup.Delete(service, "123")
+	_, err := appconnectorgroup.Delete(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -213,7 +214,7 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 	service := services.New(client)
 
 	// Make the GetAll request
-	groups, _, err := appconnectorgroup.GetAll(service)
+	groups, _, err := appconnectorgroup.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

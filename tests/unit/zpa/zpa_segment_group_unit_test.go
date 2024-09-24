@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -34,7 +35,7 @@ func TestSegmentGroup_Get(t *testing.T) {
 	})
 
 	// Make the Get request
-	group, _, err := segmentgroup.Get(service, "123")
+	group, _, err := segmentgroup.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Get request: %v", err)
@@ -135,7 +136,7 @@ func TestSegmentGroup_Create(t *testing.T) {
 	}
 
 	// Make the Create request
-	createdGroup, _, err := segmentgroup.Create(service, group)
+	createdGroup, _, err := segmentgroup.Create(context.Background(), service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Create request: %v", err)
@@ -182,7 +183,7 @@ func TestSegmentGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := segmentgroup.Update(service, "123", group)
+	_, err := segmentgroup.Update(context.Background(), service, "123", group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -201,7 +202,7 @@ func TestSegmentGroup_Delete(t *testing.T) {
 	})
 
 	// Make the Delete request
-	_, err := segmentgroup.Delete(service, "123")
+	_, err := segmentgroup.Delete(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -251,7 +252,7 @@ func TestSegmentGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := segmentgroup.GetAll(service)
+	groups, _, err := segmentgroup.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

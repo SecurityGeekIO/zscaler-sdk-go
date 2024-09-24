@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestTrustedNetworks_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	network, _, err := trustednetwork.Get(service, "123")
+	network, _, err := trustednetwork.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -65,7 +66,7 @@ func TestTrustedNetworks_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	network, _, err := trustednetwork.GetByName(service, "trustedNetwork1")
+	network, _, err := trustednetwork.GetByName(context.Background(), service, "trustedNetwork1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -98,7 +99,7 @@ func TestTrustedNetworks_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	networks, _, err := trustednetwork.GetAll(service)
+	networks, _, err := trustednetwork.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

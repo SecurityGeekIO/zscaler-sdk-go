@@ -1,6 +1,7 @@
 package user_authentication_settings
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -42,7 +43,7 @@ func cleanResources() {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	resources, err := Get(service)
+	resources, err := Get(context.Background(), service)
 	if err != nil {
 		log.Printf("Error retrieving exempted URLs during cleanup: %v", err)
 		return
@@ -56,7 +57,7 @@ func cleanResources() {
 		}
 	}
 	if len(urlsToRemove) > 0 {
-		_, err := service.Client.Create(fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{urlsToRemove})
+		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{urlsToRemove})
 		if err != nil {
 			log.Printf("Error removing exempted URL during cleanup: %v", err)
 		}
@@ -71,7 +72,7 @@ func TestUserAuthenticationSettings(t *testing.T) {
 	}
 
 	// Create 3 random exempted URLs
-	initialUrls, err := Get(service)
+	initialUrls, err := Get(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error fetching initial exempted URLs: %v", err)
 	}
@@ -80,13 +81,13 @@ func TestUserAuthenticationSettings(t *testing.T) {
 	allUrls := append(initialUrls.URLs, newUrls...)
 
 	// Update with the new exempted URLs
-	_, err = Update(service, ExemptedUrls{URLs: allUrls})
+	_, err = Update(context.Background(), service, ExemptedUrls{URLs: allUrls})
 	if err != nil {
 		t.Fatalf("Error updating exempted URLs: %v", err)
 	}
 
 	// Fetch and validate the exempted URLs after updating
-	updatedUrls, err := Get(service)
+	updatedUrls, err := Get(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error fetching updated exempted URLs: %v", err)
 	}
@@ -97,7 +98,7 @@ func TestUserAuthenticationSettings(t *testing.T) {
 	}
 
 	// Clean up by removing the URLs we added for testing
-	_, err = Update(service, ExemptedUrls{URLs: initialUrls.URLs})
+	_, err = Update(context.Background(), service, ExemptedUrls{URLs: initialUrls.URLs})
 	if err != nil {
 		t.Fatalf("Error cleaning up exempted URLs: %v", err)
 	}

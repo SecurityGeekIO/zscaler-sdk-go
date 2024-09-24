@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestMachineGroup_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	group, _, err := machinegroup.Get(service, "123")
+	group, _, err := machinegroup.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -99,7 +100,7 @@ func TestMachineGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := machinegroup.GetAll(service)
+	groups, _, err := machinegroup.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

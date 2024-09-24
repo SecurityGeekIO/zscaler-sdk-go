@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -38,7 +39,7 @@ func TestIsolationProfile_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	profile, _, err := isolationprofile.GetByName(service, "CBIProfile1")
+	profile, _, err := isolationprofile.GetByName(context.Background(), service, "CBIProfile1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -71,7 +72,7 @@ func TestIsolationProfile_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	profiles, _, err := isolationprofile.GetAll(service)
+	profiles, _, err := isolationprofile.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

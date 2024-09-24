@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestEnrollmentCert_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	enrollmentCert, _, err := enrollmentcert.Get(service, "123")
+	enrollmentCert, _, err := enrollmentcert.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -64,7 +65,7 @@ func TestEnrollmentCert_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	enrollmentCert, _, err := enrollmentcert.GetByName(service, "Connector")
+	enrollmentCert, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -99,7 +100,7 @@ func TestEnrollmentCert_GetAll(t *testing.T) {
 			}`))
 	})
 	// Make the GetAll request
-	enrollmentCerts, _, err := enrollmentcert.GetAll(service)
+	enrollmentCerts, _, err := enrollmentcert.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)

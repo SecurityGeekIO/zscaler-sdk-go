@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestBaCertificate_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	certificate, _, err := bacertificate.Get(service, "123")
+	certificate, _, err := bacertificate.Get(context.Background(), service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -99,7 +100,7 @@ func TestBaCertificate_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	certificates, _, err := bacertificate.GetAll(service)
+	certificates, _, err := bacertificate.GetAll(context.Background(), service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
