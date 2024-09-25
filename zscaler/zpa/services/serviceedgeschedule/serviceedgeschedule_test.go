@@ -73,8 +73,8 @@ func TestAppConnectorSchedule(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error updating schedule with interval %s: %v", interval, err)
 		}
-		if updateResp.StatusCode != 204 {
-			t.Errorf("Expected status code 204 for interval %s, got: %v", interval, updateResp.StatusCode)
+		if updateResp.StatusCode != 200 {
+			t.Errorf("Expected status code 200 for interval %s, got: %v", interval, updateResp.StatusCode)
 		}
 		t.Logf("Updated schedule with interval: %s", interval)
 	}
