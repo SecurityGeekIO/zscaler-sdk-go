@@ -132,7 +132,8 @@ func TestVIPs(t *testing.T) {
 	// Test for GetVIPRecommendedList with all optional parameters
 	t.Run("TestGetVIPRecommendedList", func(t *testing.T) {
 		vips, err := GetVIPRecommendedList(
-			service,
+			context.Background(), // Correctly pass the context here
+			service,              // The second argument is your service client
 			WithSourceIP(ipAddress),
 			WithRoutableIP(true),
 			WithWithinCountryOnly(true),
@@ -149,4 +150,5 @@ func TestVIPs(t *testing.T) {
 			t.Errorf("Expected recommended VIPs, but got none")
 		}
 	})
+
 }

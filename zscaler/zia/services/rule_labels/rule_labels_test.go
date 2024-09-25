@@ -154,7 +154,8 @@ func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) 
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(context.Background(), service, id)
+		// Use the passed context (ctx) instead of context.Background()
+		resource, err = Get(ctx, service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}

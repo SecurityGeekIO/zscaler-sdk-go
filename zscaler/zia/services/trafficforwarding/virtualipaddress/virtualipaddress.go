@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	vipsEndpoint               = "/vips"
+	vipsEndpoint               = "/zia/api/v1/vips"
 	vipRecommendedListEndpoint = "/zia/api/v1/vips/recommendedList"
+	staticIPEndpoint           = "/zia/api/v1/staticIP"
 )
 
 type ZscalerVIPs struct {
@@ -221,7 +222,7 @@ func GetAll(ctx context.Context, service *zscaler.Service, sourceIP string) ([]G
 
 func getAllStaticIPs(ctx context.Context, service *zscaler.Service) ([]staticips.StaticIP, error) {
 	var staticIPs []staticips.StaticIP
-	err := common.ReadAllPages(ctx, service.Client, "/staticIP", &staticIPs)
+	err := common.ReadAllPages(ctx, service.Client, staticIPEndpoint, &staticIPs)
 	return staticIPs, err
 }
 

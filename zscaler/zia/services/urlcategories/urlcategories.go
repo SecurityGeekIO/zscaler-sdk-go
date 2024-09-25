@@ -15,8 +15,8 @@ import (
 
 const (
 	urlCategoriesEndpoint = "/zia/api/v1/urlCategories"
-	urlQuotaHandler       = "urlQuota"
-	urlLookupEndpoint     = "/urlLookup"
+	urlQuotaHandler       = "/urlQuota"
+	urlLookupEndpoint     = "/zia/api/v1/urlLookup"
 )
 
 type URLCategory struct {

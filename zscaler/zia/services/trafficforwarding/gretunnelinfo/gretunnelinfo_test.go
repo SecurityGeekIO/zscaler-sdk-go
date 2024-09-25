@@ -147,7 +147,7 @@ func TestGRETunnelInfo(t *testing.T) {
 
 // deleteStaticIP deletes a static IP resource
 func deleteStaticIP(ctx context.Context, service *zscaler.Service, id int, t *testing.T) {
-	_, err := staticips.Delete(context.Background(), service, id)
+	_, err := staticips.Delete(ctx, service, id) // Use the passed context instead of context.Background()
 	if err != nil {
 		t.Errorf("Error deleting static IP: %v", err)
 	}
@@ -155,7 +155,7 @@ func deleteStaticIP(ctx context.Context, service *zscaler.Service, id int, t *te
 
 // deleteGRETunnel deletes a GRE tunnel resource
 func deleteGRETunnel(ctx context.Context, service *zscaler.Service, id int, t *testing.T) {
-	_, err := gretunnels.DeleteGreTunnels(context.Background(), service, id)
+	_, err := gretunnels.DeleteGreTunnels(ctx, service, id) // Use the passed context instead of context.Background()
 	if err != nil {
 		t.Errorf("Error deleting GRE tunnel: %v", err)
 	}

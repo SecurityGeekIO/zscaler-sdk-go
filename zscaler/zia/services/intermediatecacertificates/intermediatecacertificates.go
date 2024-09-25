@@ -202,9 +202,12 @@ func GetShowCSR(ctx context.Context, service *zscaler.Service, certID int) (*Cer
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]IntermediateCACertificate, error) {
-	var intermediateCACertificate []IntermediateCACertificate
-	err := common.ReadAllPages(ctx, service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificate)
-	return intermediateCACertificate, err
+	var intermediateCACertificates []IntermediateCACertificate
+	err := common.ReadAllPages(ctx, service.Client, intermediateCaCertificatesEndpoint, &intermediateCACertificates)
+	if err != nil {
+		return nil, err
+	}
+	return intermediateCACertificates, nil
 }
 
 func CreateIntCACertificate(ctx context.Context, service *zscaler.Service, cert *IntermediateCACertificate) (*IntermediateCACertificate, error) {

@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	submitEndpoint = "/zia/api/v1/zscsb/submit"
-	discanEndpoint = "/zia/api/v1/zscsb/discan"
+	submitEndpoint = "/zscsb/submit"
+	discanEndpoint = "/zscsb/discan"
 )
 
 // Information about the file inspection results

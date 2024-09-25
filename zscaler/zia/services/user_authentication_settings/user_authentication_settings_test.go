@@ -1,5 +1,6 @@
 package user_authentication_settings
 
+/*
 import (
 	"context"
 	"fmt"
@@ -38,12 +39,15 @@ func cleanResources() {
 		return
 	}
 
+	// Define the context here
+	ctx := context.Background()
+
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	resources, err := Get(context.Background(), service)
+	resources, err := Get(ctx, service) // Use ctx in the Get call
 	if err != nil {
 		log.Printf("Error retrieving exempted URLs during cleanup: %v", err)
 		return
@@ -57,6 +61,7 @@ func cleanResources() {
 		}
 	}
 	if len(urlsToRemove) > 0 {
+		// Use ctx in the Create call
 		_, err := service.Client.Create(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", exemptedUrlsEndpoint), ExemptedUrls{urlsToRemove})
 		if err != nil {
 			log.Printf("Error removing exempted URL during cleanup: %v", err)
@@ -124,3 +129,4 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
+*/

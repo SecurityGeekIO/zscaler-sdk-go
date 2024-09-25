@@ -43,7 +43,8 @@ func TestBaApplicationSegment(t *testing.T) {
 		}
 	}()
 
-	certificateList, _, err := bacertificate.GetAllcontext.Background(), service)
+	certificateList, _, err := bacertificate.GetAll(context.Background(), service)
+
 	if err != nil {
 		t.Errorf("Error getting certificates: %v", err)
 		return
@@ -116,7 +117,7 @@ func TestBaApplicationSegment(t *testing.T) {
 	}
 	retrievedResource.Name = updateName
 
-	_, err = Update(context.Background(), service,  createdResource.ID, retrievedResource)
+	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
@@ -205,7 +206,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service,  "non-existent-id", &BrowserAccess{})
+	_, err = Update(context.Background(), service, "non-existent-id", &BrowserAccess{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}

@@ -325,12 +325,30 @@ func BulkReorder(ctx context.Context, service *zscaler.Service, policySetType st
 		// If neither rule exists in the map, maintain their relative order
 		return i <= j
 	})
+	// Prepare the rule order list, ensuring Default_Rule is placed at the end
+	var ruleIdsOrdered []string
+	var defaultRuleID string
+
+	for _, rule := range all {
+		// Check if this is the Default_Rule
+		if rule.Name == "Default_Rule" {
+			defaultRuleID = rule.ID
+			continue
+		}
+		// Add all other rules to the ordered list
+		ruleIdsOrdered = append(ruleIdsOrdered, rule.ID)
+	}
+
+	// Append the Default_Rule to the end if it exists
+	if defaultRuleID != "" {
+		ruleIdsOrdered = append(ruleIdsOrdered, defaultRuleID)
+	}
+
+	// Log the final order for debugging
+	log.Printf("Final rule order: %v", ruleIdsOrdered)
+
 	// Construct the URL path
 	path := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/%s/reorder", policySet.ID)
-	ruleIdsOrdered := []string{}
-	for _, r := range all {
-		ruleIdsOrdered = append(ruleIdsOrdered, r.ID)
-	}
 
 	// Create a new PUT request
 	resp, err = service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, ruleIdsOrdered, nil)
@@ -343,7 +361,6 @@ func BulkReorder(ctx context.Context, service *zscaler.Service, policySetType st
 		defer resp.Body.Close() // Ensure the body is always closed
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			// Handle the error of reading the body (optional)
 			log.Printf("Error reading response body: %s\n", err.Error())
 		}
 		log.Printf("Error response from API: %s\n", string(bodyBytes))

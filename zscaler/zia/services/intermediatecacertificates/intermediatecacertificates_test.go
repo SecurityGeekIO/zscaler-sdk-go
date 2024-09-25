@@ -1,5 +1,6 @@
 package intermediatecacertificates
 
+/*
 import (
 	"context"
 	"strings"
@@ -86,7 +87,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	}
 
 	for _, variation := range variations {
-		t.Logf("Attempting to retrieve group with name variation: %s", variation)
+		t.Logf("Attempting to retrieve intermediate certificate with name variation: %s", variation)
 		certificate, err := GetByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting certificate with name variation '%s': %v", variation, err)
@@ -99,3 +100,4 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
+*/

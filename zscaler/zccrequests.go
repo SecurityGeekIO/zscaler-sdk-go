@@ -71,7 +71,6 @@ func (client *Client) NewZccRequestDo(ctx context.Context, method, endpoint stri
 		return nil, err
 	}
 
-	// Create a dummy HTTP response using the request body for response body
 	resp := &http.Response{
 		StatusCode: http.StatusOK,
 		Body:       io.NopCloser(bytes.NewBuffer(respBody)),

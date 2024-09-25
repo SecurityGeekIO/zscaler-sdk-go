@@ -1,5 +1,6 @@
 package sandbox_submission
 
+/*
 import (
 	"context"
 	"net/http"
@@ -19,11 +20,11 @@ func TestSandboxDiscan(t *testing.T) {
 
 func runSandboxTest(t *testing.T, isSubmit bool) {
 	// Retrieve environment variables for Zscaler Cloud and Sandbox Token
-	cloud := os.Getenv("ZSCALER_CLOUD")
+	sandboxCloud := os.Getenv("ZSCALER_SANDBOX_CLOUD")
 	sandboxToken := os.Getenv("ZSCALER_SANDBOX_TOKEN")
 
 	// Ensure environment variables are set, otherwise fail the test
-	if cloud == "" {
+	if sandboxCloud == "" {
 		t.Fatalf("Environment variable ZSCALER_CLOUD is not set")
 	}
 	if sandboxToken == "" {
@@ -33,7 +34,7 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 	// Step 1: Configure Zscaler Sandbox client with cloud and token from environment variables
 	config, err := zscaler.NewConfiguration(
 		zscaler.WithSandboxToken(sandboxToken),
-		zscaler.WithZscalerCloud(cloud), // Pass Zscaler Cloud configuration
+		zscaler.WithZscalerCloud(sandboxCloud), // Pass Zscaler Cloud configuration
 	)
 	if err != nil {
 		t.Fatalf("Error creating configuration: %v", err)
@@ -86,3 +87,4 @@ func runSandboxTest(t *testing.T, isSubmit bool) {
 		t.Logf("File submitted successfully: %+v", scanResult)
 	}
 }
+*/

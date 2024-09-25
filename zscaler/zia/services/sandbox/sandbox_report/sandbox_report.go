@@ -12,7 +12,7 @@ import (
 
 const (
 	reportQuotaEndpoint = "/zia/api/v1/sandbox/report/quota"
-	reportMD5Endpoint   = "/sandbox/report/"
+	reportMD5Endpoint   = "/zia/api/v1/sandbox/report/"
 )
 
 type RatingQuota struct {
