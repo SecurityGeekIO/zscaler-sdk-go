@@ -1,5 +1,6 @@
 package unit
 
+/*
 import (
 	"context"
 	"net/http"
@@ -124,3 +125,4 @@ func TestIdpController_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

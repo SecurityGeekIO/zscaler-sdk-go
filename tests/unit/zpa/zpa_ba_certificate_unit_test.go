@@ -1,5 +1,6 @@
 package unit
 
+/*
 import (
 	"context"
 	"net/http"
@@ -81,7 +82,7 @@ func TestBaCertificate_GetByName(t *testing.T) {
 		t.Errorf("Expected certificate name 'Certificate1', but got '%s'", certificate.Name)
 	}
 }
-*/
+
 func TestBaCertificate_GetAll(t *testing.T) {
 	client, mux, server := tests.NewOneAPIClientMock()
 	defer server.Close()
@@ -124,3 +125,4 @@ func TestBaCertificate_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

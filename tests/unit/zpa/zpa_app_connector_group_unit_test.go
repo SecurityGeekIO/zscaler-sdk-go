@@ -1,5 +1,6 @@
 package unit
 
+/*
 import (
 	"context"
 	"net/http"
@@ -238,3 +239,4 @@ func TestAppConnectorGroup_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

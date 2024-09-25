@@ -1,8 +1,8 @@
-[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/zscaler/zscaler-sdk-go/v2/blob/master/.go-version)
-[![Go Report Card](https://goreportcard.com/badge/github.com/zscaler/zscaler-sdk-go)](https://goreportcard.com/report/github.com/zscaler/zscaler-sdk-go)
+[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/.go-version)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
 [![codecov](https://codecov.io/github/zscaler/zscaler-sdk-go/graph/badge.svg?token=OVX3UWIWSK)](https://codecov.io/github/zscaler/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go/v2/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
 <img src="https://raw.githubusercontent.com/zscaler/zscaler-terraformer/master/images/zscaler_terraformer-logo.svg" width="400">
@@ -32,9 +32,9 @@ To install the Zscaler GO SDK in your project:
 
   - Create a module file by running `go mod init`
   - You can skip this step if you already use `go mod`
-  - Run `go get github.com/zscaler/zscaler-sdk-go/v2@latest`. This will add
+  - Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v2/zscaler/zpa"`.
+  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"`.
 
 ### You'll also need
 
@@ -185,7 +185,7 @@ You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_KEY_ID` environme
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zpa"
 )
 
 func main() {
@@ -210,7 +210,7 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zia"
 )
 
 func main() {
@@ -233,7 +233,7 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zcc"
 )
 
 func main() {
@@ -258,7 +258,7 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zdx"
 )
 
 func main() {
@@ -283,7 +283,7 @@ func main() {
 import (
 	"fmt"
 	"context"
-	"github.com/zscaler/zscaler-sdk-golang/v2/zcon"
+	"github.com/SecurityGeekIO/zscaler-sdk-golang/v2/zcon"
 )
 
 func main() {
@@ -375,17 +375,17 @@ The retry mechanism for the ZIA API client works as follows:
 ## Contributing
 
 We're happy to accept contributions and PRs! Please see the [contribution
-guide](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
+guide](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
 structure a contribution.
 
-[sdkapiref]: https://pkg.go.dev/github.com/zscaler/zscaler-sdk-go/v2
-[github-issues]: https://github.com/zscaler/zscaler-sdk-go/issues
-[github-releases]: https://github.com/zscaler/zscaler-sdk-go/releases
+[sdkapiref]: https://pkg.go.dev/github.com/SecurityGeekIO/zscaler-sdk-go/v2
+[github-issues]: https://github.com/SecurityGeekIO/zscaler-sdk-go/issues
+[github-releases]: https://github.com/SecurityGeekIO/zscaler-sdk-go/releases
 
 MIT License
 =======
 
-Copyright (c) 2022 [Zscaler](https://github.com/zscaler)
+Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

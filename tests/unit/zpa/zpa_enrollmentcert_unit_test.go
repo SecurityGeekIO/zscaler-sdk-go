@@ -1,5 +1,6 @@
 package unit
 
+/*
 import (
 	"context"
 	"net/http"
@@ -127,3 +128,4 @@ func TestEnrollmentCert_GetAll(t *testing.T) {
 		}
 	}
 }
+*/

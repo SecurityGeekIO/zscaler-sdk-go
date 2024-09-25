@@ -10,6 +10,6 @@ support options. The underlying product used (Zscaler Private Access API) but th
 scripts or templates are still supported, but the support is only for the
 product functionality and not for help in deploying or using the template or
 script itself. Unless explicitly tagged, all projects or work posted in our
-[GitHub repository](https://github.com/zscaler) or sites other
+[GitHub repository](https://github.com/SecurityGeekIO) or sites other
 than our official [Downloads page](https://help.zscaler.com/login-tickets)
 are provided under the best effort policy.
