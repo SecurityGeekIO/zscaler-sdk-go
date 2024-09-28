@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -74,9 +73,10 @@ type Configuration struct {
 			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"`
 			SandboxCloud  string     `yaml:"sandboxCloud" envconfig:"ZSCALER_SANDBOX_CLOUD"`
 			Cache         struct {
-				Enabled    bool  `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
-				DefaultTtl int32 `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
-				DefaultTti int32 `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
+				Enabled               bool          `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
+				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
+				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
 			}
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZSCALER_CLIENT_PROXY_PORT"`
@@ -107,6 +107,21 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		Debug:     false,
 		Context:   context.Background(), // Set default context
 	}
+
+	// Initialize cache
+	if cfg.Zscaler.Client.Cache.DefaultTtl == 0 {
+		cfg.Zscaler.Client.Cache.DefaultTtl = time.Minute * 10
+	}
+
+	if cfg.Zscaler.Client.Cache.DefaultTti == 0 {
+		cfg.Zscaler.Client.Cache.DefaultTti = time.Minute * 8
+	}
+
+	cche, err := cache.NewCache(time.Duration(cfg.Zscaler.Client.Cache.DefaultTtl), time.Duration(cfg.Zscaler.Client.Cache.DefaultTti), int(cfg.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	cfg.CacheManager = cche
 
 	cfg.Zscaler.Testing.DisableHttpsCheck = false
 
@@ -311,7 +326,7 @@ func GetAPIBaseURL(cloud string, sandboxEnabled bool) string {
 }
 
 func readConfigFromFile(location string, c Configuration) (*Configuration, error) {
-	yamlConfig, err := ioutil.ReadFile(location)
+	yamlConfig, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
 	}
@@ -407,56 +422,22 @@ func WithCache(cache bool) ConfigSetter {
 	}
 }
 
-// Allows refreshing the cache.
-func (client *Client) WithFreshCache() {
-	client.freshCache = true
-}
-
 func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 	return func(c *Configuration) {
 		c.CacheManager = cacheManager
 	}
 }
 
-func WithCacheTtl(i int32) ConfigSetter {
+func WithCacheTtl(i time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cache.DefaultTtl = i
 	}
 }
 
-func WithCacheTti(i int32) ConfigSetter {
+func WithCacheTti(i time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cache.DefaultTti = i
 	}
-}
-
-func (c *Client) WithCache(cache bool) {
-	c.cacheEnabled = cache
-}
-
-// WithCacheTtl sets the time-to-live (TTL) for cache.
-func (c *Client) WithCacheTtl(i time.Duration) {
-	c.cacheTtl = i
-	c.Lock()
-	c.cache.Close()
-	cche, err := cache.NewCache(i, c.cacheCleanwindow, c.cacheMaxSizeMB)
-	if err != nil {
-		cche = cache.NewNopCache()
-	}
-	c.cache = cche
-	c.Unlock()
-}
-
-func (c *Client) WithCacheCleanWindow(i time.Duration) {
-	c.cacheCleanwindow = i
-	c.Lock()
-	c.cache.Close()
-	cche, err := cache.NewCache(c.cacheTtl, i, c.cacheMaxSizeMB)
-	if err != nil {
-		cche = cache.NewNopCache()
-	}
-	c.cache = cche
-	c.Unlock()
 }
 
 // WithHttpClient sets the HttpClient in the Config.
@@ -542,7 +523,7 @@ func WithDebug(debug bool) ConfigSetter {
 func WithPrivateKey(privateKey string) ConfigSetter {
 	return func(c *Configuration) {
 		if fileExists(privateKey) {
-			content, err := ioutil.ReadFile(privateKey)
+			content, err := os.ReadFile(privateKey)
 			if err != nil {
 				fmt.Printf("failed to read from provided private key file path: %v", err)
 			}
