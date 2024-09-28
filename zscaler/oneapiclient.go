@@ -300,7 +300,7 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 func detectServiceType(endpoint string) string {
 	path := strings.TrimPrefix(endpoint, "/")
 	// Detect the service type based on the endpoint prefix
-	if strings.HasPrefix(path, "zia") {
+	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
 		return "zia"
 	} else if strings.HasPrefix(path, "zpa") {
 		return "zpa"
@@ -312,14 +312,10 @@ func detectServiceType(endpoint string) string {
 }
 
 // GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
-func GetAPIBaseURL(cloud string, sandboxEnabled bool) string {
+func GetAPIBaseURL(cloud string) string {
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
 		baseURL = fmt.Sprintf("https://api.%s.zsapi.net", strings.ToLower(cloud))
-	}
-	if sandboxEnabled {
-		// Return the Sandbox base URL
-		return fmt.Sprintf("https://csbapi.%s.net/zscsb/submit", strings.ToLower(cloud))
 	}
 
 	return baseURL
