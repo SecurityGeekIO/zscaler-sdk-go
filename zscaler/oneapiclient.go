@@ -117,11 +117,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		cfg.Zscaler.Client.Cache.DefaultTti = time.Minute * 8
 	}
 
-	cche, err := cache.NewCache(time.Duration(cfg.Zscaler.Client.Cache.DefaultTtl), time.Duration(cfg.Zscaler.Client.Cache.DefaultTti), int(cfg.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
-	if err != nil {
-		cche = cache.NewNopCache()
-	}
-	cfg.CacheManager = cche
+	cfg.CacheManager = newCache(cfg)
 
 	cfg.Zscaler.Testing.DisableHttpsCheck = false
 
@@ -424,15 +420,32 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 	}
 }
 
+func newCache(c *Configuration) cache.Cache {
+	cche, err := cache.NewCache(time.Duration(c.Zscaler.Client.Cache.DefaultTtl), time.Duration(c.Zscaler.Client.Cache.DefaultTti), int(c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
+	if err != nil {
+		cche = cache.NewNopCache()
+	}
+	return cche
+}
+
 func WithCacheTtl(i time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cache.DefaultTtl = i
+		c.CacheManager = newCache(c)
+	}
+}
+
+func WithCacheMaxSizeMB(size int64) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB = size
+		c.CacheManager = newCache(c)
 	}
 }
 
 func WithCacheTti(i time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.Cache.DefaultTti = i
+		c.CacheManager = newCache(c)
 	}
 }
 
