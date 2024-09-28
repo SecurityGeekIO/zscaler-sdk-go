@@ -366,7 +366,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		if err != nil {
 			return nil, nil, err
 		}
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		if !isSandboxRequest && (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) {
 			err = c.authenticate()
 			if err != nil {
 				return nil, nil, err
