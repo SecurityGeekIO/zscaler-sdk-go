@@ -412,9 +412,7 @@ func (c *Client) GetSandboxToken() string {
 }
 
 func (c *Client) authValid() bool {
-	//c.cache.Get("auth")
-
-	return c.oauth2Credentials.Zscaler.Client.AuthToken == nil || c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken == "" || utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken)
+	return c.oauth2Credentials.Zscaler.Client.AuthToken != nil && c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken != "" && !utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken)
 }
 
 // Unified authentication function to refresh OAuth2 tokens
