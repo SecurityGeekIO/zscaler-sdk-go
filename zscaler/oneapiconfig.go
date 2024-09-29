@@ -386,7 +386,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	}
 
 	// Cache logic for successful GET requests
-	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
+	if !isSandboxRequest && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && method == http.MethodGet {
 		resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
