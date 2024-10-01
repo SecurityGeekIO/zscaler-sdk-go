@@ -88,6 +88,10 @@ func (c *Client) startTokenRenewalTicker() {
 	}
 }
 
+func (client *Client) GetLogger() logger.Logger {
+	return client.oauth2Credentials.Logger
+}
+
 // getHTTPClient sets up the retryable HTTP client with backoff and retry policies.
 func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configuration) *http.Client {
 	retryableClient := retryablehttp.NewClient()
