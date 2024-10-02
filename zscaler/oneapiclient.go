@@ -72,7 +72,7 @@ type Configuration struct {
 			Cloud         string     `yaml:"cloud" envconfig:"ZSCALER_CLOUD"`
 			CustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
 			MicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
-			PrivateKey    string     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
+			PrivateKey    []byte     `yaml:"privateKey" envconfig:"ZSCALER_PRIVATE_KEY"`
 			AuthToken     *AuthToken `yaml:"authToken"`
 			AccessToken   *AuthToken `yaml:"accessToken"`
 			SandboxToken  string     `yaml:"sandboxToken" envconfig:"ZSCALER_SANDBOX_TOKEN"`
@@ -182,12 +182,12 @@ func setHttpClients(cfg *Configuration) {
 func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
-	if creds.ClientID == "" || (creds.ClientSecret == "" && creds.PrivateKey == "") {
+	if creds.ClientID == "" || (creds.ClientSecret == "" && len(creds.PrivateKey) == 0) {
 		return nil, errors.New("no client credentials were provided")
 	}
 
 	// If private key is provided, use JWT-based authentication.
-	if creds.PrivateKey != "" {
+	if len(creds.PrivateKey) > 0 {
 		return authenticateWithCert(cfg)
 	}
 
@@ -248,17 +248,12 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	creds := cfg.Zscaler.Client
 
-	if creds.ClientID == "" || creds.PrivateKey == "" {
+	if creds.ClientID == "" || len(creds.PrivateKey) == 0 {
 		return nil, errors.New("client ID or private key is missing")
 	}
 
 	// Create the JWT payload.
-	privateKeyData, err := os.ReadFile(creds.PrivateKey)
-	if err != nil {
-		return nil, fmt.Errorf("error reading private key: %v", err)
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyData)
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(creds.PrivateKey))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key: %v", err)
 	}
@@ -571,18 +566,25 @@ func WithDebug(debug bool) ConfigSetter {
 	}
 }
 
-// WithPrivateKey sets private key key. Can be either a path to a private key or private key itself.
-func WithPrivateKey(privateKey string) ConfigSetter {
+// WithPrivateKeyFile sets private key from the supplied pem file.
+func WithPrivateKeyFile(privateKeyFileName string) ConfigSetter {
 	return func(c *Configuration) {
-		if fileExists(privateKey) {
-			content, err := os.ReadFile(privateKey)
+		if fileExists(privateKeyFileName) {
+			content, err := os.ReadFile(privateKeyFileName)
 			if err != nil {
 				fmt.Printf("failed to read from provided private key file path: %v", err)
 			}
-			c.Zscaler.Client.PrivateKey = string(content)
+			c.Zscaler.Client.PrivateKey = content
 		} else {
-			c.Zscaler.Client.PrivateKey = privateKey
+			panic("pem file does not exists")
 		}
+	}
+}
+
+// WithPrivateKey sets private key key.
+func WithPrivateKey(privateKey []byte) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.PrivateKey = privateKey
 	}
 }
 
