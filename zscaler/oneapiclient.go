@@ -89,9 +89,8 @@ type Configuration struct {
 				Username string `yaml:"username" envconfig:"ZSCALER_CLIENT_PROXY_USERNAME"`
 				Password string `yaml:"password" envconfig:"ZSCALER_CLIENT_PROXY_PASSWORD"`
 			}
-			ConnectionTimeout int64 `yaml:"connectionTimeout" envconfig:"ZSCALER_CLIENT_CONNECTION_TIMEOUT"`
-			RequestTimeout    int64 `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
-			RateLimit         struct {
+			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
+			RateLimit      struct {
 				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
 				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
 				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
@@ -118,6 +117,8 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.Zscaler.Client.RateLimit.MaxRetries = MaxNumOfRetries
 	cfg.Zscaler.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
 	cfg.Zscaler.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
+
+	cfg.Zscaler.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
 
 	// Initialize cache
 	if cfg.Zscaler.Client.Cache.DefaultTtl == 0 {
@@ -272,6 +273,7 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 
 	formData := url.Values{
 		"grant_type":            {"client_credentials"},
+		"client_id":             {creds.ClientID},
 		"client_assertion":      {assertion},
 		"client_assertion_type": {"urn:ietf:params:oauth:client-assertion-type:jwt-bearer"},
 		"audience":              {"https://api.zscaler.com"},
@@ -297,6 +299,9 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("auth error: %v", string(body))
+	}
 	// Parse the response.
 	var tokenResponse AuthToken
 	err = json.Unmarshal(body, &tokenResponse)
@@ -515,15 +520,10 @@ func WithTestingDisableHttpsCheck(httpsCheck bool) ConfigSetter {
 	}
 }
 
-func WithRequestTimeout(requestTimeout int64) ConfigSetter {
+func WithRequestTimeout(requestTimeout time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RequestTimeout = requestTimeout
-	}
-}
-
-func WithConnectionTimeout(i int64) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.ConnectionTimeout = i
+		setHttpClients(c)
 	}
 }
 
