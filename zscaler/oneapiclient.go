@@ -566,25 +566,18 @@ func WithDebug(debug bool) ConfigSetter {
 	}
 }
 
-// WithPrivateKeyFile sets private key from the supplied pem file.
-func WithPrivateKeyFile(privateKeyFileName string) ConfigSetter {
+// WithPrivateKey sets private key, privateKey can be the raw key value or a path to the pem file.
+func WithPrivateKey(privateKey string) ConfigSetter {
 	return func(c *Configuration) {
-		if fileExists(privateKeyFileName) {
-			content, err := os.ReadFile(privateKeyFileName)
+		if fileExists(privateKey) {
+			content, err := os.ReadFile(privateKey)
 			if err != nil {
 				fmt.Printf("failed to read from provided private key file path: %v", err)
 			}
 			c.Zscaler.Client.PrivateKey = content
 		} else {
-			panic("pem file does not exists")
+			c.Zscaler.Client.PrivateKey = []byte(privateKey)
 		}
-	}
-}
-
-// WithPrivateKey sets private key key.
-func WithPrivateKey(privateKey []byte) ConfigSetter {
-	return func(c *Configuration) {
-		c.Zscaler.Client.PrivateKey = privateKey
 	}
 }
 
