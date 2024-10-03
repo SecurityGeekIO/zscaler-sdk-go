@@ -125,8 +125,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 	retryableClient.CheckRetry = checkRetry
 	retryableClient.Logger = l
-	retryableClient.HTTPClient.Timeout = time.Duration(requestTimeout) * time.Second
-
+	retryableClient.HTTPClient.Timeout = cfg.Zscaler.Client.RequestTimeout
 	// Configure proxy settings from configuration
 	proxyFunc := http.ProxyFromEnvironment // Default behavior (uses system/env variables)
 	if cfg.Zscaler.Client.Proxy.Host != "" {
