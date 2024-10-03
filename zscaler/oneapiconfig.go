@@ -359,8 +359,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		c.oauth2Credentials.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
 	}
-
+	_ = tryDrainBody(resp.Body)
 	return bodyBytes, req, nil
+}
+
+func tryDrainBody(body io.ReadCloser) error {
+	defer body.Close()
+	_, err := io.Copy(io.Discard, io.LimitReader(body, 4096))
+	return err
 }
 
 // GetSandboxURL retrieves the sandbox URL for the ZIA service.
