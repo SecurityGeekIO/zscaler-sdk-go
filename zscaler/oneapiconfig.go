@@ -166,6 +166,15 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 
 // getRetryAfter checks for the Retry-After header or response body to determine retry wait time.
 func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
+	// Try with:
+	// x-ratelimit-reset: The time (in seconds) remaining in the current window after which the rate limit resets.
+	ratelimitReset := resp.Header.Get("x-ratelimit-reset")
+	if ratelimitReset != "" {
+		resetSeconds, _ := strconv.Atoi(ratelimitReset)
+		return time.Duration(resetSeconds+1) * time.Second
+	}
+
+	// fallback to Retry-After
 	// Check both the mixed-case and lowercase Retry-After header
 	retryAfterHeader := resp.Header.Get("Retry-After")
 	if retryAfterHeader == "" {
