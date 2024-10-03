@@ -1,7 +1,7 @@
 package users
 
-/*
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/departments"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/usermanagement/groups"
@@ -47,8 +48,8 @@ func retryOnConflict(operation func() error) error {
 
 func TestUserManagement(t *testing.T) {
 	// Step 1: Create a random user name and other test data
-	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateComments := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	name := "tests-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlpha)
+	updateComments := "tests-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlpha)
 	email := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	// Step 2: Create the general ZIA client
@@ -58,17 +59,12 @@ func TestUserManagement(t *testing.T) {
 		return
 	}
 
-	// Step 3: Create a group-specific and department-specific service using the ZIA client
-	groupService := groups.New(service.Client)
-	departmentService := departments.New(service.Client)
-	userService := New(service.Client)
-
-	// Step 4: Retrieve all groups and departments
-	groups, err := groupService.GetAllGroups()
-	if err != nil || len(groups) == 0 {
-		t.Fatalf("Error retrieving groups or no groups found: %v", err)
+	departments, err := departments.GetAll(context.Background(), service)
+	if err != nil || len(departments) == 0 {
+		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
-	departments, err := departmentService.GetAll()
+
+	groups, err := groups.GetAllGroups(context.Background(), service)
 	if err != nil || len(departments) == 0 {
 		t.Fatalf("Error retrieving departments or no departments found: %v", err)
 	}
@@ -92,8 +88,9 @@ func TestUserManagement(t *testing.T) {
 
 	// Step 6: Test resource creation
 	var createdResource *Users
+
 	err = retryOnConflict(func() error {
-		createdResource, err = userService.Create(&user)
+		createdResource, err = Create(context.Background(), service, &user)
 		return err
 	})
 	if err != nil {
@@ -109,22 +106,28 @@ func TestUserManagement(t *testing.T) {
 		t.Errorf("Expected created user name '%s', but got '%s'", name, createdResource.Name)
 	}
 
-	// Step 7: Test resource retrieval by ID (Instead of Name)
-	retrievedResource, err := tryRetrieveResource(userService, createdResource.ID)
+	//Step 7: Test resource retrieval by ID (Instead of Name)
+	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving user by ID: %v", err)
 	}
 	if retrievedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved user ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
+
+	// Log the names for debugging purposes
+	t.Logf("Created user name (raw): '%s'", createdResource.Name)
+	t.Logf("Retrieved user name (raw): '%s'", retrievedResource.Name)
+
+	// Compare the raw names directly
 	if retrievedResource.Name != createdResource.Name {
 		t.Errorf("Expected retrieved user name '%s', but got '%s'", createdResource.Name, retrievedResource.Name)
 	}
 
-	// Step 8: Test resource update
+	//Step 8: Test resource update
 	retrievedResource.Comments = updateComments
 	err = retryOnConflict(func() error {
-		_, _, err = userService.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -132,7 +135,7 @@ func TestUserManagement(t *testing.T) {
 	}
 
 	// Step 9: Verify the update
-	updatedResource, err := userService.Get(createdResource.ID)
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving updated user: %v", err)
 	}
@@ -141,7 +144,7 @@ func TestUserManagement(t *testing.T) {
 	}
 
 	// Step 10: Test retrieving all users (by ID)
-	allUsers, err := userService.GetAllUsers()
+	allUsers, err := GetAllUsers(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving all users: %v", err)
 	}
@@ -161,22 +164,22 @@ func TestUserManagement(t *testing.T) {
 
 	// Step 11: Test resource removal by ID
 	err = retryOnConflict(func() error {
-		_, delErr := userService.Delete(createdResource.ID)
+		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = userService.Get(createdResource.ID)
+	_, err = Get(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted user, but got nil")
 	}
 }
 
 // Helper function to retrieve a resource with retry mechanism
-func tryRetrieveResource(s *Service, id int) (*Users, error) {
+func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*Users, error) {
 	var resource *Users
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(ctx, service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -194,4 +197,3 @@ func tryRetrieveResource(s *Service, id int) (*Users, error) {
 
 	return nil, err
 }
-*/
