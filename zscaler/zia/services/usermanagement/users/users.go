@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	usersEndpoint    = "/users"
-	enrollEndpoint   = "/enroll"
+	usersEndpoint    = "/zia/api/v1/users"
+	enrollEndpoint   = "/zia/api/v1/enroll"
 	maxBulkDeleteIDs = 500
 )
 
