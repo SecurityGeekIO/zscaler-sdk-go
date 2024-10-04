@@ -124,10 +124,6 @@ type PrivilegedCapabilities struct {
 	Capabilities  []string `json:"capabilities,omitempty"`
 }
 
-type Count struct {
-	Count string `json:"count"`
-}
-
 func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {
 	v := new(PolicySet)
 	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.GetCustomerID() + "/policySet/policyType/" + policyType)
