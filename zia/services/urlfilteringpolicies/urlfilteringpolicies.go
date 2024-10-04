@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
@@ -28,6 +29,10 @@ type URLFilteringRule struct {
 
 	// List of URL categories for which rule must be applied
 	URLCategories []string `json:"urlCategories"`
+
+	// List of URL categories for which rule is applied.
+	// The urlCategories and urlCategories2 parameters are connected with a logical AND operator so that the URL Filtering policy rules are triggered when it matches the selected categories in both the URL Categories fields.
+	URLCategories2 []string `json:"urlCategories2"`
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
 
@@ -114,6 +119,10 @@ type URLFilteringRule struct {
 	// Name-ID pairs of users for which rule must be applied
 	Users []common.IDNameExtensions `json:"users,omitempty"`
 
+	// Source IP address groups for which the rule is applicable.
+	// If not set, the rule is not restricted to a specific source IP address group.
+	SourceIPGroups []common.IDNameExtensions `json:"sourceIpGroups,omitempty"`
+
 	// Name-ID pairs of time interval during which rule must be enforced.
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
@@ -141,7 +150,7 @@ type CBIProfile struct {
 	DefaultProfile bool `json:"defaultProfile"`
 }
 
-func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
+func Get(service *services.Service, ruleID int) (*URLFilteringRule, error) {
 	var urlFilteringPolicies URLFilteringRule
 	err := service.Client.Read(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &urlFilteringPolicies)
 	if err != nil {
@@ -152,7 +161,7 @@ func (service *Service) Get(ruleID int) (*URLFilteringRule, error) {
 	return &urlFilteringPolicies, nil
 }
 
-func (service *Service) GetByName(urlFilteringPolicyName string) (*URLFilteringRule, error) {
+func GetByName(service *services.Service, urlFilteringPolicyName string) (*URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
 	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
@@ -166,7 +175,7 @@ func (service *Service) GetByName(urlFilteringPolicyName string) (*URLFilteringR
 	return nil, fmt.Errorf("no url filtering rule found with name: %s", urlFilteringPolicyName)
 }
 
-func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, error) {
+func Create(service *services.Service, ruleID *URLFilteringRule) (*URLFilteringRule, error) {
 	resp, err := service.Client.Create(urlFilteringPoliciesEndpoint, *ruleID)
 	if err != nil {
 		return nil, err
@@ -181,7 +190,7 @@ func (service *Service) Create(ruleID *URLFilteringRule) (*URLFilteringRule, err
 	return createdURLFilteringRule, nil
 }
 
-func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
+func Update(service *services.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
 	// Add debug log to print the rule object
 	service.Client.Logger.Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
 	if rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
@@ -208,7 +217,7 @@ func (service *Service) Update(ruleID int, rule *URLFilteringRule) (*URLFilterin
 	return updatedURLFilteringRule, nil, nil
 }
 
-func (service *Service) Delete(ruleID int) (*http.Response, error) {
+func Delete(service *services.Service, ruleID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID))
 	if err != nil {
 		return nil, err
@@ -218,7 +227,7 @@ func (service *Service) Delete(ruleID int) (*http.Response, error) {
 }
 
 // GetAll returns the all rules.
-func (service *Service) GetAll() ([]URLFilteringRule, error) {
+func GetAll(service *services.Service) ([]URLFilteringRule, error) {
 	var urlFilteringPolicies []URLFilteringRule
 	err := common.ReadAllPages(service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
 	if err != nil {
@@ -226,21 +235,3 @@ func (service *Service) GetAll() ([]URLFilteringRule, error) {
 	}
 	return urlFilteringPolicies, nil
 }
-
-// RulesCount returns the number of rules.
-func (service *Service) RulesCount() int {
-	rules, _ := service.GetAll()
-	return len(rules)
-}
-
-// Reorder chanegs the order of the rule.
-func (service *Service) Reorder(ruleID, order int) (int, error) {
-	resp, err := service.Get(ruleID)
-	if err != nil {
-		return 0, err
-	}
-	resp.Order = order
-	_, _, err = service.Update(ruleID, resp)
-	return order, err
-}
-

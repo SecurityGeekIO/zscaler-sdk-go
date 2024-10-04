@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 )
 
 const (
@@ -54,17 +56,17 @@ type AdminRoles struct {
 	RoleType string `json:"roleType,omitempty"`
 }
 
-func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {
-	v := new(AdminRoles)
-	relativeURL := fmt.Sprintf("%s/%d", adminRolesEndpoint, adminRoleId)
-	err := service.Client.Read(relativeURL, v)
-	if err != nil {
-		return nil, err
-	}
-	return v, nil
-}
+// func (service *Service) Get(adminRoleId int) (*AdminRoles, error) {
+// 	v := new(AdminRoles)
+// 	relativeURL := fmt.Sprintf("%s/%d", adminRolesEndpoint, adminRoleId)
+// 	err := service.Client.Read(relativeURL, v)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return v, nil
+// }
 
-func (service *Service) GetByName(adminRoleName string) (*AdminRoles, error) {
+func GetByName(service *services.Service, adminRoleName string) (*AdminRoles, error) {
 	var adminRoles []AdminRoles
 	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
 	if err != nil {
@@ -78,9 +80,9 @@ func (service *Service) GetByName(adminRoleName string) (*AdminRoles, error) {
 	return nil, fmt.Errorf("no admin role found with name: %s", adminRoleName)
 }
 
-func (service *Service) GetAPIRole(apiRole string) (*AdminRoles, error) {
+func GetAPIRole(service *services.Service, apiRole, includeApiRole string) (*AdminRoles, error) {
 	var apiRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includeApiRole=%s", adminRolesEndpoint, url.QueryEscape(apiRole)), &apiRoles)
+	err := service.Client.Read(fmt.Sprintf("%s?includeApiRole=%s", adminRolesEndpoint, url.QueryEscape(includeApiRole)), &apiRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -92,9 +94,9 @@ func (service *Service) GetAPIRole(apiRole string) (*AdminRoles, error) {
 	return nil, fmt.Errorf("no api role found with name: %s", apiRole)
 }
 
-func (service *Service) GetAuditorRole(auditorRole string) (*AdminRoles, error) {
+func GetAuditorRole(service *services.Service, auditorRole, includeAuditorRole string) (*AdminRoles, error) {
 	var auditorRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includeAuditorRole=%s", adminRolesEndpoint, url.QueryEscape(auditorRole)), &auditorRoles)
+	err := service.Client.Read(fmt.Sprintf("%s?includeAuditorRole=%s", adminRolesEndpoint, url.QueryEscape(includeAuditorRole)), &auditorRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +108,9 @@ func (service *Service) GetAuditorRole(auditorRole string) (*AdminRoles, error) 
 	return nil, fmt.Errorf("no auditor role found with name: %s", auditorRole)
 }
 
-func (service *Service) GetPartnerRole(partnerRole string) (*AdminRoles, error) {
+func GetPartnerRole(service *services.Service, partnerRole, includePartnerRole string) (*AdminRoles, error) {
 	var partnerRoles []AdminRoles
-	err := service.Client.Read(fmt.Sprintf("%s?includePartnerRole=%s", adminRolesEndpoint, url.QueryEscape(partnerRole)), &partnerRoles)
+	err := service.Client.Read(fmt.Sprintf("%s?includePartnerRole=%s", adminRolesEndpoint, url.QueryEscape(includePartnerRole)), &partnerRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -117,10 +119,10 @@ func (service *Service) GetPartnerRole(partnerRole string) (*AdminRoles, error) 
 			return &partnerRoleEnabled, nil
 		}
 	}
-	return nil, fmt.Errorf("no auditor role found with name: %s", partnerRole)
+	return nil, fmt.Errorf("no partner role found with name: %s", partnerRole)
 }
 
-func (service *Service) GetAllAdminRoles() ([]AdminRoles, error) {
+func GetAllAdminRoles(service *services.Service) ([]AdminRoles, error) {
 	var adminRoles []AdminRoles
 	err := service.Client.Read(adminRolesEndpoint, &adminRoles)
 	return adminRoles, err

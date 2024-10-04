@@ -1,55 +1,13 @@
 package microtenants
 
 import (
-	"log"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
 
 func TestMicrotenants(t *testing.T) {
 	// Define the list of all possible domain names
@@ -59,11 +17,14 @@ func TestMicrotenants(t *testing.T) {
 		"144124981675032576.zpa-customer.com",
 		"public-api-sdk-testing1.com",
 		"bd-hashicorp.com",
+		"bd-redhat.com",
 		"216199618143191040.zpa-customer.com",
 		"securitygeek.io",
 		"72058304855015424.zpa-customer.com",
 		"securitygeekio.ca",
 		"72057604775346176.zpa-customer.com",
+		"72059901509107712.zpa-customer.com",
+		"72059899361624064.zpa-customer.com",
 	}
 
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -73,13 +34,13 @@ func TestMicrotenants(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	var createdResource *MicroTenant
 
 	// Loop through each domain until successful creation or all domains exhausted
 	for _, domain := range domains {
-		createdResource, _, err = service.Create(MicroTenant{
+		createdResource, _, err = Create(service, MicroTenant{
 			Name:                    name,
 			Description:             name,
 			Enabled:                 true,
@@ -114,7 +75,7 @@ func TestMicrotenants(t *testing.T) {
 	})
 
 	t.Run("TestResourceRetrieval", func(t *testing.T) {
-		retrievedResource, _, err := service.Get(createdResource.ID)
+		retrievedResource, _, err := Get(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource: %v", err)
 		}
@@ -149,14 +110,14 @@ func TestMicrotenants(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = service.Update(createdResource.ID, &updatedResource)
+		_, err = Update(service, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
 	})
 
 	t.Run("TestResourceRetrievalByName", func(t *testing.T) {
-		retrievedResource, _, err := service.GetByName(updateName)
+		retrievedResource, _, err := GetByName(service, updateName)
 		if err != nil {
 			t.Fatalf("Error retrieving resource by name: %v", err)
 		}
@@ -169,7 +130,7 @@ func TestMicrotenants(t *testing.T) {
 	})
 
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
-		resources, _, err := service.GetAll()
+		resources, _, err := GetAll(service)
 		if err != nil {
 			t.Fatalf("Error retrieving groups: %v", err)
 		}
@@ -187,8 +148,9 @@ func TestMicrotenants(t *testing.T) {
 			t.Errorf("Expected retrieved groups to contain created resource '%s', but it didn't", createdResource.ID)
 		}
 	})
+
 	t.Run("TestResourceRemoval", func(t *testing.T) {
-		_, err := service.Delete(createdResource.ID)
+		_, err := Delete(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error deleting resource: %v", err)
 		}
@@ -200,9 +162,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non-existent-id")
+	_, _, err = Get(service, "non-existent-id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -213,9 +175,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non-existent-id")
+	_, err = Delete(service, "non-existent-id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -226,9 +188,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non-existent-id", &MicroTenant{})
+	_, err = Update(service, "non-existent-id", &MicroTenant{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -239,9 +201,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = GetByName(service, "non-existent-name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

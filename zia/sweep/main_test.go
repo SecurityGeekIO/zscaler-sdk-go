@@ -5,13 +5,17 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/adminuserrolemgmt/admins"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/cloudappcontrol"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_engines"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_notification_templates"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/dlp/dlp_web_rules"
@@ -23,7 +27,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservicegroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/firewallpolicies/networkservices"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/forwarding_rules"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/forwarding_control_policy/zpa_gateways"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/location/locationmanagement"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/rule_labels"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/sandbox/sandbox_settings"
@@ -72,32 +75,33 @@ func sweep() error {
 	log.Println("[INFO] Sweeping ZIA test resources")
 	client, err := tests.NewZiaClient()
 	if err != nil {
-		log.Printf("[ERROR] Failed to instantiate ZIAPA client: %v", err)
+		log.Printf("[ERROR] Failed to instantiate ZIA client: %v", err)
 		return err
 	}
 
 	// List of all sweep functions to execute
 	sweepFunctions := []func(*zia.Client) error{
+		sweepFirewallFilteringRules,
+		sweepURLFilteringPolicies,
+		sweepWebApplicationRules,
+		sweepLocationManagement,
 		sweepAdminUsers,
 		sweepDLPEngines,
 		sweepDLPNotificationTemplates,
 		sweepADLPWebRules,
 		sweepDLPDictionaries,
-		sweepFirewallFilteringRules,
 		sweepIPDestinationGroup,
 		sweepIPSourceGroup,
 		sweepNetworkAplicationGroups,
 		sweepNetworkServiceGroups,
 		sweepNetworkServices,
 		sweepForwardingControlRules,
-		sweepZPAGateways,
-		sweepLocationManagement,
+		// sweepZPAGateways,
 		sweepRuleLabels,
 		sweepGRETunnels,
 		sweepStaticIP,
 		sweepVPNCredentials,
 		sweepURLCategories,
-		sweepURLFilteringPolicies,
 		sweepUserManagement,
 		sweepSandboxSettings,
 		sweepSecurityPolicySettings,
@@ -106,8 +110,14 @@ func sweep() error {
 
 	// Execute each sweep function
 	for _, fn := range sweepFunctions {
+		// Get the function name using reflection
+		fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		// Extracting the short function name from the full package path
+		shortFnName := fnName[strings.LastIndex(fnName, ".")+1:]
+		log.Printf("[INFO] Starting sweep: %s", shortFnName)
+
 		if err := fn(client); err != nil {
-			log.Printf("[ERROR] Sweep function error: %v", err)
+			log.Printf("[ERROR] %s function error: %v", shortFnName, err)
 			return err
 		}
 	}
@@ -117,8 +127,8 @@ func sweep() error {
 }
 
 func sweepAdminUsers(client *zia.Client) error {
-	service := admins.New(client)
-	resources, err := service.GetAllAdminUsers()
+	service := services.New(client)
+	resources, err := admins.GetAllAdminUsers(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get admin users: %v", err)
 		return err
@@ -129,7 +139,7 @@ func sweepAdminUsers(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.UserName)
-		_, err := service.DeleteAdminUser(r.ID)
+		_, err := admins.DeleteAdminUser(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete app connector group with ID: %d, Name: %s: %v", r.ID, r.UserName, err)
 		}
@@ -138,8 +148,8 @@ func sweepAdminUsers(client *zia.Client) error {
 }
 
 func sweepDLPEngines(client *zia.Client) error {
-	service := dlp_engines.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := dlp_engines.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp engines: %v", err)
 		return err
@@ -150,7 +160,7 @@ func sweepDLPEngines(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := dlp_engines.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete dlp engines with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -159,8 +169,8 @@ func sweepDLPEngines(client *zia.Client) error {
 }
 
 func sweepDLPNotificationTemplates(client *zia.Client) error {
-	service := dlp_notification_templates.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := dlp_notification_templates.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
 		return err
@@ -171,7 +181,7 @@ func sweepDLPNotificationTemplates(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := dlp_notification_templates.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete application segment with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -180,8 +190,8 @@ func sweepDLPNotificationTemplates(client *zia.Client) error {
 }
 
 func sweepADLPWebRules(client *zia.Client) error {
-	service := dlp_web_rules.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := dlp_web_rules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
 		return err
@@ -192,7 +202,7 @@ func sweepADLPWebRules(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := dlp_web_rules.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete dlp web rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -201,8 +211,8 @@ func sweepADLPWebRules(client *zia.Client) error {
 }
 
 func sweepDLPDictionaries(client *zia.Client) error {
-	service := dlpdictionaries.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := dlpdictionaries.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
 		return err
@@ -213,7 +223,7 @@ func sweepDLPDictionaries(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.DeleteDlpDictionary(r.ID)
+		_, err := dlpdictionaries.DeleteDlpDictionary(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete dlp dictionaries with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -222,8 +232,8 @@ func sweepDLPDictionaries(client *zia.Client) error {
 }
 
 func sweepFirewallFilteringRules(client *zia.Client) error {
-	service := filteringrules.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := filteringrules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
 		return err
@@ -234,7 +244,7 @@ func sweepFirewallFilteringRules(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := filteringrules.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete Firewall filtering rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -243,8 +253,8 @@ func sweepFirewallFilteringRules(client *zia.Client) error {
 }
 
 func sweepIPDestinationGroup(client *zia.Client) error {
-	service := ipdestinationgroups.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := ipdestinationgroups.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip destination group: %v", err)
 		return err
@@ -255,7 +265,7 @@ func sweepIPDestinationGroup(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := ipdestinationgroups.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete ip destination group with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -264,8 +274,8 @@ func sweepIPDestinationGroup(client *zia.Client) error {
 }
 
 func sweepIPSourceGroup(client *zia.Client) error {
-	service := ipsourcegroups.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := ipsourcegroups.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip source group: %v", err)
 		return err
@@ -276,7 +286,7 @@ func sweepIPSourceGroup(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := ipsourcegroups.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete ip source group with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -285,8 +295,8 @@ func sweepIPSourceGroup(client *zia.Client) error {
 }
 
 func sweepNetworkAplicationGroups(client *zia.Client) error {
-	service := networkapplicationgroups.New(client)
-	resources, err := service.GetAllNetworkApplicationGroups()
+	service := services.New(client)
+	resources, err := networkapplicationgroups.GetAllNetworkApplicationGroups(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network application groups: %v", err)
 		return err
@@ -297,7 +307,7 @@ func sweepNetworkAplicationGroups(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := networkapplicationgroups.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network application groups with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -306,8 +316,8 @@ func sweepNetworkAplicationGroups(client *zia.Client) error {
 }
 
 func sweepNetworkServiceGroups(client *zia.Client) error {
-	service := networkservicegroups.New(client)
-	resources, err := service.GetAllNetworkServiceGroups()
+	service := services.New(client)
+	resources, err := networkservicegroups.GetAllNetworkServiceGroups(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network service groups: %v", err)
 		return err
@@ -318,7 +328,7 @@ func sweepNetworkServiceGroups(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.DeleteNetworkServiceGroups(r.ID)
+		_, err := networkservicegroups.DeleteNetworkServiceGroups(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network service groupsnetwork service groups with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -327,8 +337,8 @@ func sweepNetworkServiceGroups(client *zia.Client) error {
 }
 
 func sweepNetworkServices(client *zia.Client) error {
-	service := networkservices.New(client)
-	resources, err := service.GetAllNetworkServices()
+	service := services.New(client)
+	resources, err := networkservices.GetAllNetworkServices(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network services: %v", err)
 		return err
@@ -339,7 +349,7 @@ func sweepNetworkServices(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := networkservices.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete network services with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -348,8 +358,8 @@ func sweepNetworkServices(client *zia.Client) error {
 }
 
 func sweepForwardingControlRules(client *zia.Client) error {
-	service := forwarding_rules.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := forwarding_rules.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get forwarding control rules: %v", err)
 		return err
@@ -360,7 +370,7 @@ func sweepForwardingControlRules(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := forwarding_rules.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete forwarding control rules with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -368,30 +378,32 @@ func sweepForwardingControlRules(client *zia.Client) error {
 	return nil
 }
 
-func sweepZPAGateways(client *zia.Client) error {
-	service := zpa_gateways.New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("[ERROR] Failed to get zpa gateways: %v", err)
-		return err
-	}
-
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+/*
+	func sweepZPAGateways(client *zia.Client) error {
+		service := zpa_gateways.New(client)
+		resources, err := service.GetAll()
 		if err != nil {
-			log.Printf("[ERROR] Failed to delete zpa gateways with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			log.Printf("[ERROR] Failed to get zpa gateways: %v", err)
+			return err
 		}
+
+		for _, r := range resources {
+			if !strings.HasPrefix(r.Name, "tests-") {
+				continue
+			}
+			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+			_, err := service.Delete(r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete zpa gateways with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			}
+		}
+		return nil
 	}
-	return nil
-}
+*/
 
 func sweepLocationManagement(client *zia.Client) error {
-	service := locationmanagement.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := locationmanagement.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get location management: %v", err)
 		return err
@@ -402,7 +414,7 @@ func sweepLocationManagement(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := locationmanagement.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete location management with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -411,8 +423,8 @@ func sweepLocationManagement(client *zia.Client) error {
 }
 
 func sweepRuleLabels(client *zia.Client) error {
-	service := rule_labels.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := rule_labels.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to rule labels: %v", err)
 		return err
@@ -423,7 +435,7 @@ func sweepRuleLabels(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := service.Delete(r.ID)
+		_, err := rule_labels.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete rule labels with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -433,10 +445,9 @@ func sweepRuleLabels(client *zia.Client) error {
 
 // TODO: Need to review method calls.
 func sweepSandboxSettings(client *zia.Client) error {
-	service := sandbox_settings.New(client)
-
+	service := services.New(client)
 	// First, fetch the current list of MD5 hashes
-	currentSettings, err := service.Get()
+	currentSettings, err := sandbox_settings.Get(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current sandbox settings: %v", err)
 		return err
@@ -450,7 +461,7 @@ func sweepSandboxSettings(client *zia.Client) error {
 		}
 
 		// Use the Update function with the emptyHashes object to clear the MD5 hashes
-		_, err := service.Update(emptyHashes)
+		_, err := sandbox_settings.Update(service, emptyHashes)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear MD5 hashes in sandbox settings: %v", err)
 			return err
@@ -467,10 +478,10 @@ func sweepSandboxSettings(client *zia.Client) error {
 
 // TODO: Need to review method calls.
 func sweepSecurityPolicySettings(client *zia.Client) error {
-	service := security_policy_settings.New(client)
+	service := services.New(client)
 
 	// First, fetch the current lists of whitelist and blacklist URLs
-	currentSettings, err := service.GetListUrls()
+	currentSettings, err := security_policy_settings.GetListUrls(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current security policy settings: %v", err)
 		return err
@@ -485,7 +496,7 @@ func sweepSecurityPolicySettings(client *zia.Client) error {
 		}
 
 		// Use the UpdateListUrls function with the emptyUrls object to clear the URLs
-		_, err := service.UpdateListUrls(emptyUrls)
+		_, err := security_policy_settings.UpdateListUrls(service, emptyUrls)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear URLs in security policy settings: %v", err)
 			return err
@@ -501,9 +512,9 @@ func sweepSecurityPolicySettings(client *zia.Client) error {
 }
 
 func sweepUserAuthenticationSettings(client *zia.Client) error {
-	service := user_authentication_settings.New(client)
+	service := services.New(client)
 
-	currentSettings, err := service.Get()
+	currentSettings, err := user_authentication_settings.Get(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get current sandbox settings: %v", err)
 		return err
@@ -513,7 +524,7 @@ func sweepUserAuthenticationSettings(client *zia.Client) error {
 		emptyURLs := user_authentication_settings.ExemptedUrls{
 			URLs: []string{},
 		}
-		_, err := service.Update(emptyURLs)
+		_, err := user_authentication_settings.Update(service, emptyURLs)
 		if err != nil {
 			log.Printf("[ERROR] Failed to clear URLs from user authentication settings: %v", err)
 			return err
@@ -528,8 +539,8 @@ func sweepUserAuthenticationSettings(client *zia.Client) error {
 }
 
 func sweepGRETunnels(client *zia.Client) error {
-	service := gretunnels.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := gretunnels.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get gre tunnels: %v", err)
 		return err
@@ -540,7 +551,7 @@ func sweepGRETunnels(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.SourceIP)
-		_, err := service.DeleteGreTunnels(r.ID)
+		_, err := gretunnels.DeleteGreTunnels(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete gre tunnels with ID: %d, Name: %s: %v", r.ID, r.SourceIP, err)
 		}
@@ -549,8 +560,8 @@ func sweepGRETunnels(client *zia.Client) error {
 }
 
 func sweepStaticIP(client *zia.Client) error {
-	service := staticips.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := staticips.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get static ip: %v", err)
 		return err
@@ -561,7 +572,7 @@ func sweepStaticIP(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Comment)
-		_, err := service.Delete(r.ID)
+		_, err := staticips.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete static ip with ID: %d, Name: %s: %v", r.ID, r.Comment, err)
 		}
@@ -570,19 +581,19 @@ func sweepStaticIP(client *zia.Client) error {
 }
 
 func sweepVPNCredentials(client *zia.Client) error {
-	service := vpncredentials.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := vpncredentials.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get vpn credentials: %v", err)
 		return err
 	}
 
 	for _, r := range resources {
-		if !strings.HasPrefix(r.Comments, "tests-") {
+		if !strings.HasPrefix(r.FQDN, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Comments)
-		err := service.Delete(r.ID)
+		log.Printf("Deleting resource with ID: %d, FQDN: %s", r.ID, r.FQDN)
+		err := vpncredentials.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete vpn credentials with ID: %d, Name: %s: %v", r.ID, r.Comments, err)
 		}
@@ -591,8 +602,8 @@ func sweepVPNCredentials(client *zia.Client) error {
 }
 
 func sweepURLCategories(client *zia.Client) error {
-	service := urlcategories.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := urlcategories.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
 		return err
@@ -603,7 +614,7 @@ func sweepURLCategories(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.ConfiguredName)
-		err, _ := service.DeleteURLCategories(r.ID)
+		err, _ := urlcategories.DeleteURLCategories(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url categories with ID: %s, Name: %s: %v", r.ID, r.ConfiguredName, err)
 		}
@@ -612,8 +623,8 @@ func sweepURLCategories(client *zia.Client) error {
 }
 
 func sweepURLFilteringPolicies(client *zia.Client) error {
-	service := urlfilteringpolicies.New(client)
-	resources, err := service.GetAll()
+	service := services.New(client)
+	resources, err := urlfilteringpolicies.GetAll(service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url filtering policies: %v", err)
 		return err
@@ -624,11 +635,40 @@ func sweepURLFilteringPolicies(client *zia.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		err, _ := service.Delete(r.ID)
+		err, _ := urlfilteringpolicies.Delete(service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete url filtering policies with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
 	}
+	return nil
+}
+
+func sweepWebApplicationRules(client *zia.Client) error {
+	service := services.New(client)
+	ruleTypes := []string{"STREAMING_MEDIA"}
+
+	for _, ruleType := range ruleTypes {
+		resources, err := cloudappcontrol.GetByRuleType(service, ruleType)
+		if err != nil {
+			log.Printf("[ERROR] Failed to get web application rules for type %s: %v", ruleType, err)
+			return err
+		}
+
+		for _, r := range resources {
+			if !strings.HasPrefix(r.Name, "tests-") {
+				continue
+			}
+			log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+			err, _ := cloudappcontrol.Delete(service, ruleType, r.ID)
+			if err != nil {
+				log.Printf("[ERROR] Failed to delete web application rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+			}
+		}
+
+		// Add a delay to respect rate limits
+		time.Sleep(1 * time.Second)
+	}
+
 	return nil
 }
 

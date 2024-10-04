@@ -42,6 +42,7 @@ const (
 )
 
 // Client ...
+// Client ...
 type Client struct {
 	sync.Mutex
 	userName         string
@@ -62,6 +63,9 @@ type Client struct {
 	cacheCleanwindow time.Duration
 	cacheMaxSizeMB   int
 	rateLimiter      *rl.RateLimiter
+	sessionTicker    *time.Ticker
+	stopTicker       chan bool
+	refreshing       bool
 }
 
 // Session ...
@@ -117,7 +121,7 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
 	}
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
-	cli := Client{
+	cli := &Client{
 		userName:         username,
 		password:         password,
 		apiKey:           apiKey,
@@ -131,16 +135,23 @@ func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client,
 		cacheCleanwindow: time.Minute * 8,
 		cacheMaxSizeMB:   0,
 		rateLimiter:      rateLimiter,
+		stopTicker:       make(chan bool),
+		sessionTimeout:   30 * time.Minute, // Initialize with a default session timeout
 	}
+
 	cche, err := cache.NewCache(cli.cacheTtl, cli.cacheCleanwindow, cli.cacheMaxSizeMB)
 	if err != nil {
 		cche = cache.NewNopCache()
 	}
 	cli.cache = cche
-	return &cli, nil
+
+	// Start the session refresh ticker
+	cli.startSessionTicker()
+
+	return cli, nil
 }
 
-// MakeAuthRequestZIA ...
+// MakeAuthRequestZIA authenticates using the provided credentials and returns the session or an error.
 func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Client, userAgent string) (*Session, error) {
 	if credentials == nil {
 		return nil, fmt.Errorf("empty credentials")
@@ -150,38 +161,49 @@ func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Clien
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest("POST", url+ziaAPIAuthURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", contentTypeJSON)
 	if userAgent != "" {
 		req.Header.Add("User-Agent", userAgent)
 	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("un-successful request with status code: %v", resp.Status)
-	}
-
 	defer resp.Body.Close()
+
+	// Read the response body for use in error messages
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
-	var session Session
-	err = json.Unmarshal(body, &session)
-	if err != nil {
-		return nil, err
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var session Session
+		if err = json.Unmarshal(body, &session); err != nil {
+			return nil, fmt.Errorf("error unmarshalling response: %v", err)
+		}
+		session.JSessionID, err = extractJSessionIDFromHeaders(resp.Header)
+		if err != nil {
+			return nil, err
+		}
+		return &session, nil
+	case http.StatusBadRequest:
+		return nil, fmt.Errorf("HTTP 400 Bad Request: %s", string(body))
+	case http.StatusUnauthorized:
+		return nil, fmt.Errorf("HTTP 401 Unauthorized: %s", string(body))
+	case http.StatusForbidden:
+		return nil, fmt.Errorf("HTTP 403 Forbidden: %s", string(body))
+	default:
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	// We get the whole string match as session ID
-	session.JSessionID, err = extractJSessionIDFromHeaders(resp.Header)
-	if err != nil {
-		return nil, err
-	}
-	return &session, nil
 }
 
 func extractJSessionIDFromHeaders(header http.Header) (string, error) {
@@ -217,10 +239,18 @@ func (c *Client) refreshSession() error {
 	}
 	session, err := MakeAuthRequestZIA(&credentialData, c.URL, c.HTTPClient, c.UserAgent)
 	if err != nil {
+		c.Logger.Printf("[ERROR] Failed to make auth request: %v\n", err)
 		return err
 	}
 	c.session = session
 	c.sessionRefreshed = time.Now()
+	if c.session.PasswordExpiryTime == -1 {
+		c.Logger.Printf("[INFO] PasswordExpiryTime is -1, setting sessionTimeout to 30 minutes")
+		c.sessionTimeout = 30 * time.Minute
+	} else {
+		//c.Logger.Printf("[INFO] Setting session timeout based on PasswordExpiryTime: %v seconds", c.session.PasswordExpiryTime)
+		c.sessionTimeout = time.Duration(c.session.PasswordExpiryTime) * time.Second
+	}
 	return nil
 }
 
@@ -252,46 +282,66 @@ func (c *Client) WithCacheCleanWindow(i time.Duration) {
 	c.Unlock()
 }
 
-// checkSession synce new session if its over the timeout limit.
+// checkSession checks if the session is valid and refreshes it if necessary.
 func (c *Client) checkSession() error {
 	c.Lock()
 	defer c.Unlock()
-	// One call to this function is allowed at a time caller must call lock.
+
+	now := time.Now()
 	if c.session == nil {
+		c.Logger.Printf("[INFO] No session found, refreshing session")
 		err := c.refreshSession()
 		if err != nil {
-			c.Logger.Printf("[ERROR] failed to get session id: %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to get session id: %v\n", err)
 			return err
 		}
 	} else {
-		now := time.Now()
-		// Refresh if session has expire time (diff than -1)  & c.sessionTimeout less than jSessionTimeoutOffset time remaining. You never refresh on exact timeout.
-		if c.session.PasswordExpiryTime > 0 && c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset).After(now) {
-			err := c.refreshSession()
-			if err != nil {
-				c.Logger.Printf("[ERROR] failed to refresh session id: %v\n", err)
-				return err
+		c.Logger.Printf("[INFO] Current time: %v\nSession Refreshed: %v\nSession Timeout: %v\n",
+			now.Format("2006-01-02 15:04:05 MST"),
+			c.sessionRefreshed.Format("2006-01-02 15:04:05 MST"),
+			c.sessionTimeout)
+
+		if c.session.PasswordExpiryTime > 0 && now.After(c.sessionRefreshed.Add(c.sessionTimeout-jSessionTimeoutOffset)) {
+			c.Logger.Printf("[INFO] Session timeout reached, refreshing session")
+			if !c.refreshing {
+				c.refreshing = true
+				c.Unlock()
+				err := c.refreshSession()
+				c.Lock()
+				c.refreshing = false
+				if err != nil {
+					c.Logger.Printf("[ERROR] Failed to refresh session id: %v\n", err)
+					return err
+				}
+			} else {
+				c.Logger.Printf("[INFO] Another refresh is in progress, waiting for it to complete")
 			}
+		} else {
+			c.Logger.Printf("[INFO] Session is still valid, no need to refresh")
 		}
 	}
+
 	url, err := url.Parse(c.URL)
 	if err != nil {
-		c.Logger.Printf("[ERROR] failed to parse url %s: %v\n", c.URL, err)
+		c.Logger.Printf("[ERROR] Failed to parse url %s: %v\n", c.URL, err)
 		return err
 	}
+
 	if c.HTTPClient.Jar == nil {
 		c.HTTPClient.Jar, err = cookiejar.New(nil)
 		if err != nil {
-			c.Logger.Printf("[ERROR] failed to create new http cookie jar %v\n", err)
+			c.Logger.Printf("[ERROR] Failed to create new http cookie jar %v\n", err)
 			return err
 		}
 	}
+
 	c.HTTPClient.Jar.SetCookies(url, []*http.Cookie{
 		{
 			Name:  cookieName,
 			Value: c.session.JSessionID,
 		},
 	})
+
 	return nil
 }
 
@@ -300,11 +350,15 @@ func (c *Client) GetContentType() string {
 }
 
 func getRetryAfter(resp *http.Response, l logger.Logger) time.Duration {
-	if s, ok := resp.Header["Retry-After"]; ok {
-		if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+	if s := resp.Header.Get("Retry-After"); s != "" {
+		if sleep, err := strconv.ParseInt(s, 10, 64); err == nil {
 			l.Printf("[INFO] got Retry-After from header:%s\n", s)
 			return time.Second * time.Duration(sleep)
 		} else {
+			dur, err := time.ParseDuration(s)
+			if err == nil {
+				return dur
+			}
 			l.Printf("[INFO] error getting Retry-After from header:%s\n", err)
 		}
 	}
@@ -440,7 +494,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			err = json.Unmarshal(data, &apiRespErr)
 			if err == nil {
 				if apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Failed during enter Org barrier" ||
-					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" {
+					apiRespErr.Code == "EDIT_LOCK_NOT_AVAILABLE" || apiRespErr.Message == "Resource Access Blocked" ||
+					apiRespErr.Code == "UNEXPECTED_ERROR" && apiRespErr.Message == "Request processing failed, possibly because an expected precondition was not met" {
 					return true, nil
 				}
 			}
@@ -463,4 +518,58 @@ func (c *Client) GetSandboxURL() string {
 
 func (c *Client) GetSandboxToken() string {
 	return os.Getenv("ZIA_SANDBOX_TOKEN")
+}
+
+// func (c *Client) startSessionTicker() {
+// 	c.Lock()
+// 	defer c.Unlock()
+
+// 	if c.sessionTicker != nil {
+// 		c.stopTicker <- true
+// 		c.sessionTicker.Stop()
+// 	}
+
+// 	tickerInterval := c.sessionTimeout - 1*time.Minute
+// 	c.sessionTicker = time.NewTicker(tickerInterval)
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-c.sessionTicker.C:
+// 				err := c.refreshSession()
+// 				if err != nil {
+// 					c.Logger.Printf("[ERROR] Failed to refresh session: %v\n", err)
+// 				}
+// 			case <-c.stopTicker:
+// 				return
+// 			}
+// 		}
+// 	}()
+// }
+
+// startSessionTicker starts a ticker to refresh the session periodically
+func (c *Client) startSessionTicker() {
+	if c.sessionTimeout > 0 {
+		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
+		go func() {
+			for {
+				select {
+				case <-c.sessionTicker.C:
+					c.Lock()
+					if !c.refreshing {
+						c.refreshing = true
+						c.Unlock()
+						c.refreshSession()
+						c.Lock()
+						c.refreshing = false
+					}
+					c.Unlock()
+				case <-c.stopTicker:
+					c.sessionTicker.Stop()
+					return
+				}
+			}
+		}()
+	} else {
+		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
+	}
 }

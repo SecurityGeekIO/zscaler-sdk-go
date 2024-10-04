@@ -1,55 +1,12 @@
 package segmentgroup
 
 import (
-	"log"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
 
 func TestSegmentGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -59,10 +16,10 @@ func TestSegmentGroup(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	// Create new resource
-	createdResource, _, err := service.Create(&SegmentGroup{
+	createdResource, _, err := Create(service, &SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
@@ -81,7 +38,7 @@ func TestSegmentGroup(t *testing.T) {
 	})
 
 	t.Run("TestResourceRetrieval", func(t *testing.T) {
-		retrievedResource, _, err := service.Get(createdResource.ID)
+		retrievedResource, _, err := Get(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving resource: %v", err)
 		}
@@ -96,14 +53,14 @@ func TestSegmentGroup(t *testing.T) {
 	t.Run("TestResourceUpdate", func(t *testing.T) {
 		updatedResource := *createdResource
 		updatedResource.Name = updateName
-		_, err = service.Update(createdResource.ID, &updatedResource)
+		_, err = Update(service, createdResource.ID, &updatedResource)
 		if err != nil {
 			t.Fatalf("Error updating resource: %v", err)
 		}
 	})
 
 	t.Run("TestResourceRetrievalByName", func(t *testing.T) {
-		retrievedResource, _, err := service.GetByName(updateName)
+		retrievedResource, _, err := GetByName(service, updateName)
 		if err != nil {
 			t.Fatalf("Error retrieving resource by name: %v", err)
 		}
@@ -115,8 +72,33 @@ func TestSegmentGroup(t *testing.T) {
 		}
 	})
 
+	// REQUIRES DEPLOYMENT OF ET-76506 IN PRODUCTION BEFORE ENABLING IT.
+	/*
+		t.Run("TestResourceUpdateV2", func(t *testing.T) {
+			updatedResource := *createdResource
+			updatedResource.Name = updateName
+			_, err = UpdateV2(service, createdResource.ID, &updatedResource)
+			if err != nil {
+				t.Fatalf("Error updating resource: %v", err)
+			}
+		})
+
+		t.Run("TestResourceRetrievalByName", func(t *testing.T) {
+			retrievedResource, _, err := GetByName(service, updateName)
+			if err != nil {
+				t.Fatalf("Error retrieving resource by name: %v", err)
+			}
+			if retrievedResource.ID != createdResource.ID {
+				t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
+			}
+			if retrievedResource.Name != updateName {
+				t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
+			}
+		})
+	*/
+
 	t.Run("TestAllResourcesRetrieval", func(t *testing.T) {
-		resources, _, err := service.GetAll()
+		resources, _, err := GetAll(service)
 		if err != nil {
 			t.Fatalf("Error retrieving groups: %v", err)
 		}
@@ -135,7 +117,7 @@ func TestSegmentGroup(t *testing.T) {
 		}
 	})
 	t.Run("TestResourceRemoval", func(t *testing.T) {
-		_, err := service.Delete(createdResource.ID)
+		_, err := Delete(service, createdResource.ID)
 		if err != nil {
 			t.Fatalf("Error deleting resource: %v", err)
 		}
@@ -147,9 +129,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non-existent-id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -160,9 +142,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non-existent-id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -173,22 +155,38 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non-existent-id", &SegmentGroup{})
+	_, err = Update(service, "non_existent_id", &SegmentGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
 }
+
+// REQUIRES DEPLOYMENT OF ET-76506 IN PRODUCTION BEFORE ENABLING IT.
+/*
+func TestUpdateV2NonExistentResource(t *testing.T) {
+	client, err := tests.NewZpaClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+	service := services.New(client)
+
+	_, err = UpdateV2(service, "non_existent_id", &SegmentGroup{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
+*/
 
 func TestGetByNameNonExistentResource(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

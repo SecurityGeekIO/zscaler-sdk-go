@@ -1,58 +1,15 @@
 package servergroup
 
 import (
-	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-		log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-		_, _ = service.Delete(r.ID)
-	}
-}
 
 func TestServerGroup(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -62,15 +19,16 @@ func TestServerGroup(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 		return
 	}
-	// create app connector group for testing
-	appConnGroupService := appconnectorgroup.New(client)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
+
+	service := services.New(client)
+
+	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
 		Description:              name,
 		Enabled:                  true,
 		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
+		Latitude:                 "37.33874",
+		Longitude:                "-121.8852525",
 		Location:                 "San Jose, CA, USA",
 		UpgradeDay:               "SUNDAY",
 		UpgradeTimeInSecs:        "66600",
@@ -90,60 +48,30 @@ func TestServerGroup(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		_, _, getErr := appconnectorgroup.Get(service, appConnGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			_, err := appconnectorgroup.Delete(service, appConnGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting app connector group: %v", err)
 			}
 		}
 	}()
 
-	// create app server for testing
-	appServerService := appservercontroller.New(client)
-	appServer, _, err := appServerService.Create(appservercontroller.ApplicationServer{
-		Name:        name,
-		Description: name,
-		Address:     "192.168.1.1",
-	})
-	// Check if the request was successful
-	if err != nil {
-		t.Errorf("Error creating app server for testing server group: %v", err)
-	}
-	defer func() {
-		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appServerService.Get(appServer.ID)
-		if getErr != nil {
-			t.Logf("Resource might have already been deleted: %v", getErr)
-		} else {
-			_, err := appServerService.Delete(appServer.ID)
-			if err != nil {
-				t.Errorf("Error deleting app server: %v", err)
-			}
-		}
-	}()
-
-	service := New(client)
-
 	appGroup := ServerGroup{
-		Name:        name,
-		Description: name,
-		AppConnectorGroups: []AppConnectorGroups{
+		Name:             name,
+		Description:      name,
+		DynamicDiscovery: true,
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{
 				ID: appConnGroup.ID,
-			},
-		},
-		Servers: []ApplicationServer{
-			{
-				ID: appServer.ID,
 			},
 		},
 	}
 
 	// Test resource creation
-	createdResource, _, err := service.Create(&appGroup)
+	createdResource, _, err := Create(service, &appGroup)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -156,7 +84,7 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -168,11 +96,11 @@ func TestServerGroup(t *testing.T) {
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = Update(service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -184,7 +112,7 @@ func TestServerGroup(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -194,8 +122,9 @@ func TestServerGroup(t *testing.T) {
 	if retrievedResource.Name != updateName {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
+
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -214,14 +143,14 @@ func TestServerGroup(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = Delete(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	retrievedAfterDelete, _, err := service.Get(createdResource.ID)
+	retrievedAfterDelete, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		// Check if the error implies the resource doesn't exist.
 		// Note: This is a basic check.
@@ -244,9 +173,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non-existent-id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -257,9 +186,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non-existent-id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -270,9 +199,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non-existent-id", &ServerGroup{})
+	_, err = Update(service, "non_existent_id", &ServerGroup{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -283,9 +212,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

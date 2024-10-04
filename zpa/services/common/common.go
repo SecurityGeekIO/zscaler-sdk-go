@@ -30,8 +30,10 @@ type Filter struct {
 	Search          string  `url:"search,omitempty"`
 	MicroTenantID   *string `url:"microtenantId,omitempty"`
 	MicroTenantName *string `url:"-,omitempty"`
-	SortBy          string  `url:"sortBy,omitempty"`    // New field for sorting by attribute
-	SortOrder       string  `url:"sortOrder,omitempty"` // New field for the sort order (ASC or DESC)
+	SortBy          string  `url:"sortBy,omitempty"`          // New field for sorting by attribute
+	SortOrder       string  `url:"sortOrder,omitempty"`       // New field for the sort order (ASC or DESC)
+	ApplicationType string  `url:"applicationType,omitempty"` // New field for filtering by application type
+	ExpandAll       bool    `url:"expandAll,omitempty"`       // New field for deciding whether to expand all attributes
 }
 
 type DeleteApplicationQueryParams struct {
@@ -57,6 +59,28 @@ type Conditions struct {
 	RHS string `json:"rhs,omitempty"`
 }
 
+type CustomCommonControls struct {
+	ID                               string                   `json:"id,omitempty"`
+	Name                             string                   `json:"name,omitempty"`
+	Action                           string                   `json:"action,omitempty"`
+	ActionValue                      string                   `json:"actionValue,omitempty"`
+	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
+	Attachment                       string                   `json:"attachment,omitempty"`
+	ControlGroup                     string                   `json:"controlGroup,omitempty"`
+	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
+	CreationTime                     string                   `json:"creationTime,omitempty"`
+	DefaultAction                    string                   `json:"defaultAction,omitempty"`
+	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
+	Description                      string                   `json:"description,omitempty"`
+	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
+	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                   `json:"protocolType,omitempty"`
+	Severity                         string                   `json:"severity,omitempty"`
+	Version                          string                   `json:"version,omitempty"`
+}
+
 type AssociatedProfileNames struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
@@ -66,6 +90,22 @@ type AssociatedProfileNames struct {
 type CommonConfigDetails struct {
 	Name   string `json:"name,omitempty"`
 	Reason string `json:"reason,omitempty"`
+}
+
+// Shared Between App Connector and Service Edge Controllers and Groups
+type ZPNSubModuleUpgrade struct {
+	ID              string `json:"id,omitempty"`
+	CreationTime    string `json:"creationTime,omitempty"`
+	CurrentVersion  string `json:"currentVersion,omitempty"`
+	EntityGid       string `json:"entityGid,omitempty"`
+	EntityType      string `json:"entityType,omitempty"`
+	ExpectedVersion string `json:"expectedVersion,omitempty"`
+	ModifiedBy      string `json:"modifiedBy,omitempty"`
+	ModifiedTime    string `json:"modifiedTime,omitempty"`
+	PreviousVersion string `json:"previousVersion,omitempty"`
+	Role            string `json:"role,omitempty"`
+	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
+	UpgradeTime     string `json:"upgradeTime,omitempty"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
@@ -163,7 +203,7 @@ func GetAllPagesGenericWithCustomFilters[T any](client *zpa.Client, relativeURL 
 		if err == nil {
 			return nil, resp, err
 		}
-		if err == nil && mt != nil {
+		if mt != nil {
 			filters.MicroTenantID = &mt.ID
 		}
 	}

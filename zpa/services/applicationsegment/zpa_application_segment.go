@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegmentpra"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/browseraccess"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
@@ -52,30 +54,13 @@ type ApplicationSegmentResource struct {
 	UDPPortRanges             []string                            `json:"udpPortRanges"`
 	TCPAppPortRange           []common.NetworkPorts               `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts               `json:"udpPortRange,omitempty"`
-	ServerGroups              []AppServerGroups                   `json:"serverGroups"`
+	ServerGroups              []servergroup.ServerGroup           `json:"serverGroups"`
 	DefaultIdleTimeout        string                              `json:"defaultIdleTimeout,omitempty"`
 	DefaultMaxAge             string                              `json:"defaultMaxAge,omitempty"`
 	CommonAppsDto             applicationsegmentpra.CommonAppsDto `json:"commonAppsDto,omitempty"`
 	ClientlessApps            []browseraccess.ClientlessApps      `json:"clientlessApps,omitempty"`
+	ShareToMicrotenants       []string                            `json:"shareToMicrotenants"`
 	SharedMicrotenantDetails  SharedMicrotenantDetails            `json:"sharedMicrotenantDetails,omitempty"`
-	InconsistentConfigDetails InconsistentConfigDetails           `json:"inconsistentConfigDetails,omitempty"`
-}
-
-type InconsistentConfigDetails struct {
-	Application          []common.CommonConfigDetails `json:"application,omitempty"`
-	SegmentGroup         []common.CommonConfigDetails `json:"segmentGroup,omitempty"`
-	BaCertificate        []common.CommonConfigDetails `json:"baCertificate,omitempty"`
-	BranchConnectorGroup []common.CommonConfigDetails `json:"branchConnectorGroup,omitempty"`
-	CloudConnectorGroup  []common.CommonConfigDetails `json:"cloudConnectorGroup,omitempty"`
-	IDP                  []common.CommonConfigDetails `json:"idp,omitempty"`
-	Location             []common.CommonConfigDetails `json:"location,omitempty"`
-	MachineGroup         []common.CommonConfigDetails `json:"machineGroup,omitempty"`
-	PostureProfile       []common.CommonConfigDetails `json:"postureProfile,omitempty"`
-	SamlAttributes       []common.CommonConfigDetails `json:"samlAttributes,omitempty"`
-	ScimAttributes       []common.CommonConfigDetails `json:"scimAttributes,omitempty"`
-	ServerGroup          []common.CommonConfigDetails `json:"serverGroup,omitempty"`
-	SRAApplication       []common.CommonConfigDetails `json:"sraApplication,omitempty"`
-	TrustedNetwork       []common.CommonConfigDetails `json:"trustedNetwork,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -105,10 +90,10 @@ type AppServerGroups struct {
 	Name             string `json:"name"`
 }
 
-func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
+func Get(service *services.Service, applicationID string) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -116,9 +101,9 @@ func (service *Service) Get(applicationID string) (*ApplicationSegmentResource, 
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, *http.Response, error) {
+func GetByName(service *services.Service, appName string) (*ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{Search: appName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{Search: appName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -130,9 +115,9 @@ func (service *Service) GetByName(appName string) (*ApplicationSegmentResource, 
 	return nil, resp, fmt.Errorf("no application segment named '%s' was found", appName)
 }
 
-func (service *Service) Create(appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {
+func Create(service *services.Service, appSegment ApplicationSegmentResource) (*ApplicationSegmentResource, *http.Response, error) {
 	v := new(ApplicationSegmentResource)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, common.Filter{MicroTenantID: service.microTenantID}, appSegment, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegment, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -140,9 +125,9 @@ func (service *Service) Create(appSegment ApplicationSegmentResource) (*Applicat
 	return v, resp, nil
 }
 
-func (service *Service) Update(applicationId string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationId)
-	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, appSegmentRequest, nil)
+func Update(service *services.Service, appID string, appSegmentRequest ApplicationSegmentResource) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, appID)
+	resp, err := service.Client.NewRequestDo("PUT", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentRequest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -150,9 +135,9 @@ func (service *Service) Update(applicationId string, appSegmentRequest Applicati
 	return resp, err
 }
 
-func (service *Service) Delete(applicationId string) (*http.Response, error) {
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, applicationId)
-	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.microTenantID}, nil, nil)
+func Delete(service *services.Service, appID string) (*http.Response, error) {
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentEndpoint, appID)
+	resp, err := service.Client.NewRequestDo("DELETE", relativeURL, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -160,9 +145,9 @@ func (service *Service) Delete(applicationId string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (service *Service) GetAll() ([]ApplicationSegmentResource, *http.Response, error) {
+func GetAll(service *services.Service) ([]ApplicationSegmentResource, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ApplicationSegmentResource](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -3,12 +3,12 @@ package forwarding_rules
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -42,52 +42,6 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
-}
-
 func TestForwardingRulesDirect(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -97,7 +51,7 @@ func TestForwardingRulesDirect(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(ziaClient)
+	service := services.New(ziaClient)
 	rule := ForwardingRules{
 		Name:          name,
 		Description:   name,
@@ -111,14 +65,14 @@ func TestForwardingRulesDirect(t *testing.T) {
 	}
 
 	// Inside Forwarding Control Rule function
-	createdResource, err := service.Create(&rule)
+	createdResource, err := Create(service, &rule)
 	if err != nil {
 		t.Fatalf("Error creating Forwarding Control Rule resource: %v", err)
 	}
 
 	defer func() {
 		// Attempt to delete the resource
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		if delErr != nil {
 			// If the error indicates the resource is already deleted, log it as information
 			if strings.Contains(delErr.Error(), "409") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
@@ -145,14 +99,14 @@ func TestForwardingRulesDirect(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -164,7 +118,7 @@ func TestForwardingRulesDirect(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := service.GetByName(updateName)
+	retrievedByNameResource, err := GetByName(service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -176,7 +130,7 @@ func TestForwardingRulesDirect(t *testing.T) {
 	}
 
 	// Test resources retrieval
-	allResources, err := service.GetAll()
+	allResources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -201,26 +155,26 @@ func TestForwardingRulesDirect(t *testing.T) {
 
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := service.Get(createdResource.ID)
+		_, getErr := Get(service, createdResource.ID)
 		if getErr != nil {
 			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
 		}
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*ForwardingRules, error) {
+func tryRetrieveResource(s *services.Service, id int) (*ForwardingRules, error) {
 	var resource *ForwardingRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -236,9 +190,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -249,9 +203,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -262,9 +216,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update(0, &ForwardingRules{})
+	_, err = Update(service, 0, &ForwardingRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -275,9 +229,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non-existent-name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

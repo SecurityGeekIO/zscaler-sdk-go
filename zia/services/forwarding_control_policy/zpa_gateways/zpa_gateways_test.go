@@ -2,13 +2,13 @@ package zpa_gateways
 
 import (
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/applicationsegment"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
@@ -47,52 +47,6 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
-}
-
 func TestZPAGateways(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	description := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -106,14 +60,14 @@ func TestZPAGateways(t *testing.T) {
 	}
 
 	// create app connector group for testing
-	appConnGroupService := appconnectorgroup.New(zpaClient)
-	appConnGroup, _, err := appConnGroupService.Create(appconnectorgroup.AppConnectorGroup{
+	service := services.New(zpaClient)
+	appConnGroup, _, err := appconnectorgroup.Create(service, appconnectorgroup.AppConnectorGroup{
 		Name:                     name,
 		Description:              name,
 		Enabled:                  true,
 		CityCountry:              "San Jose, US",
-		Latitude:                 "37.3382082",
-		Longitude:                "-121.8863286",
+		Latitude:                 "37.33874",
+		Longitude:                "-121.8852525",
 		Location:                 "San Jose, CA, USA",
 		UpgradeDay:               "SUNDAY",
 		UpgradeTimeInSecs:        "66600",
@@ -133,11 +87,11 @@ func TestZPAGateways(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appConnGroupService.Get(appConnGroup.ID)
+		_, _, getErr := appconnectorgroup.Get(service, appConnGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appConnGroupService.Delete(appConnGroup.ID)
+			_, err := appconnectorgroup.Delete(service, appConnGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting app connector group: %v", err)
 			}
@@ -145,13 +99,12 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create app server for testing
-	serverGroupService := servergroup.New(zpaClient)
-	serverGroup, _, err := serverGroupService.Create(&servergroup.ServerGroup{
+	serverGroup, _, err := servergroup.Create(service, &servergroup.ServerGroup{
 		Name:             name,
 		Description:      name,
 		Enabled:          true,
 		DynamicDiscovery: true,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{
 				ID: appConnGroup.ID,
 			},
@@ -163,11 +116,11 @@ func TestZPAGateways(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := serverGroupService.Get(serverGroup.ID)
+		_, _, getErr := servergroup.Get(service, serverGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := serverGroupService.Delete(serverGroup.ID)
+			_, err := servergroup.Delete(service, serverGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting server group: %v", err)
 			}
@@ -175,8 +128,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create segment group for testing
-	segmentGroupService := segmentgroup.New(zpaClient)
-	segmentGroup, _, err := segmentGroupService.Create(&segmentgroup.SegmentGroup{
+	segmentGroup, _, err := segmentgroup.Create(service, &segmentgroup.SegmentGroup{
 		Name:        name,
 		Description: name,
 		Enabled:     true,
@@ -187,11 +139,11 @@ func TestZPAGateways(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := segmentGroupService.Get(segmentGroup.ID)
+		_, _, getErr := segmentgroup.Get(service, segmentGroup.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := segmentGroupService.Delete(segmentGroup.ID)
+			_, err := segmentgroup.Delete(service, segmentGroup.ID)
 			if err != nil {
 				t.Errorf("Error deleting segment group: %v", err)
 			}
@@ -199,8 +151,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// create segment group for testing
-	appSegmentService := applicationsegment.New(zpaClient)
-	appSegment, _, err := appSegmentService.Create(applicationsegment.ApplicationSegmentResource{
+	appSegment, _, err := applicationsegment.Create(service, applicationsegment.ApplicationSegmentResource{
 		Name:                  name,
 		Description:           name,
 		Enabled:               true,
@@ -214,7 +165,7 @@ func TestZPAGateways(t *testing.T) {
 		TCPKeepAlive:          "1",
 		InspectTrafficWithZia: false,
 		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
+		ServerGroups: []servergroup.ServerGroup{
 			{
 				ID: serverGroup.ID,
 			},
@@ -232,11 +183,11 @@ func TestZPAGateways(t *testing.T) {
 	}
 	defer func() {
 		time.Sleep(time.Second * 2) // Sleep for 2 seconds before deletion
-		_, _, getErr := appSegmentService.Get(appSegment.ID)
+		_, _, getErr := applicationsegment.Get(service, appSegment.ID)
 		if getErr != nil {
 			t.Logf("Resource might have already been deleted: %v", getErr)
 		} else {
-			_, err := appSegmentService.Delete(appSegment.ID)
+			_, err := applicationsegment.Delete(service, appSegment.ID)
 			if err != nil {
 				t.Errorf("Error deleting application segment: %v", err)
 			}
@@ -249,7 +200,7 @@ func TestZPAGateways(t *testing.T) {
 		t.Fatalf("Error creating ZIA client: %v", err)
 		return
 	}
-	service := New(ziaClient)
+	ziaService := New(ziaClient)
 
 	// Initialize ZPAGateways resource
 	zpaGateways := ZPAGateways{
@@ -269,14 +220,14 @@ func TestZPAGateways(t *testing.T) {
 	}
 
 	// Inside TestZPAGateways function
-	createdResource, err := service.Create(&zpaGateways)
+	createdResource, err := ziaService.Create(&zpaGateways)
 	if err != nil {
 		t.Fatalf("Error creating ZPAGateways resource: %v", err)
 	}
 
 	defer func() {
 		// Attempt to delete the resource
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := ziaService.Delete(createdResource.ID)
 		if delErr != nil {
 			// If the error indicates the resource is already deleted, log it as information
 			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
@@ -289,7 +240,7 @@ func TestZPAGateways(t *testing.T) {
 	}()
 
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(ziaService, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -318,14 +269,14 @@ func TestZPAGateways(t *testing.T) {
 	// t.Logf("JSON Payload being sent for update:\n%s", string(jsonRepresentation))
 
 	err = retryOnConflict(func() error {
-		_, err = service.Update(createdResource.ID, retrievedResource)
+		_, err = ziaService.Update(createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := ziaService.Get(createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -337,7 +288,7 @@ func TestZPAGateways(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(name)
+	retrievedResource, err = ziaService.GetByName(name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -348,7 +299,7 @@ func TestZPAGateways(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := ziaService.GetAll()
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -368,7 +319,7 @@ func TestZPAGateways(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := ziaService.Delete(createdResource.ID)
 		if delErr != nil {
 			// Check if the error is due to the resource not being found (i.e., already deleted)
 			if strings.Contains(delErr.Error(), "404") || strings.Contains(delErr.Error(), "RESOURCE_NOT_FOUND") {
@@ -449,7 +400,7 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	}
 	service := New(client)
 
-	_, err = service.GetByName("non-existent-name")
+	_, err = service.GetByName("non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

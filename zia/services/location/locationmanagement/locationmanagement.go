@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
 	locationsEndpoint   = "/locations"
 	subLocationEndpoint = "/sublocations"
+	maxBulkDeleteIDs    = 100
 )
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
@@ -34,11 +36,17 @@ type Locations struct {
 	// Country
 	Country string `json:"country,omitempty"`
 
+	State string `json:"state,omitempty"`
+
 	// Language
 	Language string `json:"language,omitempty"`
 
 	// Timezone of the location. If not specified, it defaults to GMT.
 	TZ string `json:"tz,omitempty"`
+
+	ChildCount int `json:"childCount,omitempty"`
+
+	MatchInChild bool `json:"matchInChild,omitempty"`
 
 	//
 	GeoOverride bool `json:"geoOverride,omitempty"`
@@ -48,7 +56,7 @@ type Locations struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// IP ports that are associated with the location
-	Ports string `json:"ports,omitempty"`
+	Ports []int `json:"ports,omitempty"`
 
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
@@ -67,6 +75,10 @@ type Locations struct {
 
 	// Enable IOT Discovery at the location
 	IOTDiscoveryEnabled bool `json:"iotDiscoveryEnabled"`
+
+	IOTEnforcePolicySet bool `json:"iotEnforcePolicySet"`
+
+	CookiesAndProxy bool `json:"cookiesAndProxy"`
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
 	// Enable SSL Inspection. Set to true in order to apply your SSL Inspection policy to HTTPS traffic in the location and inspect HTTPS transactions for data leakage, malicious content, and viruses.
@@ -122,6 +134,10 @@ type Locations struct {
 	// Profile tag that specifies the location traffic type. If not specified, this tag defaults to "Unassigned".
 	Profile string `json:"profile,omitempty"`
 
+	ExcludeFromDynamicGroups bool `json:"excludeFromDynamicGroups,omitempty"`
+
+	ExcludeFromManualGroups bool `json:"excludeFromManualGroups,omitempty"`
+
 	// Additional notes or information regarding the location or sub-location. The description cannot exceed 1024 characters.
 	Description string `json:"description,omitempty"`
 
@@ -131,12 +147,17 @@ type Locations struct {
 	// If set to true, indicates that this is a default sub-location created by the Zscaler service to accommodate IPv6 addresses that are not part of any user-defined sub-locations. The default sub-location is created with the name Other6 and it can be renamed, if required. This field is applicable only if ipv6Enabled is set is true.
 	Other6SubLocation bool `json:"other6SubLocation,omitempty"`
 
+	ECLocation bool `json:"ecLocation,omitempty"`
+
 	// If set to true, IPv6 is enabled for the location and IPv6 traffic from the location can be forwarded to the Zscaler service to enforce security policies.
 	IPv6Enabled bool `json:"ipv6Enabled,omitempty"`
 
 	// (Optional) Name-ID pair of the NAT64 prefix configured as the DNS64 prefix for the location. If specified, the DNS64 prefix is used for the IP addresses that reside in this location. If not specified, a prefix is selected from the set of supported prefixes. This field is applicable only if ipv6Enabled is set is true.
 	// Before you can configure a DNS64 prefix, you must send a GET request to /ipv6config/nat64prefix to retrieve the IDs of NAT64 prefixes, which can be configured as the DNS64 prefix.
 	IPv6Dns64Prefix bool `json:"ipv6Dns64Prefix,omitempty"`
+
+	DynamiclocationGroups []common.IDNameExtensions `json:"dynamiclocationGroups"`
+	StaticLocationGroups  []common.IDNameExtensions `json:"staticLocationGroups"`
 }
 
 type Location struct {
@@ -185,8 +206,24 @@ type VPNCredentials struct {
 	ManagedBy []ManagedBy `json:"managedBy,omitempty"`
 }
 
+type StaticLocationGroups struct {
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
+	Name string `json:"name,omitempty"`
+}
+
+type DynamiclocationGroups struct {
+	// Identifier that uniquely identifies an entity
+	ID int `json:"id,omitempty"`
+
+	// The configured name of the entity
+	Name string `json:"name,omitempty"`
+}
+
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
-func (service *Service) GetLocation(locationID int) (*Locations, error) {
+func GetLocation(service *services.Service, locationID int) (*Locations, error) {
 	var location Locations
 	err := service.Client.Read(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), &location)
 	if err != nil {
@@ -198,13 +235,13 @@ func (service *Service) GetLocation(locationID int) (*Locations, error) {
 }
 
 // GetSubLocationBySubID gets a sub-location by its ID (fetches all locations's sub-location to find a match).
-func (service *Service) GetSubLocationBySubID(subLocationID int) (*Locations, error) {
-	locations, err := service.GetAll()
+func GetSubLocationBySubID(service *services.Service, subLocationID int) (*Locations, error) {
+	locations, err := GetAll(service)
 	if err != nil {
 		return nil, err
 	}
 	for _, location := range locations {
-		subLoc, err := service.GetSubLocation(location.ID, subLocationID)
+		subLoc, err := GetSubLocation(service, location.ID, subLocationID)
 		if err == nil && subLoc != nil {
 			return subLoc, nil
 		}
@@ -213,15 +250,15 @@ func (service *Service) GetSubLocationBySubID(subLocationID int) (*Locations, er
 }
 
 // GetSublocations gets all sub-locations for a given location ID.
-func (service *Service) GetSublocations(locationID int) ([]Locations, error) {
+func GetSublocations(service *services.Service, locationID int) ([]Locations, error) {
 	var locations []Locations
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s/%d%s", locationsEndpoint, locationID, subLocationEndpoint), &locations)
 	return locations, err
 }
 
 // GetSubLocation gets a sub-location by its ID and parent ID.
-func (service *Service) GetSubLocation(locationID, subLocationID int) (*Locations, error) {
-	locations, err := service.GetSublocations(locationID)
+func GetSubLocation(service *services.Service, locationID, subLocationID int) (*Locations, error) {
+	locations, err := GetSublocations(service, locationID)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +271,7 @@ func (service *Service) GetSubLocation(locationID, subLocationID int) (*Location
 }
 
 // GetLocationByName gets a location by its name.
-func (service *Service) GetLocationByName(locationName string) (*Locations, error) {
+func GetLocationByName(service *services.Service, locationName string) (*Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
@@ -250,12 +287,12 @@ func (service *Service) GetLocationByName(locationName string) (*Locations, erro
 }
 
 // GetSubLocationByNames gets a sub-location by its name and parent location name
-func (service *Service) GetSubLocationByNames(locationName, subLocatioName string) (*Locations, error) {
-	location, err := service.GetLocationByName(locationName)
+func GetSubLocationByNames(service *services.Service, locationName, subLocatioName string) (*Locations, error) {
+	location, err := GetLocationByName(service, locationName)
 	if err != nil {
 		return nil, err
 	}
-	subLocations, err := service.GetSublocations(location.ID)
+	subLocations, err := GetSublocations(service, location.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -268,13 +305,13 @@ func (service *Service) GetSubLocationByNames(locationName, subLocatioName strin
 }
 
 // GetSubLocationByName gets a sub-location by its name (fetches all locations's sub-location to find a match).
-func (service *Service) GetSubLocationByName(subLocatioName string) (*Locations, error) {
-	locations, err := service.GetAll()
+func GetSubLocationByName(service *services.Service, subLocatioName string) (*Locations, error) {
+	locations, err := GetAll(service)
 	if err != nil {
 		return nil, err
 	}
 	for _, location := range locations {
-		subLocs, _ := service.GetSublocations(location.ID)
+		subLocs, _ := GetSublocations(service, location.ID)
 		for _, subLoc := range subLocs {
 			if strings.EqualFold(subLoc.Name, subLocatioName) {
 				return &subLoc, nil
@@ -284,7 +321,7 @@ func (service *Service) GetSubLocationByName(subLocatioName string) (*Locations,
 	return nil, fmt.Errorf("no sublocation found with name: %s", subLocatioName)
 }
 
-func (service *Service) Create(locations *Locations) (*Locations, error) {
+func Create(service *services.Service, locations *Locations) (*Locations, error) {
 	resp, err := service.Client.Create(locationsEndpoint, *locations)
 	if err != nil {
 		return nil, err
@@ -299,7 +336,7 @@ func (service *Service) Create(locations *Locations) (*Locations, error) {
 	return createdLocations, nil
 }
 
-func (service *Service) Update(locationID int, locations *Locations) (*Locations, *http.Response, error) {
+func Update(service *services.Service, locationID int, locations *Locations) (*Locations, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", locationsEndpoint, locationID), *locations)
 	if err != nil {
 		return nil, nil, err
@@ -310,7 +347,7 @@ func (service *Service) Update(locationID int, locations *Locations) (*Locations
 	return updatedLocations, nil, nil
 }
 
-func (service *Service) Delete(locationID int) (*http.Response, error) {
+func Delete(service *services.Service, locationID int) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", locationsEndpoint, locationID))
 	if err != nil {
 		return nil, err
@@ -319,16 +356,30 @@ func (service *Service) Delete(locationID int) (*http.Response, error) {
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]Locations, error) {
+func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
+	if len(ids) > maxBulkDeleteIDs {
+		// Truncate the list to the first 100 IDs
+		ids = ids[:maxBulkDeleteIDs]
+		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+	}
+
+	// Define the payload
+	payload := map[string][]int{
+		"ids": ids,
+	}
+	return service.Client.BulkDelete(locationsEndpoint+"/bulkDelete", payload)
+}
+
+func GetAll(service *services.Service) ([]Locations, error) {
 	var locations []Locations
 	// We are assuming this location name will be in the firsy 1000 obejcts
 	err := common.ReadAllPages(service.Client, locationsEndpoint, &locations)
 	return locations, err
 }
 
-func (service *Service) GetAllSublocations() ([]Locations, error) {
+func GetAllSublocations(service *services.Service) ([]Locations, error) {
 	// Step 1: Fetch all parent locations.
-	parentLocations, err := service.GetAll()
+	parentLocations, err := GetAll(service)
 	if err != nil {
 		return nil, err
 	}
@@ -352,19 +403,19 @@ func (service *Service) GetAllSublocations() ([]Locations, error) {
 }
 
 // GetLocationOrSublocationByID gets a location or sub-location by its ID.
-func (service *Service) GetLocationOrSublocationByID(id int) (*Locations, error) {
-	location, err := service.GetLocation(id)
+func GetLocationOrSublocationByID(service *services.Service, id int) (*Locations, error) {
+	location, err := GetLocation(service, id)
 	if err == nil && location != nil {
 		return location, nil
 	}
-	return service.GetSubLocationBySubID(id)
+	return GetSubLocationBySubID(service, id)
 }
 
 // GetLocationOrSublocationByName gets a location or sub-location by its name.
-func (service *Service) GetLocationOrSublocationByName(name string) (*Locations, error) {
-	location, err := service.GetLocationByName(name)
+func GetLocationOrSublocationByName(service *services.Service, name string) (*Locations, error) {
+	location, err := GetLocationByName(service, name)
 	if err == nil && location != nil {
 		return location, nil
 	}
-	return service.GetSubLocationByName(name)
+	return GetSubLocationByName(service, name)
 }

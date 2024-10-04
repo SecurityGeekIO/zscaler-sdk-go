@@ -2,62 +2,15 @@ package inspection_profile
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_custom_controls"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/inspectioncontrol/inspection_predefined_controls"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if !strings.HasPrefix(r.Name, "tests-") {
-			continue
-		}
-
-		// Check if the resource exists before deleting
-		_, _, err := service.Get(r.ID)
-		if err == nil { // if no error, resource exists
-			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-			_, _ = service.Delete(r.ID)
-		}
-	}
-}
 
 func TestInspectionProfile(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -65,12 +18,12 @@ func TestInspectionProfile(t *testing.T) {
 	client, err := tests.NewZpaClient()
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
-		return
 	}
 	var resourcesToDelete []string
 
+	service := services.New(client)
+
 	// create Inspection Custom Control for testing
-	customInspectionControlService := inspection_custom_controls.New(client)
 	customControl := inspection_custom_controls.InspectionCustomControl{
 		Name:          name,
 		Description:   name,
@@ -104,7 +57,7 @@ func TestInspectionProfile(t *testing.T) {
 		},
 	}
 
-	createdCustomControl, _, err := customInspectionControlService.Create(customControl)
+	createdCustomControl, _, err := inspection_custom_controls.Create(service, customControl)
 	if err != nil || createdCustomControl == nil || createdCustomControl.ID == "" {
 		t.Fatalf("Error creating inspection custom control or ID is empty")
 	}
@@ -113,42 +66,40 @@ func TestInspectionProfile(t *testing.T) {
 	resourcesToDelete = append(resourcesToDelete, createdCustomControl.ID) // Add to our list
 
 	defer func() {
-		existingControl, _, errCheck := customInspectionControlService.Get(createdCustomControl.ID)
+		existingControl, _, errCheck := inspection_custom_controls.Get(service, createdCustomControl.ID)
 		if errCheck == nil && existingControl != nil {
-			_, errDelete := customInspectionControlService.Delete(createdCustomControl.ID)
+			_, errDelete := inspection_custom_controls.Delete(service, createdCustomControl.ID)
 			if errDelete != nil {
 				t.Errorf("Error deleting inspection custom control: %v", errDelete)
 			}
 		}
 	}()
 
-	predefinedControlsService := inspection_predefined_controls.New(client)
-	predefinedControlsByGroup, err := predefinedControlsService.GetAllByGroup("OWASP_CRS/3.3.0", "preprocessors")
+	predefinedControlsByGroup, err := inspection_predefined_controls.GetAllByGroup(service, "OWASP_CRS/3.3.0", "Preprocessors")
 	if err != nil {
 		t.Errorf("Error getting predefined controls by group: %v", err)
 		return
 	}
 
-	controlByName, _, err := predefinedControlsService.GetByName("Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
+	controlByName, _, err := inspection_predefined_controls.GetByName(service, "Multipart request body failed strict validation", "OWASP_CRS/3.3.0")
 	if err != nil {
 		t.Errorf("Error getting predefined control by name: %v", err)
 		return
 	}
 
-	predefinedControls := make([]CustomCommonControls, len(predefinedControlsByGroup)+1)
+	predefinedControls := make([]common.CustomCommonControls, len(predefinedControlsByGroup)+1)
 	for i, control := range predefinedControlsByGroup {
-		predefinedControls[i] = CustomCommonControls{
+		predefinedControls[i] = common.CustomCommonControls{
 			ID:          control.ID,
 			Action:      "BLOCK",
 			ActionValue: control.ActionValue,
 		}
 	}
-	predefinedControls[len(predefinedControlsByGroup)] = CustomCommonControls{
+	predefinedControls[len(predefinedControlsByGroup)] = common.CustomCommonControls{
 		ID:     controlByName.ID,
 		Action: "BLOCK",
 	}
 
-	service := New(client)
 	profile := InspectionProfile{
 		Name:                      name,
 		Description:               name,
@@ -174,30 +125,30 @@ func TestInspectionProfile(t *testing.T) {
 		},
 	}
 
-	createdResource, _, err := service.Create(profile)
+	createdResource, _, err := Create(service, profile)
 	if err != nil || createdResource == nil {
 		t.Fatalf("Error making POST request: %v or createdResource is nil", err)
 	}
 	resourcesToDelete = append(resourcesToDelete, createdResource.ID) // Add to our list
 
-	retrievedResourceAfterCreation, _, err := service.Get(createdResource.ID)
+	retrievedResourceAfterCreation, _, err := Get(service, createdResource.ID)
 	if err != nil || retrievedResourceAfterCreation == nil {
 		t.Fatalf("Failed to verify the creation of the resource: %v", err)
 	}
 
 	defer func() {
 		for _, resourceID := range resourcesToDelete {
-			existingResource, _, errCheck := service.Get(resourceID)
+			existingResource, _, errCheck := Get(service, resourceID)
 			if errCheck == nil && existingResource != nil {
-				_, errDelete := service.Delete(resourceID)
+				_, errDelete := Delete(service, resourceID)
 				if errDelete != nil {
 					t.Errorf("Error deleting inspection profile with ID %s: %v", resourceID, errDelete)
 				}
 			}
 
-			existingControl, _, errCheckControl := customInspectionControlService.Get(resourceID)
+			existingControl, _, errCheckControl := inspection_custom_controls.Get(service, resourceID)
 			if errCheckControl == nil && existingControl != nil {
-				_, errDeleteControl := customInspectionControlService.Delete(resourceID)
+				_, errDeleteControl := inspection_custom_controls.Delete(service, resourceID)
 				if errDeleteControl != nil {
 					t.Errorf("Error deleting inspection custom control with ID %s: %v", resourceID, errDeleteControl)
 				}
@@ -212,7 +163,7 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
 	}
 	// Test resource retrieval
-	retrievedResource, _, err := service.Get(createdResource.ID)
+	retrievedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 		return
@@ -226,15 +177,15 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedResource.Name)
 	}
 	// Test resource update
 	retrievedResource.Name = updateName
-	_, err = service.Update(createdResource.ID, retrievedResource)
+	_, err = Update(service, createdResource.ID, retrievedResource)
 	if err != nil {
 		t.Errorf("Error updating resource: %v", err)
 	}
-	updatedResource, _, err := service.Get(createdResource.ID)
+	updatedResource, _, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -246,7 +197,7 @@ func TestInspectionProfile(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, _, err = service.GetByName(updateName)
+	retrievedResource, _, err = GetByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -254,10 +205,10 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%s', but got '%s'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedResource.Name)
 	}
 	// Test resources retrieval
-	resources, _, err := service.GetAll()
+	resources, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -276,14 +227,14 @@ func TestInspectionProfile(t *testing.T) {
 		t.Errorf("Expected retrieved resources to contain created resource '%s', but it didn't", createdResource.ID)
 	}
 	// Test resource removal
-	_, err = service.Delete(createdResource.ID)
+	_, err = Delete(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error deleting resource: %v", err)
 		return
 	}
 
 	// Test resource retrieval after deletion
-	_, _, err = service.Get(createdResource.ID)
+	_, _, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Errorf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -294,9 +245,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Get("non-existent-id")
+	_, _, err = Get(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -307,9 +258,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete("non-existent-id")
+	_, err = Delete(service, "non_existent_id")
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -320,9 +271,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Update("non-existent-id", &InspectionProfile{})
+	_, err = Update(service, "non_existent_id", &InspectionProfile{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -333,9 +284,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

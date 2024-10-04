@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon/services/activation"
 )
 
@@ -21,10 +22,9 @@ func TestActivationCLI(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
-	activationService := activation.New(service.Client)
+	service := services.New(client)
 
-	_, err = activationService.ForceActivationStatus(activation.ECAdminActivation{
+	_, err = activation.ForceActivationStatus(service, activation.ECAdminActivation{
 		AdminActivateStatus: "ADM_ACTV_DONE",
 	})
 	if err != nil {

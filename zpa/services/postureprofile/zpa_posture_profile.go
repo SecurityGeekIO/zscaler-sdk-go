@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
-	mgmtConfig             = "/mgmtconfig/v2/admin/customers/"
+	mgmtConfigV1           = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2           = "/mgmtconfig/v2/admin/customers/"
 	postureProfileEndpoint = "/posture"
 )
 
@@ -33,9 +35,9 @@ type PostureProfile struct {
 	ZscalerCustomerID              string `json:"zscalerCustomerId,omitempty"`
 }
 
-func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) {
+func Get(service *services.Service, id string) (*PostureProfile, *http.Response, error) {
 	v := new(PostureProfile)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+postureProfileEndpoint, id)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+postureProfileEndpoint, id)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
 	if err != nil {
 		return nil, nil, err
@@ -44,8 +46,8 @@ func (service *Service) Get(id string) (*PostureProfile, *http.Response, error) 
 	return v, resp, nil
 }
 
-func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *http.Response, error) {
-	relativeURL := fmt.Sprintf(mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint)
+func GetByPostureUDID(service *services.Service, postureUDID string) (*PostureProfile, *http.Response, error) {
+	relativeURL := fmt.Sprintf(mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint)
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err
@@ -58,9 +60,9 @@ func (service *Service) GetByPostureUDID(postureUDID string) (*PostureProfile, *
 	return nil, resp, fmt.Errorf("no posture profile with postureUDID '%s' was found", postureUDID)
 }
 
-func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Response, error) {
+func GetByName(service *services.Service, postureName string) (*PostureProfile, *http.Response, error) {
 	adaptedPostureName := common.RemoveCloudSuffix(postureName)
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 
 	// Set up custom filters for pagination
 	filters := common.Filter{Search: adaptedPostureName} // Using the adapted posture name for searching
@@ -80,8 +82,8 @@ func (service *Service) GetByName(postureName string) (*PostureProfile, *http.Re
 	return nil, resp, fmt.Errorf("no posture profile named '%s' was found", postureName)
 }
 
-func (service *Service) GetAll() ([]PostureProfile, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + postureProfileEndpoint
+func GetAll(service *services.Service) ([]PostureProfile, *http.Response, error) {
+	relativeURL := mgmtConfigV2 + service.Client.Config.CustomerID + postureProfileEndpoint
 	list, resp, err := common.GetAllPagesGeneric[PostureProfile](service.Client, relativeURL, "")
 	if err != nil {
 		return nil, nil, err

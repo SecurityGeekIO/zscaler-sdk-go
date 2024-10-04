@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appservercontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
@@ -14,21 +17,21 @@ const (
 )
 
 type ServerGroup struct {
-	ID                 string               `json:"id,omitempty"`
-	Enabled            bool                 `json:"enabled"`
-	Name               string               `json:"name,omitempty"`
-	Description        string               `json:"description,omitempty"`
-	IpAnchored         bool                 `json:"ipAnchored"`
-	ConfigSpace        string               `json:"configSpace,omitempty"`
-	DynamicDiscovery   bool                 `json:"dynamicDiscovery"`
-	CreationTime       string               `json:"creationTime,omitempty"`
-	ModifiedBy         string               `json:"modifiedBy,omitempty"`
-	ModifiedTime       string               `json:"modifiedTime,omitempty"`
-	MicroTenantID      string               `json:"microtenantId,omitempty"`
-	MicroTenantName    string               `json:"microtenantName,omitempty"`
-	AppConnectorGroups []AppConnectorGroups `json:"appConnectorGroups"`
-	Servers            []ApplicationServer  `json:"servers"`
-	Applications       []Applications       `json:"applications"`
+	ID                 string                                  `json:"id,omitempty"`
+	Enabled            bool                                    `json:"enabled"`
+	Name               string                                  `json:"name,omitempty"`
+	Description        string                                  `json:"description,omitempty"`
+	IpAnchored         bool                                    `json:"ipAnchored"`
+	ConfigSpace        string                                  `json:"configSpace,omitempty"`
+	DynamicDiscovery   bool                                    `json:"dynamicDiscovery"`
+	CreationTime       string                                  `json:"creationTime,omitempty"`
+	ModifiedBy         string                                  `json:"modifiedBy,omitempty"`
+	ModifiedTime       string                                  `json:"modifiedTime,omitempty"`
+	MicroTenantID      string                                  `json:"microtenantId,omitempty"`
+	MicroTenantName    string                                  `json:"microtenantName,omitempty"`
+	AppConnectorGroups []appconnectorgroup.AppConnectorGroup   `json:"appConnectorGroups"`
+	Servers            []appservercontroller.ApplicationServer `json:"servers"`
+	Applications       []Applications                          `json:"applications"`
 }
 
 type Applications struct {
@@ -105,32 +108,19 @@ type AppServerGroups struct {
 	Name             string `json:"name"`
 }
 
-type ApplicationServer struct {
-	Address           string   `json:"address,omitempty"`
-	AppServerGroupIds []string `json:"appServerGroupIds,omitempty"`
-	ConfigSpace       string   `json:"configSpace,omitempty"`
-	CreationTime      string   `json:"creationTime,omitempty"`
-	Description       string   `json:"description,omitempty"`
-	Enabled           bool     `json:"enabled"`
-	ID                string   `json:"id,omitempty"`
-	ModifiedBy        string   `json:"modifiedBy,omitempty"`
-	ModifiedTime      string   `json:"modifiedTime,omitempty"`
-	Name              string   `json:"name"`
-}
-
-func (service *Service) Get(groupID string) (*ServerGroup, *http.Response, error) {
+func Get(service *services.Service, groupID string) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.Response, error) {
+func GetByName(service *services.Service, serverGroupName string) (*ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{Search: serverGroupName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{Search: serverGroupName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -142,36 +132,36 @@ func (service *Service) GetByName(serverGroupName string) (*ServerGroup, *http.R
 	return nil, resp, fmt.Errorf("no server group named '%s' was found", serverGroupName)
 }
 
-func (service *Service) Create(serverGroup *ServerGroup) (*ServerGroup, *http.Response, error) {
+func Create(service *services.Service, serverGroup *ServerGroup) (*ServerGroup, *http.Response, error) {
 	v := new(ServerGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, serverGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(groupId string, serverGroup *ServerGroup) (*http.Response, error) {
+func Update(service *services.Service, groupId string, serverGroup *ServerGroup) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, serverGroup, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, serverGroup, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(groupId string) (*http.Response, error) {
+func Delete(service *services.Service, groupId string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+serverGroupEndpoint, groupId)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]ServerGroup, *http.Response, error) {
+func GetAll(service *services.Service) ([]ServerGroup, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + serverGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ServerGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -5,54 +5,58 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 const (
-	mgmtConfig            = "/mgmtconfig/v1/admin/customers/"
-	appSegmentPraEndpoint = "/application"
+	mgmtConfig              = "/mgmtconfig/v1/admin/customers/"
+	appSegmentPraEndpoint   = "/application"
+	applicationTypeEndpoint = "/application/getAppsByType"
 )
 
 type AppSegmentPRA struct {
-	ID                        string                   `json:"id,omitempty"`
-	DomainNames               []string                 `json:"domainNames,omitempty"`
-	Name                      string                   `json:"name,omitempty"`
-	Description               string                   `json:"description,omitempty"`
-	Enabled                   bool                     `json:"enabled"`
-	PassiveHealthEnabled      bool                     `json:"passiveHealthEnabled"`
-	SelectConnectorCloseToApp bool                     `json:"selectConnectorCloseToApp"`
-	DoubleEncrypt             bool                     `json:"doubleEncrypt"`
-	AppRecommendationId       string                   `json:"appRecommendationId,omitempty"`
-	ConfigSpace               string                   `json:"configSpace,omitempty"`
-	Applications              string                   `json:"applications,omitempty"`
-	BypassType                string                   `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                     `json:"bypassOnReauth,omitempty"`
-	FQDNDnsCheck              bool                     `json:"fqdnDnsCheck"`
-	HealthCheckType           string                   `json:"healthCheckType,omitempty"`
-	IsCnameEnabled            bool                     `json:"isCnameEnabled"`
-	IpAnchored                bool                     `json:"ipAnchored"`
-	HealthReporting           string                   `json:"healthReporting,omitempty"`
-	IcmpAccessType            string                   `json:"icmpAccessType,omitempty"`
-	SegmentGroupID            string                   `json:"segmentGroupId"`
-	SegmentGroupName          string                   `json:"segmentGroupName,omitempty"`
-	CreationTime              string                   `json:"creationTime,omitempty"`
-	ModifiedBy                string                   `json:"modifiedBy,omitempty"`
-	ModifiedTime              string                   `json:"modifiedTime,omitempty"`
-	TCPKeepAlive              string                   `json:"tcpKeepAlive,omitempty"`
-	IsIncompleteDRConfig      bool                     `json:"isIncompleteDRConfig"`
-	UseInDrMode               bool                     `json:"useInDrMode"`
-	MicroTenantID             string                   `json:"microtenantId,omitempty"`
-	MicroTenantName           string                   `json:"microtenantName,omitempty"`
-	TCPAppPortRange           []common.NetworkPorts    `json:"tcpPortRange,omitempty"`
-	UDPAppPortRange           []common.NetworkPorts    `json:"udpPortRange,omitempty"`
-	TCPPortRanges             []string                 `json:"tcpPortRanges,omitempty"`
-	UDPPortRanges             []string                 `json:"udpPortRanges,omitempty"`
-	ServerGroups              []AppServerGroups        `json:"serverGroups,omitempty"`
-	DefaultIdleTimeout        string                   `json:"defaultIdleTimeout,omitempty"`
-	DefaultMaxAge             string                   `json:"defaultMaxAge,omitempty"`
-	SRAAppsDto                []SRAAppsDto             `json:"sraApps,omitempty"`
-	CommonAppsDto             CommonAppsDto            `json:"commonAppsDto,omitempty"`
-	SharedMicrotenantDetails  SharedMicrotenantDetails `json:"sharedMicrotenantDetails,omitempty"`
+	ID                        string                    `json:"id,omitempty"`
+	DomainNames               []string                  `json:"domainNames,omitempty"`
+	Name                      string                    `json:"name,omitempty"`
+	Description               string                    `json:"description,omitempty"`
+	Enabled                   bool                      `json:"enabled"`
+	PassiveHealthEnabled      bool                      `json:"passiveHealthEnabled"`
+	SelectConnectorCloseToApp bool                      `json:"selectConnectorCloseToApp"`
+	DoubleEncrypt             bool                      `json:"doubleEncrypt"`
+	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
+	ConfigSpace               string                    `json:"configSpace,omitempty"`
+	Applications              string                    `json:"applications,omitempty"`
+	BypassType                string                    `json:"bypassType,omitempty"`
+	MatchStyle                string                    `json:"matchStyle,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	FQDNDnsCheck              bool                      `json:"fqdnDnsCheck"`
+	HealthCheckType           string                    `json:"healthCheckType,omitempty"`
+	IsCnameEnabled            bool                      `json:"isCnameEnabled"`
+	IpAnchored                bool                      `json:"ipAnchored"`
+	HealthReporting           string                    `json:"healthReporting,omitempty"`
+	IcmpAccessType            string                    `json:"icmpAccessType,omitempty"`
+	SegmentGroupID            string                    `json:"segmentGroupId"`
+	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
+	CreationTime              string                    `json:"creationTime,omitempty"`
+	ModifiedBy                string                    `json:"modifiedBy,omitempty"`
+	ModifiedTime              string                    `json:"modifiedTime,omitempty"`
+	TCPKeepAlive              string                    `json:"tcpKeepAlive,omitempty"`
+	IsIncompleteDRConfig      bool                      `json:"isIncompleteDRConfig"`
+	UseInDrMode               bool                      `json:"useInDrMode"`
+	MicroTenantID             string                    `json:"microtenantId,omitempty"`
+	MicroTenantName           string                    `json:"microtenantName,omitempty"`
+	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
+	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
+	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
+	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
+	ServerGroups              []servergroup.ServerGroup `json:"serverGroups,omitempty"`
+	DefaultIdleTimeout        string                    `json:"defaultIdleTimeout,omitempty"`
+	DefaultMaxAge             string                    `json:"defaultMaxAge,omitempty"`
+	PRAApps                   []PRAApps                 `json:"praApps"`
+	CommonAppsDto             CommonAppsDto             `json:"commonAppsDto,omitempty"`
+	SharedMicrotenantDetails  SharedMicrotenantDetails  `json:"sharedMicrotenantDetails,omitempty"`
 }
 
 type SharedMicrotenantDetails struct {
@@ -91,7 +95,7 @@ type AppsConfig struct {
 	Portal              bool     `json:"portal,omitempty"`
 }
 
-type SRAAppsDto struct {
+type PRAApps struct {
 	ID                  string `json:"id,omitempty"`
 	Name                string `json:"name,omitempty"`
 	AppID               string `json:"appId,omitempty"`
@@ -113,33 +117,33 @@ type AppServerGroups struct {
 	ID string `json:"id"`
 }
 
-func (service *Service) Get(id string) (*AppSegmentPRA, *http.Response, error) {
+func Get(service *services.Service, id string) (*AppSegmentPRA, *http.Response, error) {
 	v := new(AppSegmentPRA)
 	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(BaName string) (*AppSegmentPRA, *http.Response, error) {
+func GetByName(service *services.Service, praName string) (*AppSegmentPRA, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{Search: BaName, MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{Search: praName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, app := range list {
-		if strings.EqualFold(app.Name, BaName) {
+		if strings.EqualFold(app.Name, praName) {
 			return &app, resp, nil
 		}
 	}
-	return nil, resp, fmt.Errorf("no browser access application named '%s' was found", BaName)
+	return nil, resp, fmt.Errorf("no pra application named '%s' was found", praName)
 }
 
-func (service *Service) Create(appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
+func Create(service *services.Service, appSegmentPra AppSegmentPRA) (*AppSegmentPRA, *http.Response, error) {
 	v := new(AppSegmentPRA)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, common.Filter{MicroTenantID: service.microTenantID}, appSegmentPra, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -164,9 +168,9 @@ func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
 	return diff
 }
 
-func mapSraApp(SRAAppsDto []SRAAppsDto) []AppsConfig {
+func mapSraApp(PRAApps []PRAApps) []AppsConfig {
 	result := []AppsConfig{}
-	for _, app := range SRAAppsDto {
+	for _, app := range PRAApps {
 		result = append(result, AppsConfig{
 			Name:   app.Name,
 			Domain: app.Domain,
@@ -185,43 +189,43 @@ func appToListStringIDs(apps []AppsConfig) []string {
 	return result
 }
 
-func (service *Service) Update(id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
-	existingResource, _, err := service.Get(id)
+func Update(service *services.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
+	existingResource, _, err := Get(service, id)
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapSraApp(existingResource.SRAAppsDto)
+	existingApps := mapSraApp(existingResource.PRAApps)
 	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
 	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
 	appSegmentPra.CommonAppsDto.AppsConfig = newApps
 	appSegmentPra.CommonAppsDto.DeletedSraApps = appToListStringIDs(removedApps)
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, appSegmentPra, nil)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(id string) (*http.Response, error) {
+func Delete(service *services.Service, id string) (*http.Response, error) {
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+appSegmentPraEndpoint, id)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.microTenantID}, nil, nil)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.DeleteApplicationQueryParams{ForceDelete: true, MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]AppSegmentPRA, *http.Response, error) {
+func GetAll(service *services.Service) ([]AppSegmentPRA, *http.Response, error) {
 	relativeURL := mgmtConfig + service.Client.Config.CustomerID + appSegmentPraEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[AppSegmentPRA](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
 	result := []AppSegmentPRA{}
 	// filter pra apps
 	for _, item := range list {
-		if len(item.CommonAppsDto.AppsConfig) == 0 || (!common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "SECURE_REMOTE_ACCESS") && !common.InList(item.CommonAppsDto.AppsConfig[0].AppTypes, "INSPECT")) {
+		if len(item.PRAApps) > 0 {
 			result = append(result, item)
 		}
 	}

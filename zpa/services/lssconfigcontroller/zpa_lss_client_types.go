@@ -2,6 +2,8 @@ package lssconfigcontroller
 
 import (
 	"net/http"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -9,7 +11,6 @@ const (
 )
 
 type LSSClientTypes struct {
-	// ID                         string `json:"id"`
 	ZPNClientTypeExporter      string `json:"zpn_client_type_exporter"`
 	ZPNClientTypeMachineTunnel string `json:"zpn_client_type_machine_tunnel"`
 	ZPNClientTypeIPAnchoring   string `json:"zpn_client_type_ip_anchoring"`
@@ -18,7 +19,7 @@ type LSSClientTypes struct {
 	ZPNClientTypeSlogger       string `json:"zpn_client_type_slogger,omitempty"`
 }
 
-func (service *Service) GetClientTypes() (*LSSClientTypes, *http.Response, error) {
+func GetClientTypes(service *services.Service) (*LSSClientTypes, *http.Response, error) {
 	v := new(LSSClientTypes)
 	relativeURL := mgmtConfigTypesAndFormats + lssClientTypesEndpoint
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)

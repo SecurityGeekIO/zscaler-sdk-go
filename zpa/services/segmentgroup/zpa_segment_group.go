@@ -5,28 +5,33 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/common"
 )
 
 const (
-	mgmtConfig           = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV1         = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2         = "/mgmtconfig/v2/admin/customers/"
 	segmentGroupEndpoint = "/segmentGroup"
 )
 
 type SegmentGroup struct {
-	Applications        []Application `json:"applications"`
-	ConfigSpace         string        `json:"configSpace,omitempty"`
-	CreationTime        string        `json:"creationTime,omitempty"`
-	Description         string        `json:"description,omitempty"`
-	Enabled             bool          `json:"enabled"`
-	ID                  string        `json:"id,omitempty"`
-	ModifiedBy          string        `json:"modifiedBy,omitempty"`
-	ModifiedTime        string        `json:"modifiedTime,omitempty"`
-	Name                string        `json:"name"`
-	PolicyMigrated      bool          `json:"policyMigrated"`
-	TcpKeepAliveEnabled string        `json:"tcpKeepAliveEnabled,omitempty"`
-	MicroTenantID       string        `json:"microtenantId,omitempty"`
-	MicroTenantName     string        `json:"microtenantName,omitempty"`
+	ID                  string             `json:"id,omitempty"`
+	Name                string             `json:"name"`
+	Description         string             `json:"description,omitempty"`
+	Enabled             bool               `json:"enabled"`
+	ConfigSpace         string             `json:"configSpace,omitempty"`
+	CreationTime        string             `json:"creationTime,omitempty"`
+	ModifiedBy          string             `json:"modifiedBy,omitempty"`
+	ModifiedTime        string             `json:"modifiedTime,omitempty"`
+	PolicyMigrated      bool               `json:"policyMigrated"`
+	TcpKeepAliveEnabled string             `json:"tcpKeepAliveEnabled,omitempty"`
+	MicroTenantID       string             `json:"microtenantId,omitempty"`
+	MicroTenantName     string             `json:"microtenantName,omitempty"`
+	AddedApps           string             `json:"addedApps,omitempty"`
+	DeletedApps         string             `json:"deletedApps,omitempty"`
+	Applications        []Application      `json:"applications"`
+	ApplicationNames    []ApplicationNames `json:"applicationNames,omitempty"`
 }
 
 type Application struct {
@@ -67,19 +72,24 @@ type AppServerGroup struct {
 	Name             string `json:"name"`
 }
 
-func (service *Service) Get(segmentGroupID string) (*SegmentGroup, *http.Response, error) {
+type ApplicationNames struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name"`
+}
+
+func Get(service *services.Service, segmentGroupID string) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupID)
-	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.microTenantID}, nil, v)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupID)
+	resp, err := service.Client.NewRequestDo("GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{Search: segmentName, MicroTenantID: service.microTenantID})
+func GetByName(service *services.Service, segmentName string) (*SegmentGroup, *http.Response, error) {
+	relativeURL := mgmtConfigV1 + service.Client.Config.CustomerID + segmentGroupEndpoint
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{Search: segmentName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -91,36 +101,45 @@ func (service *Service) GetByName(segmentName string) (*SegmentGroup, *http.Resp
 	return nil, resp, fmt.Errorf("no application named '%s' was found", segmentName)
 }
 
-func (service *Service) Create(segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
+func Create(service *services.Service, segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
-	resp, err := service.Client.NewRequestDo("POST", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, common.Filter{MicroTenantID: service.microTenantID}, segmentGroup, &v)
+	resp, err := service.Client.NewRequestDo("POST", mgmtConfigV1+service.Client.Config.CustomerID+segmentGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
 	return v, resp, nil
 }
 
-func (service *Service) Update(segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupId)
-	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.microTenantID}, segmentGroupRequest, nil)
+func Update(service *services.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupId)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) Delete(segmentGroupId string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupId)
-	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.microTenantID}, nil, nil)
+func UpdateV2(service *services.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfigV2+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupId)
+	resp, err := service.Client.NewRequestDo("PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]SegmentGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.Config.CustomerID + segmentGroupEndpoint
-	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.microTenantID})
+func Delete(service *services.Service, segmentGroupId string) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.Config.CustomerID+segmentGroupEndpoint, segmentGroupId)
+	resp, err := service.Client.NewRequestDo("DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func GetAll(service *services.Service) ([]SegmentGroup, *http.Response, error) {
+	relativeURL := mgmtConfigV1 + service.Client.Config.CustomerID + segmentGroupEndpoint
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
 	}

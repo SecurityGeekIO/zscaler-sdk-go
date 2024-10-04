@@ -27,6 +27,7 @@ import (
 const (
 	defaultBaseURL           = "https://config.private.zscaler.com"
 	betaBaseURL              = "https://config.zpabeta.net"
+	zpaTwoBaseUrl            = "https://config.zpatwo.net"
 	govBaseURL               = "https://config.zpagov.net"
 	govUsBaseURL             = "https://config.zpagov.us"
 	previewBaseUrl           = "https://config.zpapreview.net"
@@ -126,6 +127,8 @@ func NewConfig(clientID, clientSecret, customerID, cloud, userAgent string) (*Co
 	}
 	if strings.EqualFold(cloud, "PRODUCTION") {
 		rawUrl = defaultBaseURL
+	} else if strings.EqualFold(cloud, "ZPATWO") {
+		rawUrl = zpaTwoBaseUrl
 	} else if strings.EqualFold(cloud, "BETA") {
 		rawUrl = betaBaseURL
 	} else if strings.EqualFold(cloud, "GOV") {
@@ -212,10 +215,14 @@ func (c *Config) GetHTTPClient() *http.Client {
 			retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 				if resp != nil {
 					if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
-						// TODO: ask backend to implement such header, instead of using the logic below
-						if s, ok := resp.Header["Retry-After"]; ok {
-							if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+						if s := resp.Header.Get("Retry-After"); s != "" {
+							if sleep, err := strconv.ParseInt(s, 10, 64); err == nil {
 								return time.Second * time.Duration(sleep)
+							} else {
+								dur, err := time.ParseDuration(s)
+								if err == nil {
+									return dur
+								}
 							}
 						}
 					}
@@ -264,7 +271,7 @@ func containsInt(codes []int, code int) bool {
 // return empty slice to enable retry on all connection & server errors.
 // or return []int{429}  to retry on only TooManyRequests error
 func getRetryOnStatusCodes() []int {
-	return []int{http.StatusTooManyRequests}
+	return []int{http.StatusTooManyRequests, http.StatusConflict}
 }
 
 // Used to make http client retry on provided list of response status codes
@@ -274,6 +281,17 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return false, ctx.Err()
 	}
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
+		if resp.StatusCode == http.StatusConflict {
+			respMap := map[string]string{}
+			data, err := io.ReadAll(resp.Body)
+			resp.Body = io.NopCloser(bytes.NewBuffer(data))
+			if err == nil {
+				_ = json.Unmarshal(data, &respMap)
+				if errorID, ok := respMap["id"]; ok && (errorID == "api.concurrent.access.error") {
+					return true, nil
+				}
+			}
+		}
 		return true, nil
 	}
 	if resp != nil && resp.StatusCode == http.StatusBadRequest {
@@ -292,6 +310,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		if err == nil {
 			_ = json.Unmarshal(data, &respMap)
 			if errorID, ok := respMap["id"]; ok && (errorID == "db.simultaneous.request" || errorID == "bad.request") {
+				return true, nil
+			}
+		}
+
+		// ET-66174: https://jira.corp.zscaler.com/browse/ET-66174
+		// DOC-51102: https://jira.corp.zscaler.com/browse/DOC-51102
+		if err == nil {
+			_ = json.Unmarshal(data, &respMap)
+			if errorID, ok := respMap["id"]; ok && (errorID == "api.concurrent.access.error" || errorID == "bad.request") {
 				return true, nil
 			}
 		}

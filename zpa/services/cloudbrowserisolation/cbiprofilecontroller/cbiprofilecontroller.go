@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
 
 const (
@@ -32,6 +34,7 @@ type IsolationProfile struct {
 	Certificates     []Certificates    `json:"certificates,omitempty"`
 	CertificateIDs   []string          `json:"certificateIds,omitempty"`
 	Banner           *Banner           `json:"banner,omitempty"`
+	DebugMode        *DebugMode        `json:"debugMode,omitempty"`
 }
 
 type Certificates struct {
@@ -45,30 +48,57 @@ type Banner struct {
 }
 
 type UserExperience struct {
-	SessionPersistence  bool `json:"sessionPersistence,omitempty"`
-	BrowserInBrowser    bool `json:"browserInBrowser,omitempty"`
-	PersistIsolationBar bool `json:"persistIsolationBar,omitempty"`
+	SessionPersistence  bool          `json:"sessionPersistence"`
+	BrowserInBrowser    bool          `json:"browserInBrowser"`
+	PersistIsolationBar bool          `json:"persistIsolationBar"`
+	Translate           bool          `json:"translate"`
+	ZGPU                bool          `json:"zgpu,omitempty"`
+	ForwardToZia        *ForwardToZia `json:"forwardToZia,omitempty"`
+}
+
+type ForwardToZia struct {
+	Enabled        bool   `json:"enabled"`
+	OrganizationID string `json:"organizationId"`
+	CloudName      string `json:"cloudName,omitempty"`
+	PacFileUrl     string `json:"pacFileUrl,omitempty"`
 }
 
 type Watermark struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled       bool   `json:"enabled,omitempty"`
+	ShowUserID    bool   `json:"showUserId,omitempty"`
+	ShowTimestamp bool   `json:"showTimestamp,omitempty"`
+	ShowMessage   bool   `json:"showMessage,omitempty"`
+	Message       string `json:"message,omitempty"`
 }
+
 type SecurityControls struct {
-	DocumentViewer     bool      `json:"documentViewer,omitempty"`
-	AllowPrinting      bool      `json:"allowPrinting,omitempty"`
-	Watermark          Watermark `json:"watermark,omitempty"`
-	FlattenedPdf       bool      `json:"flattenedPdf,omitempty"`
-	UploadDownload     string    `json:"uploadDownload,omitempty"`
-	RestrictKeystrokes bool      `json:"restrictKeystrokes,omitempty"`
-	CopyPaste          string    `json:"copyPaste,omitempty"`
-	LocalRender        bool      `json:"localRender,omitempty"`
+	DocumentViewer     bool       `json:"documentViewer,omitempty"`
+	AllowPrinting      bool       `json:"allowPrinting,omitempty"`
+	Watermark          *Watermark `json:"watermark,omitempty"`
+	FlattenedPdf       bool       `json:"flattenedPdf,omitempty"`
+	UploadDownload     string     `json:"uploadDownload,omitempty"`
+	RestrictKeystrokes bool       `json:"restrictKeystrokes,omitempty"`
+	CopyPaste          string     `json:"copyPaste,omitempty"`
+	LocalRender        bool       `json:"localRender,omitempty"`
+	DeepLink           *DeepLink  `json:"deepLink,omitempty"`
 }
+
+type DeepLink struct {
+	Enabled      bool     `json:"enabled,omitempty"`
+	Applications []string `json:"applications,omitempty"`
+}
+
 type Regions struct {
 	Name string `json:"name,omitempty"`
 	ID   string `json:"id,omitempty"`
 }
 
-func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response, error) {
+type DebugMode struct {
+	Allowed      bool   `json:"allowed,omitempty"`
+	FilePassword string `json:"filePassword,omitempty"`
+}
+
+func Get(service *services.Service, profileID string) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	relativeURL := fmt.Sprintf("%s/%s", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &v)
@@ -79,20 +109,31 @@ func (service *Service) Get(profileID string) (*IsolationProfile, *http.Response
 	return v, resp, nil
 }
 
-func (service *Service) GetByName(profileName string) (*IsolationProfile, *http.Response, error) {
-	list, resp, err := service.GetAll()
+func GetByNameOrID(service *services.Service, identifier string) (*IsolationProfile, *http.Response, error) {
+	// Retrieve all profiles
+	list, resp, err := GetAll(service)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Try to find by ID
 	for _, profile := range list {
-		if strings.EqualFold(profile.Name, profileName) {
-			return &profile, resp, nil
+		if profile.ID == identifier {
+			return Get(service, profile.ID)
 		}
 	}
-	return nil, resp, fmt.Errorf("no isolation profile named '%s' was found", profileName)
+
+	// Try to find by name
+	for _, profile := range list {
+		if strings.EqualFold(profile.Name, identifier) {
+			return Get(service, profile.ID)
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation profile named or with ID '%s' was found", identifier)
 }
 
-func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
+func Create(service *services.Service, cbiProfile *IsolationProfile) (*IsolationProfile, *http.Response, error) {
 	v := new(IsolationProfile)
 	resp, err := service.Client.NewRequestDo("POST", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, nil, cbiProfile, &v)
 	if err != nil {
@@ -101,8 +142,8 @@ func (service *Service) Create(cbiProfile *IsolationProfile) (*IsolationProfile,
 	return v, resp, nil
 }
 
-func (service *Service) Update(segmentGroupId string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, segmentGroupId)
+func Update(service *services.Service, profileID string, segmentGroupRequest *IsolationProfile) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("PUT", path, nil, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
@@ -110,7 +151,7 @@ func (service *Service) Update(segmentGroupId string, segmentGroupRequest *Isola
 	return resp, err
 }
 
-func (service *Service) Delete(profileID string) (*http.Response, error) {
+func Delete(service *services.Service, profileID string) (*http.Response, error) {
 	path := fmt.Sprintf("%v/%v", cbiConfig+service.Client.Config.CustomerID+cbiProfileEndpoint, profileID)
 	resp, err := service.Client.NewRequestDo("DELETE", path, nil, nil, nil)
 	if err != nil {
@@ -119,7 +160,7 @@ func (service *Service) Delete(profileID string) (*http.Response, error) {
 	return resp, err
 }
 
-func (service *Service) GetAll() ([]IsolationProfile, *http.Response, error) {
+func GetAll(service *services.Service) ([]IsolationProfile, *http.Response, error) {
 	relativeURL := cbiConfig + service.Client.Config.CustomerID + cbiProfileEndpoint
 	var list []IsolationProfile
 	resp, err := service.Client.NewRequestDo("GET", relativeURL, nil, nil, &list)

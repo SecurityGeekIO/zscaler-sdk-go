@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
 	vpnCredentialsEndpoint = "/vpnCredentials"
+	maxBulkDeleteIDs       = 100
 )
 
 type VPNCredentials struct {
@@ -54,7 +56,7 @@ type ManagedBy struct {
 	Extensions map[string]interface{} `json:"extensions,omitempty"`
 }
 
-func (service *Service) Get(vpnCredentialID int) (*VPNCredentials, error) {
+func Get(service *services.Service, vpnCredentialID int) (*VPNCredentials, error) {
 	var vpnCredentials VPNCredentials
 	err := service.Client.Read(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), &vpnCredentials)
 	if err != nil {
@@ -65,7 +67,7 @@ func (service *Service) Get(vpnCredentialID int) (*VPNCredentials, error) {
 	return &vpnCredentials, nil
 }
 
-func (service *Service) GetVPNByType(vpnType string) (*VPNCredentials, error) {
+func GetVPNByType(service *services.Service, vpnType string) (*VPNCredentials, error) {
 	var vpnTypes []VPNCredentials
 	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?type=%s", vpnCredentialsEndpoint, url.QueryEscape(vpnType)), &vpnTypes)
 	if err != nil {
@@ -79,7 +81,7 @@ func (service *Service) GetVPNByType(vpnType string) (*VPNCredentials, error) {
 	return nil, fmt.Errorf("no VPN found with type: %s", vpnType)
 }
 
-func (service *Service) GetByFQDN(vpnCredentialName string) (*VPNCredentials, error) {
+func GetByFQDN(service *services.Service, vpnCredentialName string) (*VPNCredentials, error) {
 	var vpnCredentials []VPNCredentials
 
 	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnCredentials)
@@ -94,7 +96,22 @@ func (service *Service) GetByFQDN(vpnCredentialName string) (*VPNCredentials, er
 	return nil, fmt.Errorf("no vpn credentials found with fqdn: %s", vpnCredentialName)
 }
 
-func (service *Service) Create(vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
+func GetByIP(service *services.Service, vpnCredentialIP string) (*VPNCredentials, error) {
+	var vpnCredentials []VPNCredentials
+
+	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnCredentials)
+	if err != nil {
+		return nil, err
+	}
+	for _, vpnCredential := range vpnCredentials {
+		if strings.EqualFold(vpnCredential.IPAddress, vpnCredentialIP) {
+			return &vpnCredential, nil
+		}
+	}
+	return nil, fmt.Errorf("no vpn credentials found with ip: %s", vpnCredentialIP)
+}
+
+func Create(service *services.Service, vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
 	resp, err := service.Client.Create(vpnCredentialsEndpoint, *vpnCredentials)
 	if err != nil {
 		return nil, nil, err
@@ -109,7 +126,7 @@ func (service *Service) Create(vpnCredentials *VPNCredentials) (*VPNCredentials,
 	return createdVpnCredentials, nil, nil
 }
 
-func (service *Service) Update(vpnCredentialID int, vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
+func Update(service *services.Service, vpnCredentialID int, vpnCredentials *VPNCredentials) (*VPNCredentials, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID), *vpnCredentials)
 	if err != nil {
 		return nil, nil, err
@@ -120,7 +137,7 @@ func (service *Service) Update(vpnCredentialID int, vpnCredentials *VPNCredentia
 	return updatedVpnCredentials, nil, nil
 }
 
-func (service *Service) Delete(vpnCredentialID int) error {
+func Delete(service *services.Service, vpnCredentialID int) error {
 	err := service.Client.Delete(fmt.Sprintf("%s/%d", vpnCredentialsEndpoint, vpnCredentialID))
 	if err != nil {
 		return err
@@ -129,7 +146,24 @@ func (service *Service) Delete(vpnCredentialID int) error {
 	return nil
 }
 
-func (service *Service) GetAll() ([]VPNCredentials, error) {
+// BulkDeleteVPNCredentials sends a bulk delete request for VPN credentials.
+func BulkDelete(service *services.Service, ids []int) (*http.Response, error) {
+	if len(ids) > maxBulkDeleteIDs {
+		// Truncate the list to the first 100 IDs
+		ids = ids[:maxBulkDeleteIDs]
+		service.Client.Logger.Printf("[INFO] Truncating IDs list to the first %d items", maxBulkDeleteIDs)
+	}
+
+	// Define the payload
+	payload := map[string][]int{
+		"ids": ids,
+	}
+
+	// Call the generalized BulkDelete function from the client
+	return service.Client.BulkDelete(vpnCredentialsEndpoint+"/bulkDelete", payload)
+}
+
+func GetAll(service *services.Service) ([]VPNCredentials, error) {
 	var vpnTypes []VPNCredentials
 	err := common.ReadAllPages(service.Client, vpnCredentialsEndpoint, &vpnTypes)
 	return vpnTypes, err

@@ -1,13 +1,17 @@
 package dlpdictionaries
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -48,7 +52,7 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Fatalf("Error creating client: %v", err)
 	}
 
-	service := New(client)
+	service := services.New(client)
 
 	dictionary := DlpDictionary{
 		Name:                  name,
@@ -73,7 +77,7 @@ func TestDLPDictionaries(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&dictionary)
+		createdResource, _, err = Create(service, &dictionary)
 		return err
 	})
 	if err != nil {
@@ -101,14 +105,14 @@ func TestDLPDictionaries(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -119,7 +123,7 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(updateName)
+	retrievedResource, err = GetByName(service, updateName)
 
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
@@ -131,7 +135,7 @@ func TestDLPDictionaries(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -151,22 +155,51 @@ func TestDLPDictionaries(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.DeleteDlpDictionary(createdResource.ID)
+		_, delErr := DeleteDlpDictionary(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
+func TestGetPredefinedIdentifiers(t *testing.T) {
+	client, err := tests.NewZiaClient()
+	require.NoError(t, err, "Error creating client")
+	service := services.New(client)
+
+	t.Run("Successful fetch of predefined identifiers", func(t *testing.T) {
+		dictionaryName := "CRED_LEAKAGE"
+		identifiers, dictionaryID, err := GetPredefinedIdentifiers(service, dictionaryName)
+		require.NoError(t, err)
+		assert.NotZero(t, dictionaryID)
+		assert.NotEmpty(t, identifiers)
+		fmt.Printf("Dictionary ID: %d\n", dictionaryID)
+		fmt.Printf("Predefined Identifiers: %v\n", identifiers)
+	})
+
+	t.Run("Error fetching dictionary by name", func(t *testing.T) {
+		dictionaryName := "InvalidDictionaryName" // Replace with a name that doesn't exist
+		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		assert.Error(t, err)
+	})
+
+	t.Run("Error reading predefined identifiers", func(t *testing.T) {
+		// Assuming there's no predefined identifier for this dictionary
+		dictionaryName := "AnotherInvalidDictionaryName" // Replace with another name that doesn't exist
+		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		assert.Error(t, err)
+	})
+}
+
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DlpDictionary, error) {
+func tryRetrieveResource(s *services.Service, id int) (*DlpDictionary, error) {
 	var resource *DlpDictionary
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -182,9 +215,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -195,9 +228,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.DeleteDlpDictionary(0)
+	_, err = DeleteDlpDictionary(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -208,9 +241,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &DlpDictionary{})
+	_, _, err = Update(service, 0, &DlpDictionary{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -221,9 +254,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non-existent-name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

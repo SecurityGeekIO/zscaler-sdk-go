@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
 
 func TestIdPController(t *testing.T) {
@@ -13,9 +14,9 @@ func TestIdPController(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	providers, _, err := service.GetAll()
+	providers, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting identity providers: %v", err)
 		return
@@ -24,9 +25,10 @@ func TestIdPController(t *testing.T) {
 		t.Errorf("No identity provider found")
 		return
 	}
+
 	name := providers[0].Name
 	t.Log("Getting identity provider by name:" + name)
-	provider, _, err := service.GetByName(name)
+	provider, _, err := GetByName(service, name)
 	if err != nil {
 		t.Errorf("Error getting identity provider by name: %v", err)
 		return
@@ -35,11 +37,33 @@ func TestIdPController(t *testing.T) {
 		t.Errorf("identity provider name does not match: expected %s, got %s", name, provider.Name)
 		return
 	}
+
+	// Additional step: Use the ID of the first provider to test the Get function
+	firstProviderID := providers[0].ID
+	t.Log("Getting identity provider by ID:" + firstProviderID)
+	providerByID, _, err := Get(service, firstProviderID)
+	if err != nil {
+		t.Errorf("Error getting identity provider by ID: %v", err)
+		return
+	}
+	if providerByID.ID != firstProviderID {
+		t.Errorf("identity provider ID does not match: expected %s, got %s", firstProviderID, providerByID.ID)
+		return
+	}
+
 	// Negative Test: Try to retrieve a Idp with a non-existent name
 	nonExistentName := "ThisIdpNameDoesNotExist"
-	_, _, err = service.GetByName(nonExistentName)
+	_, _, err = GetByName(service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
+		return
+	}
+
+	// Negative Test: Try to retrieve an Idp with a non-existent ID
+	nonExistentID := "non_existent_id"
+	_, _, err = Get(service, nonExistentID)
+	if err == nil {
+		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
 	}
 }
@@ -51,9 +75,9 @@ func TestResponseFormatValidation(t *testing.T) {
 		return
 	}
 
-	service := New(client)
+	service := services.New(client)
 
-	providers, _, err := service.GetAll()
+	providers, _, err := GetAll(service)
 	if err != nil {
 		t.Errorf("Error getting identity provider: %v", err)
 		return
@@ -80,9 +104,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.GetByName("non-existent-name")
+	_, _, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

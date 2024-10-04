@@ -2,12 +2,12 @@ package networkapplicationgroups
 
 import (
 	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -41,52 +41,6 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAllNetworkApplicationGroups()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
-}
-
 func TestNetworkApplicationGroups(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
@@ -95,7 +49,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	nwAppgroup := NetworkApplicationGroups{
 		Name:                name,
@@ -107,7 +61,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = service.Create(&nwAppgroup)
+		createdResource, err = Create(service, &nwAppgroup)
 		return err
 	})
 	if err != nil {
@@ -136,14 +90,14 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.GetNetworkApplicationGroups(createdResource.ID)
+	updatedResource, err := GetNetworkApplicationGroups(service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -155,7 +109,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetNetworkApplicationGroupsByName(updateName)
+	retrievedResource, err = GetNetworkApplicationGroupsByName(service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -166,7 +120,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAllNetworkApplicationGroups()
+	resources, err := GetAllNetworkApplicationGroups(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -186,22 +140,22 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		return delErr
 	})
-	_, err = service.GetNetworkApplicationGroups(createdResource.ID)
+	_, err = GetNetworkApplicationGroups(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*NetworkApplicationGroups, error) {
+func tryRetrieveResource(s *services.Service, id int) (*NetworkApplicationGroups, error) {
 	var resource *NetworkApplicationGroups
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.GetNetworkApplicationGroups(id)
+		resource, err = GetNetworkApplicationGroups(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -217,9 +171,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetNetworkApplicationGroups(0)
+	_, err = GetNetworkApplicationGroups(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -230,9 +184,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -243,9 +197,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &NetworkApplicationGroups{})
+	_, _, err = Update(service, 0, &NetworkApplicationGroups{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -256,9 +210,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetNetworkApplicationGroupsByName("non-existent-name")
+	_, err = GetNetworkApplicationGroupsByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}

@@ -1,17 +1,21 @@
 package urlcategories
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services/common"
 )
 
 const (
 	urlCategoriesEndpoint = "/urlCategories"
+	urlQuotaHandler       = "urlQuota"
+	urlLookupEndpoint     = "/urlLookup"
 )
 
 type URLCategory struct {
@@ -99,7 +103,30 @@ type URLKeywordCounts struct {
 	RetainParentKeywordCount int `json:"retainParentKeywordCount,omitempty"`
 }
 
-func (service *Service) Get(categoryID string) (*URLCategory, error) {
+type URLQuota struct {
+	UniqueUrlsProvisioned int `json:"uniqueUrlsProvisioned,omitempty"`
+	RemainingUrlsQuota    int `json:"remainingUrlsQuota,omitempty"`
+}
+
+type URLClassification struct {
+	URL                                 string   `json:"url,omitempty"`
+	URLClassifications                  []string `json:"urlClassifications,omitempty"`
+	URLClassificationsWithSecurityAlert []string `json:"urlClassificationsWithSecurityAlert,omitempty"`
+	Application                         string   `json:"application,omitempty"`
+}
+
+type DomainMatch struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type URLReview struct {
+	URL        string        `json:"url"`
+	DomainType string        `json:"domainType"`
+	Matches    []DomainMatch `json:"matches"`
+}
+
+func Get(service *services.Service, categoryID string) (*URLCategory, error) {
 	var urlCategory URLCategory
 	err := service.Client.Read(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), &urlCategory)
 	if err != nil {
@@ -110,35 +137,31 @@ func (service *Service) Get(categoryID string) (*URLCategory, error) {
 	return &urlCategory, nil
 }
 
-func (service *Service) GetCustomURLCategories(customName string) (*URLCategory, error) {
+func GetCustomURLCategories(service *services.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
 	var urlCategory []URLCategory
-	err := common.ReadAllPages(service.Client, fmt.Sprintf("%s?customOnly=%s", urlCategoriesEndpoint, "true"), &urlCategory)
+	queryParams := url.Values{}
+
+	if includeOnlyUrlKeywordCounts {
+		queryParams.Set("includeOnlyUrlKeywordCounts", "false")
+	}
+	if customOnly {
+		queryParams.Set("customOnly", "true")
+	}
+
+	err := service.Client.Read(fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, custom := range urlCategory {
-		if strings.EqualFold(custom.ConfiguredName, customName) { // Use ConfiguredName instead of ID for comparison
+		if strings.EqualFold(custom.ConfiguredName, customName) {
 			return &custom, nil
 		}
 	}
 	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
 }
 
-func (service *Service) GetIncludeOnlyUrlKeyWordCounts(customName string) (*URLCategory, error) {
-	var urlCategory []URLCategory
-	err := service.Client.Read(fmt.Sprintf("%s?includeOnlyUrlKeywordCounts=%s", urlCategoriesEndpoint, url.QueryEscape(customName)), &urlCategory)
-	if err != nil {
-		return nil, err
-	}
-	for _, custom := range urlCategory {
-		if strings.EqualFold(custom.ID, customName) {
-			return &custom, nil
-		}
-	}
-	return nil, fmt.Errorf("no custom url category found with name: %s", customName)
-}
-
-func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory, error) {
+func CreateURLCategories(service *services.Service, category *URLCategory) (*URLCategory, error) {
 	resp, err := service.Client.Create(urlCategoriesEndpoint, *category)
 	if err != nil {
 		return nil, err
@@ -153,7 +176,7 @@ func (service *Service) CreateURLCategories(category *URLCategory) (*URLCategory
 	return createdUrlCategory, nil
 }
 
-func (service *Service) UpdateURLCategories(categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
+func UpdateURLCategories(service *services.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
 	resp, err := service.Client.UpdateWithPut(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
 	if err != nil {
 		return nil, nil, err
@@ -163,7 +186,7 @@ func (service *Service) UpdateURLCategories(categoryID string, category *URLCate
 	return updatedUrlCategory, nil, nil
 }
 
-func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, error) {
+func DeleteURLCategories(service *services.Service, categoryID string) (*http.Response, error) {
 	err := service.Client.Delete(fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID))
 	if err != nil {
 		return nil, err
@@ -172,8 +195,74 @@ func (service *Service) DeleteURLCategories(categoryID string) (*http.Response, 
 	return nil, nil
 }
 
-func (service *Service) GetAll() ([]URLCategory, error) {
+func GetURLQuota(service *services.Service) (*URLQuota, error) {
+	url := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, urlQuotaHandler)
+	var quota URLQuota
+	err := service.Client.Read(url, &quota)
+	if err != nil {
+		return nil, err
+	}
+	return &quota, nil
+}
+
+func GetURLLookup(service *services.Service, urls []string) ([]URLClassification, error) {
+	resp, err := service.Client.CreateWithSlicePayload(urlLookupEndpoint, urls)
+	if err != nil {
+		return nil, err
+	}
+
+	var lookupResults []URLClassification
+	err = json.Unmarshal(resp, &lookupResults)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Client.Logger.Printf("[DEBUG] returning URL lookup results: %+v", lookupResults)
+	return lookupResults, nil
+}
+
+func GetAll(service *services.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint, &urlCategories)
 	return urlCategories, err
+}
+
+func GetAllLite(service *services.Service) ([]URLCategory, error) {
+	var urlCategories []URLCategory
+	err := common.ReadAllPages(service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
+	if err != nil {
+		service.Client.Logger.Printf("[ERROR] Error fetching URL categories: %v", err)
+		return nil, err
+	}
+	return urlCategories, nil
+}
+
+func CreateURLReview(service *services.Service, domains []string) ([]URLReview, error) {
+	resp, err := service.Client.CreateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", domains)
+	if err != nil {
+		return nil, err
+	}
+
+	var reviewResults []URLReview
+	err = json.Unmarshal(resp, &reviewResults)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Client.Logger.Printf("[DEBUG] returning URL review results: %+v", reviewResults)
+	return reviewResults, nil
+}
+
+func UpdateURLReview(service *services.Service, reviews []URLReview) error {
+	resp, err := service.Client.UpdateWithSlicePayload(urlCategoriesEndpoint+"/review/domains", reviews)
+	if err != nil {
+		return err
+	}
+
+	if len(resp) > 0 {
+		return errors.New("unexpected response format")
+	}
+
+	service.Client.Logger.Printf("[DEBUG] successfully updated URL review")
+	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -21,10 +22,7 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
-			// this will allow to remove resource from cache when PUT/DELETE/PATCH requests are called, which modifies the resource
 			c.cache.Delete(key)
-			// to avoid resources that GET url is not the same as DELETE/PUT/PATCH url, because of different query params.
-			// example delete app segment has key url/<id>?forceDelete=true but GET has url/<id>, in this case we clean the whole cache entries with key prefix url/<id>
 			c.cache.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 		}
 		resp := c.cache.Get(key)
@@ -40,15 +38,44 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		}
 	}
 
+	// Ensure the session is valid before making the request
+	err := c.checkSession()
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := c.HTTPClient.Do(req)
 	logger.LogResponse(c.Logger, resp, start, reqID)
 	if err != nil {
 		return resp, err
 	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return resp, err
+	}
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	// Fallback check for SESSION_NOT_VALID
+	if resp.StatusCode == http.StatusUnauthorized || strings.Contains(string(body), "SESSION_NOT_VALID") {
+		// Refresh session and retry
+		err := c.refreshSession()
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("JSessionID", c.session.JSessionID)
+		resp, err = c.HTTPClient.Do(req)
+		logger.LogResponse(c.Logger, resp, start, reqID)
+		if err != nil {
+			return resp, err
+		}
+	}
+
 	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
 		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
 		c.cache.Set(key, cache.CopyResponse(resp))
 	}
+
 	return resp, nil
 }
 
@@ -92,13 +119,6 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 	start := time.Now()
 	logger.LogRequest(c.Logger, req, reqID, otherHeaders, !isSandboxRequest)
 	for retry := 1; retry <= 5; retry++ {
-		if !isSandboxRequest {
-			err = c.checkSession()
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		resp, err = c.do(req, start, reqID)
 		if err != nil {
 			return nil, err
@@ -132,7 +152,7 @@ func (client *Client) WithFreshCache() {
 	client.freshCache = true
 }
 
-// Create send HTTP Post request.
+// Create sends an HTTP POST request.
 func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to create with a nil payload not a Struct")
@@ -151,6 +171,13 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 	if len(resp) > 0 {
+		// Check if the response is an array of strings
+		var stringArrayResponse []string
+		if json.Unmarshal(resp, &stringArrayResponse) == nil {
+			return stringArrayResponse, nil
+		}
+
+		// Otherwise, handle as usual
 		responseObject := reflect.New(t).Interface()
 		err = json.Unmarshal(resp, &responseObject)
 		if err != nil {
@@ -164,6 +191,56 @@ func (c *Client) Create(endpoint string, o interface{}) (interface{}, error) {
 		// in case of 204 no content
 		return nil, nil
 	}
+}
+
+func (c *Client) CreateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to create with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to create with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		// in case of 204 no content
+		return nil, nil
+	}
+}
+
+func (c *Client) UpdateWithSlicePayload(endpoint string, slice interface{}) ([]byte, error) {
+	if slice == nil {
+		return nil, errors.New("tried to update with a nil payload not a Slice")
+	}
+
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil, errors.New("tried to update with a " + v.Kind().String() + " not a Slice")
+	}
+
+	data, err := json.Marshal(slice)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Request(endpoint, "PUT", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 // Read ...
@@ -223,4 +300,32 @@ func (c *Client) Delete(endpoint string) error {
 		return err
 	}
 	return nil
+}
+
+// BulkDelete sends an HTTP POST request for bulk deletion and expects a 204 No Content response.
+func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Response, error) {
+	if payload == nil {
+		return nil, errors.New("tried to delete with a nil payload, expected a struct")
+	}
+
+	// Marshal the payload into JSON
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the POST request
+	resp, err := c.Request(endpoint, "POST", data, "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the status code (204 No Content expected)
+	if len(resp) == 0 {
+		c.Logger.Printf("[DEBUG] Bulk delete successful with 204 No Content")
+		return &http.Response{StatusCode: 204}, nil
+	}
+
+	// If the response is not empty, this might indicate an error or unexpected behavior
+	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }

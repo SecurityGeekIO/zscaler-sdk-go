@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcon"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 )
@@ -145,4 +147,30 @@ func WriteJSONResponse(t *testing.T, w http.ResponseWriter, statusCode int, data
 	}
 
 	return nil
+}
+
+func NewZccClient() (*zcc.Client, error) {
+	clientID := os.Getenv("ZCC_CLIENT_ID")
+	clientSecret := os.Getenv("ZCC_CLIENT_SECRET")
+	cloud := os.Getenv("ZCC_CLOUD")
+	config, err := zcc.NewConfig(clientID, clientSecret, cloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating config failed: %v\n", err)
+		return nil, err
+	}
+	zccClient := zcc.NewClient(config)
+	return zccClient, nil
+}
+
+func NewZdxClient() (*zdx.Client, error) {
+	clientID := os.Getenv("ZDX_API_KEY_ID")
+	clientSecret := os.Getenv("ZDX_API_SECRET")
+	// cloud := os.Getenv("ZCC_CLOUD")
+	config, err := zdx.NewConfig(clientID, clientSecret, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating config failed: %v\n", err)
+		return nil, err
+	}
+	zdxClient := zdx.NewClient(config)
+	return zdxClient, nil
 }

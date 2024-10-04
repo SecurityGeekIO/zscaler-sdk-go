@@ -7,55 +7,14 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"math/big"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
 )
-
-// clean all resources
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources() // clean up at the beginning
-}
-
-func teardown() {
-	cleanResources() // clean up at the end
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZpaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, _, _ := service.GetAll()
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") || strings.HasPrefix(r.Name, "updated-") {
-			log.Printf("Deleting resource with ID: %s, Name: %s", r.ID, r.Name)
-			_, _ = service.Delete(r.ID)
-		}
-	}
-}
 
 func TestCBICertificates(t *testing.T) {
 	// Initialize the ZPA client
@@ -106,7 +65,8 @@ func TestCBICertificates(t *testing.T) {
 	certName := fmt.Sprintf("test-rootCA %s", randomName)
 
 	// Create the certificate object
-	service := New(client)
+	service := services.New(client)
+
 	cbiCertificate := CBICertificate{
 		PEM:  string(rootCertPEM),
 		Name: certName,
@@ -118,19 +78,37 @@ func TestCBICertificates(t *testing.T) {
 			PEM:  "", // Invalid as it's empty
 			Name: "invalid-cert",
 		}
-		_, _, err := service.Create(&invalidCert)
+		_, _, err := Create(service, &invalidCert)
 		if err == nil {
 			t.Errorf("Expected error while uploading invalid certificate, got nil")
 		}
 	})
 
 	// Upload the certificate
-	createdCert, _, err := service.Create(&cbiCertificate)
+	createdCert, _, err := Create(service, &cbiCertificate)
 	if err != nil {
 		t.Fatalf("Error uploading certificate: %v", err)
 	}
 
-	// Test for updating the certificate name
+	// Test 2: Verify the certificate is present in the GetAll list
+	t.Run("TestGetAllCertificates", func(t *testing.T) {
+		allCerts, _, err := GetAll(service)
+		if err != nil {
+			t.Fatalf("Error retrieving all certificates: %v", err)
+		}
+		found := false
+		for _, cert := range allCerts {
+			if cert.ID == createdCert.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Certificate not found in GetAll response")
+		}
+	})
+
+	// Test 3: Update the certificate name
 	t.Run("TestCertificateUpdate", func(t *testing.T) {
 		// Generate a new random name for updating the certificate
 		updatedName, err := generateRandomString(10)
@@ -141,13 +119,13 @@ func TestCBICertificates(t *testing.T) {
 
 		// Update the certificate with the new name
 		cbiCertificate.Name = updatedCertName
-		_, err = service.Update(createdCert.ID, &cbiCertificate)
+		_, err = Update(service, createdCert.ID, &cbiCertificate)
 		if err != nil {
 			t.Fatalf("Error updating certificate: %v", err)
 		}
 
 		// Verify the update by retrieving the certificate again
-		updatedCert, _, err := service.Get(createdCert.ID)
+		updatedCert, _, err := Get(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error retrieving updated certificate: %v", err)
 		}
@@ -155,52 +133,31 @@ func TestCBICertificates(t *testing.T) {
 			t.Errorf("Updated certificate name mismatch. Expected: %s, Got: %s", updatedCertName, updatedCert.Name)
 		}
 	})
-	// Verify the upload by retrieving the certificate by ID
-	retrievedCert, _, err := service.Get(createdCert.ID)
-	if err != nil {
-		t.Fatalf("Error retrieving uploaded certificate: %v", err)
-	}
-	if retrievedCert.Name != cbiCertificate.Name {
 
-		// Verify the upload by retrieving the certificate by ID
-		retrievedCert, _, err := service.Get(createdCert.ID)
-		if err != nil {
-			t.Fatalf("Error retrieving uploaded certificate: %v", err)
-		}
-		if retrievedCert.Name != cbiCertificate.Name {
-			t.Errorf("Retrieved certificate name mismatch. Expected: %s, Got: %s", cbiCertificate.Name, retrievedCert.Name)
-		}
-
-		// Retrieve the certificate by name
-		retrievedCertByName, _, err := service.GetByName(createdCert.Name)
+	// Test 4: Retrieve the certificate by name
+	t.Run("TestGetByName", func(t *testing.T) {
+		retrievedCertByName, _, err := GetByNameOrID(service, cbiCertificate.Name)
 		if err != nil {
 			t.Fatalf("Error retrieving uploaded certificate by name: %v", err)
 		}
 		if retrievedCertByName.Name != cbiCertificate.Name {
 			t.Errorf("Retrieved by name certificate name mismatch. Expected: %s, Got: %s", cbiCertificate.Name, retrievedCertByName.Name)
 		}
+	})
 
-		// Delete the certificate
-		_, err = service.Delete(createdCert.ID)
+	//Test 5: Delete the certificate
+	t.Run("TestDeleteCertificate", func(t *testing.T) {
+		_, err := Delete(service, createdCert.ID)
 		if err != nil {
 			t.Fatalf("Error deleting certificate: %v", err)
 		}
 
-		// Test 3: Attempt Retrieval After Deletion
-		t.Run("TestRetrieveAfterDeletion", func(t *testing.T) {
-			_, _, err := service.Get(createdCert.ID)
-			if err == nil {
-				t.Errorf("Expected error while retrieving deleted certificate, got nil")
-			}
-		})
-
-		// Verify deletion
-		_, _, err = service.Get(createdCert.ID)
-		if err == nil || !strings.Contains(err.Error(), "404") {
-			t.Errorf("Certificate still exists after deletion or unexpected error: %v", err)
+		// Attempt Retrieval After Deletion
+		_, _, err = Get(service, createdCert.ID)
+		if err == nil || !strings.Contains(err.Error(), "resource.not.found") {
+			t.Errorf("Expected error while retrieving deleted certificate, got nil or unexpected error: %v", err)
 		}
-
-	}
+	})
 }
 
 // generateRandomString generates a random string of the given length

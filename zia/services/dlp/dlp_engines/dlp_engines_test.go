@@ -2,12 +2,12 @@ package dlp_engines
 
 import (
 	"log"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia/services"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/stretchr/testify/require"
 )
@@ -42,62 +42,16 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true")) // simplified for clarity
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	client, err := tests.NewZiaClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	service := New(client)
-	resources, err := service.GetAll()
-	if err != nil {
-		log.Printf("Error retrieving resources during cleanup: %v", err)
-		return
-	}
-
-	for _, r := range resources {
-		if strings.HasPrefix(r.Name, "tests-") {
-			_, err := service.Delete(r.ID)
-			if err != nil {
-				log.Printf("Error deleting resource %d: %v", r.ID, err)
-			}
-		}
-	}
-}
-
 func TestDLPEngine(t *testing.T) {
-	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	description := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
-	updateDescription := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	name := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	description := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
+	updateDescription := "tests-" + acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 	client, err := tests.NewZiaClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 		return
 	}
-	service := New(client)
+	service := services.New(client)
 
 	engine := DLPEngines{
 		Name:             name,
@@ -110,7 +64,7 @@ func TestDLPEngine(t *testing.T) {
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = service.Create(&engine)
+		createdResource, _, err = Create(service, &engine)
 		return err
 	})
 	if err != nil {
@@ -138,7 +92,7 @@ func TestDLPEngine(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = service.Update(createdResource.ID, retrievedResource)
+		_, _, err = Update(service, createdResource.ID, retrievedResource)
 		require.NoError(t, err, "Updating a dlp engine caused an error")
 		return err
 	})
@@ -146,7 +100,7 @@ func TestDLPEngine(t *testing.T) {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := service.Get(createdResource.ID)
+	updatedResource, err := Get(service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -158,7 +112,7 @@ func TestDLPEngine(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = service.GetByName(name)
+	retrievedResource, err = GetByName(service, name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
@@ -169,7 +123,7 @@ func TestDLPEngine(t *testing.T) {
 		t.Errorf("Expected retrieved resource description '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
-	resources, err := service.GetAll()
+	resources, err := GetAll(service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -189,23 +143,23 @@ func TestDLPEngine(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := service.Delete(createdResource.ID)
+		_, delErr := Delete(service, createdResource.ID)
 		require.NoError(t, err, "Should not error when deleting")
 		return delErr
 	})
-	_, err = service.Get(createdResource.ID)
+	_, err = Get(service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *Service, id int) (*DLPEngines, error) {
+func tryRetrieveResource(s *services.Service, id int) (*DLPEngines, error) {
 	var resource *DLPEngines
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = s.Get(id)
+		resource, err = Get(s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -221,9 +175,9 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Get(0)
+	_, err = Get(service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -234,9 +188,9 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.Delete(0)
+	_, err = Delete(service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -247,9 +201,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, _, err = service.Update(0, &DLPEngines{})
+	_, _, err = Update(service, 0, &DLPEngines{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -260,9 +214,9 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	service := New(client)
+	service := services.New(client)
 
-	_, err = service.GetByName("non-existent-name")
+	_, err = GetByName(service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
