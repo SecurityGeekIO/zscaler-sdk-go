@@ -305,10 +305,10 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 	return req, nil
 }
 
-func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Request, error) {
+func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Response, *http.Request, error) {
 	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
@@ -328,7 +328,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
 			}
 			c.oauth2Credentials.Logger.Printf("[INFO] served from cache, key:%s\n", key)
-			return respData, req, nil
+			return respData, resp, req, nil
 		}
 	}
 
@@ -342,17 +342,17 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		resp, err = httpClient.Do(req)
 		logger.LogResponse(c.oauth2Credentials.Logger, resp, start, reqID)
 		if err != nil {
-			return nil, nil, err
+			return nil, resp, nil, err
 		}
 		if !isSandboxRequest && (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) {
 			err = c.authenticate()
 			if err != nil {
-				return nil, nil, err
+				return nil, resp, nil, err
 			}
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
 		} else if resp.StatusCode > 299 {
 			resp.Body.Close()
-			return nil, nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			return nil, resp, nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		} else if resp.StatusCode < 300 {
 			break
 		}
@@ -360,7 +360,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, err
+		return nil, resp, nil, err
 	}
 
 	// Cache logic for successful GET requests
@@ -370,7 +370,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		c.oauth2Credentials.CacheManager.Set(key, cache.CopyResponse(resp))
 	}
 	_ = tryDrainBody(resp.Body)
-	return bodyBytes, req, nil
+	return bodyBytes, resp, req, nil
 }
 
 func tryDrainBody(body io.ReadCloser) error {
