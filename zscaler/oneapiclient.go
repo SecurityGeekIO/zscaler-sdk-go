@@ -493,7 +493,7 @@ func WithCacheTti(i time.Duration) ConfigSetter {
 }
 
 // WithHttpClient sets the HttpClient in the Config.
-func WithHttpClient(httpClient *http.Client) ConfigSetter {
+func WithHttpClientPtr(httpClient *http.Client) ConfigSetter {
 	return func(c *Configuration) {
 		c.HTTPClient = httpClient
 	}
