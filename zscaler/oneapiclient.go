@@ -143,6 +143,15 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		confSetter(cfg)
 	}
 
+	// Recheck and adjust defaults after setters are applied.
+	if cfg.Zscaler.Client.RateLimit.MaxRetries == 0 {
+		cfg.Zscaler.Client.RateLimit.MaxRetries = 4 // Default to 4 if user set it to zero.
+	}
+
+	if cfg.Zscaler.Client.RequestTimeout == 0 {
+		cfg.Zscaler.Client.RequestTimeout = 60 * time.Second // Default to 60 seconds if user set it to zero.
+	}
+
 	// UserAgentExtra gets added if provided.
 	if cfg.UserAgentExtra != "" {
 		cfg.UserAgent = fmt.Sprintf("%s %s", cfg.UserAgent, cfg.UserAgentExtra)
