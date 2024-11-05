@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/idpcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/idpcontroller"
 )
 
 func TestIdpController_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestIdpController_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	idp, _, err := idpcontroller.Get(context.Background(), service, "123")
+	idp, _, err := idpcontroller.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -42,7 +40,7 @@ func TestIdpController_Get(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 
 func TestIdpController_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -68,7 +66,7 @@ func TestIdpController_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	idp, _, err := idpcontroller.GetByName(context.Background(), service, "Idp1")
+	idp, _, err := idpcontroller.GetByName(service, "Idp1")
 	// Check if the request was successful
 	if err != nil {
 		t.Fatalf("Error making GetByName request: %v", err)
@@ -84,7 +82,7 @@ func TestIdpController_GetByName(t *testing.T) {
 }
 
 func TestIdpController_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -101,7 +99,7 @@ func TestIdpController_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	idps, _, err := idpcontroller.GetAll(context.Background(), service)
+	idps, _, err := idpcontroller.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -125,4 +123,3 @@ func TestIdpController_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

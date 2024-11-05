@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/bacertificate"
 )
 
 func TestBaCertificate_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestBaCertificate_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	certificate, _, err := bacertificate.Get(context.Background(), service, "123")
+	certificate, _, err := bacertificate.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -42,7 +40,7 @@ func TestBaCertificate_Get(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 /*
 func TestBaCertificate_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v2/admin/customers/customerid/clientlessCertificate/issued", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
@@ -82,9 +80,9 @@ func TestBaCertificate_GetByName(t *testing.T) {
 		t.Errorf("Expected certificate name 'Certificate1', but got '%s'", certificate.Name)
 	}
 }
-
+*/
 func TestBaCertificate_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -101,7 +99,7 @@ func TestBaCertificate_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	certificates, _, err := bacertificate.GetAll(context.Background(), service)
+	certificates, _, err := bacertificate.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -125,4 +123,3 @@ func TestBaCertificate_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

@@ -1,19 +1,20 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"reflect"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorcontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/appservercontroller"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/servergroup"
 )
 
 func TestService_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -130,7 +131,7 @@ func TestService_Get(t *testing.T) {
 
 	// Call the Get method
 	groupID := "groupID"
-	serverGroup, resp, err := servergroup.Get(context.Background(), service, groupID)
+	serverGroup, resp, err := servergroup.Get(service, groupID)
 	// Check the error
 	if err != nil {
 		t.Errorf("Error calling Get: %s", err)
@@ -148,27 +149,26 @@ func TestService_Get(t *testing.T) {
 		CreationTime:     "2023-06-12T10:00:00Z",
 		ModifiedBy:       "John Doe",
 		ModifiedTime:     "2023-06-12T10:00:00Z",
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{
-				Citycountry:           "City, Country",
-				CountryCode:           "CC",
-				CreationTime:          "2023-06-12T10:00:00Z",
-				Description:           "Test group",
-				DnsqueryType:          "A",
-				Enabled:               true,
-				GeolocationID:         "locationID",
-				ID:                    "groupID",
-				Latitude:              "0.0",
-				Location:              "Test location",
-				Longitude:             "0.0",
-				ModifiedBy:            "John Doe",
-				ModifiedTime:          "2023-06-12T10:00:00Z",
-				Name:                  "Test Group",
-				SiemAppconnectorGroup: false,
-				UpgradeDay:            "Saturday",
-				UpgradeTimeinSecs:     "7200",
-				VersionProfileID:      "profileID",
-				AppServerGroups: []servergroup.AppServerGroups{
+				CityCountry:       "City, Country",
+				CountryCode:       "CC",
+				CreationTime:      "2023-06-12T10:00:00Z",
+				Description:       "Test group",
+				DNSQueryType:      "A",
+				Enabled:           true,
+				GeoLocationID:     "locationID",
+				ID:                "groupID",
+				Latitude:          "0.0",
+				Location:          "Test location",
+				Longitude:         "0.0",
+				ModifiedBy:        "John Doe",
+				ModifiedTime:      "2023-06-12T10:00:00Z",
+				Name:              "Test Group",
+				UpgradeDay:        "Saturday",
+				UpgradeTimeInSecs: "7200",
+				VersionProfileID:  "profileID",
+				AppServerGroup: []appconnectorgroup.AppServerGroup{
 					{
 						ConfigSpace:      "testConfigSpace",
 						CreationTime:     "2023-06-12T10:00:00Z",
@@ -181,7 +181,7 @@ func TestService_Get(t *testing.T) {
 						Name:             "Test Group",
 					},
 				},
-				Connectors: []servergroup.Connectors{
+				Connectors: []appconnectorcontroller.AppConnector{
 					{
 						ApplicationStartTime:     "2023-06-12T10:00:00Z",
 						AppConnectorGroupID:      "groupID",
@@ -196,29 +196,26 @@ func TestService_Get(t *testing.T) {
 						ExpectedVersion:          "2.0",
 						Fingerprint:              "Test fingerprint",
 						ID:                       "connectorID",
-						IPACL:                    []string{"0.0.0.0/0"},
 						IssuedCertID:             "certID",
-						LastBrokerConnecttime:    "2023-06-12T10:00:00Z",
+						LastBrokerConnectTime:    "2023-06-12T10:00:00Z",
 						LastBrokerDisconnectTime: "2023-06-12T10:00:00Z",
 						LastUpgradeTime:          "2023-06-12T10:00:00Z",
-						Latitude:                 0.0,
-						Location:                 "Test location",
-						Longitude:                0.0,
-						ModifiedBy:               "John Doe",
+						Latitude:                 "37.33874",
+						Location:                 "San Jose, CA, USA",
+						Longitude:                "-121.8852525",
 						ModifiedTime:             "2023-06-12T10:00:00Z",
 						Name:                     "Test Connector",
 						Platform:                 "Test Platform",
 						PreviousVersion:          "1.0",
 						PrivateIP:                "10.0.0.1",
 						PublicIP:                 "192.168.0.1",
-						SigningCert:              map[string]interface{}{},
 						UpgradeAttempt:           "Test attempt",
 						UpgradeStatus:            "Success",
 					},
 				},
 			},
 		},
-		Servers: []servergroup.ApplicationServer{
+		Servers: []appservercontroller.ApplicationServer{
 			{
 				Address:           "192.168.0.1",
 				AppServerGroupIds: []string{"groupID"},
@@ -251,9 +248,9 @@ func TestService_Get(t *testing.T) {
 	}
 }
 
-
+/*
 	func TestServerGroup_GetByName(t *testing.T) {
-		client, mux, server := tests.NewOneAPIClientMock()
+		client, mux, server := tests.NewZpaClientMock()
 		defer server.Close()
 		mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/serverGroup", func(w http.ResponseWriter, r *http.Request) {
 			// Get the query parameter "name" from the request
@@ -305,9 +302,9 @@ func TestService_Get(t *testing.T) {
 			t.Errorf("Expected group name 'Group1', but got '%s'", group.Name)
 		}
 	}
-
+*/
 func TestServerGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -337,7 +334,7 @@ func TestServerGroup_Create(t *testing.T) {
 	}
 
 	// Make the Create request
-	createdGroup, _, err := servergroup.Create(context.Background(), service, group)
+	createdGroup, _, err := servergroup.Create(service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Create request: %v", err)
@@ -353,7 +350,7 @@ func TestServerGroup_Create(t *testing.T) {
 }
 
 func TestServerGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -385,7 +382,7 @@ func TestServerGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := servergroup.Update(context.Background(), service, "123", group)
+	_, err := servergroup.Update(service, "123", group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -393,7 +390,7 @@ func TestServerGroup_Update(t *testing.T) {
 }
 
 func TestServerGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -404,7 +401,7 @@ func TestServerGroup_Delete(t *testing.T) {
 	})
 
 	// Make the Delete request
-	_, err := servergroup.Delete(context.Background(), service, "123")
+	_, err := servergroup.Delete(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -412,7 +409,7 @@ func TestServerGroup_Delete(t *testing.T) {
 }
 
 func TestServerGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -454,7 +451,7 @@ func TestServerGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := servergroup.GetAll(context.Background(), service)
+	groups, _, err := servergroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -473,4 +470,3 @@ func TestServerGroup_GetAll(t *testing.T) {
 		t.Errorf("Expected group ID '456' and name 'Group2', but got ID '%s' and name '%s'", groups[1].ID, groups[1].Name)
 	}
 }
-*/

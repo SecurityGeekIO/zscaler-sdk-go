@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/machinegroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/machinegroup"
 )
 
 func TestMachineGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestMachineGroup_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	group, _, err := machinegroup.Get(context.Background(), service, "123")
+	group, _, err := machinegroup.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -42,7 +40,7 @@ func TestMachineGroup_Get(t *testing.T) {
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 /*
 func TestMachineGroup_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 	mux.HandleFunc("/mgmtconfig/v1/admin/customers/customerid/machineGroup", func(w http.ResponseWriter, r *http.Request) {
 		// Get the query parameter "name" from the request
@@ -82,9 +80,9 @@ func TestMachineGroup_GetByName(t *testing.T) {
 		t.Errorf("Expected machine name 'Idp1', but got '%s'", group.Name)
 	}
 }
-
+*/
 func TestMachineGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -101,7 +99,7 @@ func TestMachineGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := machinegroup.GetAll(context.Background(), service)
+	groups, _, err := machinegroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -125,4 +123,3 @@ func TestMachineGroup_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

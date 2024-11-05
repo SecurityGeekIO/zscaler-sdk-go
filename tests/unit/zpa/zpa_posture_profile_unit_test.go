@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/postureprofile"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/postureprofile"
 )
 
 func TestPostureProfile_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestPostureProfile_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	posture, _, err := postureprofile.Get(context.Background(), service, "123")
+	posture, _, err := postureprofile.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -41,7 +39,7 @@ func TestPostureProfile_Get(t *testing.T) {
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestPostureProfile_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -67,7 +65,7 @@ func TestPostureProfile_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	profile, _, err := postureprofile.GetByName(context.Background(), service, "Posture1")
+	profile, _, err := postureprofile.GetByName(service, "Posture1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -83,7 +81,7 @@ func TestPostureProfile_GetByName(t *testing.T) {
 }
 
 func TestPostureProfile_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -100,7 +98,7 @@ func TestPostureProfile_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	profiles, _, err := postureprofile.GetAll(context.Background(), service)
+	profiles, _, err := postureprofile.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -124,4 +122,3 @@ func TestPostureProfile_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

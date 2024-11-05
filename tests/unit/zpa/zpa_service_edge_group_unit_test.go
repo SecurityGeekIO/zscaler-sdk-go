@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/serviceedgegroup"
 )
 
 func TestServiceEdgeGroup_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestServiceEdgeGroup_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	group, _, err := serviceedgegroup.Get(context.Background(), service, "123")
+	group, _, err := serviceedgegroup.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -40,7 +38,7 @@ func TestServiceEdgeGroup_Get(t *testing.T) {
 }
 
 func TestServiceEdgeGroup_Create(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -58,7 +56,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 	}
 
 	// Make the POST request
-	createdGroup, _, err := serviceedgegroup.Create(context.Background(), service, group)
+	createdGroup, _, err := serviceedgegroup.Create(service, group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making POST request: %v", err)
@@ -75,7 +73,7 @@ func TestServiceEdgeGroup_Create(t *testing.T) {
 
 // You can write similar tests for other functions like GetByName, Update, Delete, and GetAll.
 func TestServiceEdgeGroup_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -101,7 +99,7 @@ func TestServiceEdgeGroup_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	group, _, err := serviceedgegroup.GetByName(context.Background(), service, "Group1")
+	group, _, err := serviceedgegroup.GetByName(service, "Group1")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -117,7 +115,7 @@ func TestServiceEdgeGroup_GetByName(t *testing.T) {
 }
 
 func TestServiceEdgeGroup_Update(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -134,7 +132,7 @@ func TestServiceEdgeGroup_Update(t *testing.T) {
 	}
 
 	// Make the Update request
-	_, err := serviceedgegroup.Update(context.Background(), service, "123", &group)
+	_, err := serviceedgegroup.Update(service, "123", &group)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Update request: %v", err)
@@ -142,7 +140,7 @@ func TestServiceEdgeGroup_Update(t *testing.T) {
 }
 
 func TestServiceEdgeGroup_Delete(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -153,7 +151,7 @@ func TestServiceEdgeGroup_Delete(t *testing.T) {
 	})
 
 	// Make the Delete request
-	_, err := serviceedgegroup.Delete(context.Background(), service, "123")
+	_, err := serviceedgegroup.Delete(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making Delete request: %v", err)
@@ -161,7 +159,7 @@ func TestServiceEdgeGroup_Delete(t *testing.T) {
 }
 
 func TestServiceEdgeGroup_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -178,7 +176,7 @@ func TestServiceEdgeGroup_GetAll(t *testing.T) {
 	})
 
 	// Make the GetAll request
-	groups, _, err := serviceedgegroup.GetAll(context.Background(), service)
+	groups, _, err := serviceedgegroup.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -202,4 +200,3 @@ func TestServiceEdgeGroup_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

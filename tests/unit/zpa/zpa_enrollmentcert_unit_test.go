@@ -1,18 +1,16 @@
 package unit
 
-/*
 import (
-	"context"
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/tests"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa/services/enrollmentcert"
 )
 
 func TestEnrollmentCert_Get(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -24,7 +22,7 @@ func TestEnrollmentCert_Get(t *testing.T) {
 	})
 
 	// Make the GET request
-	enrollmentCert, _, err := enrollmentcert.Get(context.Background(), service, "123")
+	enrollmentCert, _, err := enrollmentcert.Get(service, "123")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GET request: %v", err)
@@ -40,7 +38,7 @@ func TestEnrollmentCert_Get(t *testing.T) {
 }
 
 func TestEnrollmentCert_GetByName(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -66,7 +64,7 @@ func TestEnrollmentCert_GetByName(t *testing.T) {
 	})
 
 	// Make the GetByName request
-	enrollmentCert, _, err := enrollmentcert.GetByName(context.Background(), service, "Connector")
+	enrollmentCert, _, err := enrollmentcert.GetByName(service, "Connector")
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetByName request: %v", err)
@@ -82,7 +80,7 @@ func TestEnrollmentCert_GetByName(t *testing.T) {
 }
 
 func TestEnrollmentCert_GetAll(t *testing.T) {
-	client, mux, server := tests.NewOneAPIClientMock()
+	client, mux, server := tests.NewZpaClientMock()
 	defer server.Close()
 
 	service := services.New(client)
@@ -101,7 +99,7 @@ func TestEnrollmentCert_GetAll(t *testing.T) {
 			}`))
 	})
 	// Make the GetAll request
-	enrollmentCerts, _, err := enrollmentcert.GetAll(context.Background(), service)
+	enrollmentCerts, _, err := enrollmentcert.GetAll(service)
 	// Check if the request was successful
 	if err != nil {
 		t.Errorf("Error making GetAll request: %v", err)
@@ -128,4 +126,3 @@ func TestEnrollmentCert_GetAll(t *testing.T) {
 		}
 	}
 }
-*/

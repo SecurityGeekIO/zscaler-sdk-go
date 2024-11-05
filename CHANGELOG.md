@@ -1,5 +1,109 @@
 # Changelog
 
+# 2.732.0 (October 31, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #282](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/282) - Fixed update function in all specialized ZPA Application Segments
+    * `applicationsegmentpra` - The fix now automatically includes the attributes `appId` and `praAppId` in the payload during updates
+    * `applicationsegmentinspection` - The fix now automatically includes the attributes `appId` and `inspectAppId` in the payload during updates
+  -
+
+# 2.731.0 (October 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Enhancements
+
+  - Zscaler Cloud Connector (ZCON)
+    - Added `GET /provUrl` endpoint to list provisioning templates.
+    - Added `GET /provUrl/{id}` endpoint to retrieve a specific provisioning template.
+    - Added `POST /provUrl` endpoint to create provisioning template.
+    - Added `PUT /provUrl/{id}` endpoint to update a specific provisioning template.
+    - Added `DELETE /provUrl/{id}` endpoint to delete a specific provisioning template.
+
+### Internal Changes
+
+[PR #281](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/281) - Added new ZPA Attributes:
+  - Resource: `applicationsegment`
+    * `extranetEnabled`
+    * `apiProtectionEnabled`
+    * `zpnErId`
+
+  - Resource: `policysetcontrollerv1` and `policysetcontrollerv2`
+    * `disabled`
+    * `extranetEnabled`
+    * `extranetDTO`
+    * `privilegedPortalCapabilities`
+
+# 2.73.0 (October 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Enhancements
+
+  - Zscaler Cloud Connector (ZCON)
+    - Added `GET /provUrl` endpoint to list provisioning templates.
+    - Added `GET /provUrl/{id}` endpoint to retrieve a specific provisioning template.
+    - Added `POST /provUrl` endpoint to create provisioning template.
+    - Added `PUT /provUrl/{id}` endpoint to update a specific provisioning template.
+    - Added `DELETE /provUrl/{id}` endpoint to delete a specific provisioning template.
+
+### Internal Changes
+
+[PR #281](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/281) - Added new ZPA Attributes:
+  - Resource: `applicationsegment`
+    * `extranetEnabled`
+    * `apiProtectionEnabled`
+    * `zpnErId`
+
+  - Resource: `policysetcontrollerv1` and `policysetcontrollerv2`
+    * `disabled`
+    * `extranetEnabled`
+    * `extranetDTO`
+    * `privilegedPortalCapabilities`
+
+# 2.72.5 (October 8, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #280](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/280) - Added missing attribute `sourceCountries` to ZIA `firewallfilteringrule`
+
+# 2.72.4 (October 3, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Internal Changes
+
+[PR #278](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/278) - Consolidated several ZPA common functions for Struct simplication.
+
+# 2.72.3 (September 30, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #277](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/277) - Added new attributes to ZPA `servicedgegroup` and `serviceedgecontroller` packages.
+
+# 2.72.2 (September 11, 2024)
+
+## Notes
+- Golang: **v1.22**
+
+### Bug Fixes
+
+[PR #276](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/276) - Fixed removed `omitempty` from ZPA `microtenant_id` attribute in `policysetcontrollerv2`.
+
 # 2.72.1 (August 16, 2024)
 
 ## Notes

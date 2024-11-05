@@ -10,6 +10,10 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/reports/applications"
 )
 
 type AppScore struct {

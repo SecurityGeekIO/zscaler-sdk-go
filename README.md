@@ -34,7 +34,7 @@ To install the Zscaler GO SDK in your project:
   - You can skip this step if you already use `go mod`
   - Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v2@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"`.
+  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"`.
 
 ### You'll also need
 
