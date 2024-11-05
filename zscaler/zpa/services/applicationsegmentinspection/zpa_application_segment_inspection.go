@@ -153,55 +153,35 @@ func Create(ctx context.Context, service *zscaler.Service, appSegmentInspection 
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1
-func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
-	var diff []AppsConfig
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1.Domain == s2.Domain || s1.Name == s2.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			diff = append(diff, s1)
-		}
-	}
-	return diff
-}
-
-func mapInspectionApp(InspectionAppDto []InspectionAppDto) []AppsConfig {
-	result := []AppsConfig{}
-	for _, app := range InspectionAppDto {
-		result = append(result, AppsConfig{
-			Name:   app.Name,
-			Domain: app.Domain,
-			ID:     app.ID,
-			AppID:  app.AppID,
-		})
-	}
-	return result
-}
-
-func appToListStringIDs(apps []AppsConfig) []string {
-	result := []string{}
-	for _, app := range apps {
-		result = append(result, app.ID)
-	}
-	return result
-}
-
 func Update(ctx context.Context, service *zscaler.Service, id string, appSegmentInspection *AppSegmentInspection) (*http.Response, error) {
+	// Step 1: Retrieve the existing resource to get current `appId` and `InspectAppID`
 	existingResource, _, err := Get(ctx, service, id)
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapInspectionApp(existingResource.InspectionAppDto)
-	newApps := difference(appSegmentInspection.CommonAppsDto.AppsConfig, existingApps)
-	removedApps := difference(existingApps, appSegmentInspection.CommonAppsDto.AppsConfig)
-	appSegmentInspection.CommonAppsDto.AppsConfig = newApps
-	appSegmentInspection.CommonAppsDto.DeletedInspectApps = appToListStringIDs(removedApps)
+
+	// Set the primary app ID
+	appSegmentInspection.ID = existingResource.ID
+
+	// Step 2: Map existing `inspectionApp` entries by `Name` to get `InspectAppID` for each sub-application
+	existingInspectionApps := make(map[string]InspectionAppDto)
+	for _, inspectionApp := range existingResource.InspectionAppDto {
+		existingInspectionApps[inspectionApp.Name] = inspectionApp
+	}
+
+	// Step 3: Inject `appId` and `InspectAppID` into each entry in `appsConfig`
+	for i, appConfig := range appSegmentInspection.CommonAppsDto.AppsConfig {
+		if existingApp, ok := existingInspectionApps[appConfig.Name]; ok {
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID   // main app ID
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].InspectAppID = existingApp.ID // InspectAppID for sub-app
+		}
+	}
+
+	// Check if `commonAppsDto` actually has entries, set to nil if empty
+	if len(appSegmentInspection.CommonAppsDto.AppsConfig) == 0 {
+		appSegmentInspection.CommonAppsDto = CommonAppsDto{}
+	}
+
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentInspectionEndpoint, id)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentInspection, nil)
 	if err != nil {

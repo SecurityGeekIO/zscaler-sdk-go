@@ -1,4 +1,4 @@
-package browseraccess
+package applicationsegmentbrowseraccess
 
 import (
 	"context"
@@ -133,6 +133,22 @@ func Create(ctx context.Context, service *zscaler.Service, browserAccess Browser
 }
 
 func Update(ctx context.Context, service *zscaler.Service, appID string, browserAccess *BrowserAccess) (*http.Response, error) {
+	// Fetch the existing state using the Get function to obtain current clientlessApps.id
+	existingState, _, err := Get(ctx, service, appID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve existing state for appID %s: %w", appID, err)
+	}
+
+	// Set appID in clientlessApps and assign existing clientlessApps.id where missing
+	for i := range browserAccess.ClientlessApps {
+		// Set the clientlessApps.appId to the parent appID
+		browserAccess.ClientlessApps[i].AppID = appID
+
+		// If clientlessApps.id is missing in the payload, use the existing state to fill it in
+		if browserAccess.ClientlessApps[i].ID == "" && len(existingState.ClientlessApps) > i {
+			browserAccess.ClientlessApps[i].ID = existingState.ClientlessApps[i].ID
+		}
+	}
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+browserAccessEndpoint, appID)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, browserAccess, nil)
 	if err != nil {

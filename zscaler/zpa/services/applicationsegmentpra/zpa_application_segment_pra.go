@@ -80,7 +80,8 @@ type CommonAppsDto struct {
 
 type AppsConfig struct {
 	ID                  string   `json:"id,omitempty"`
-	AppID               string   `json:"appId,omitempty"`
+	AppID               string   `json:"appId"`
+	PRAAppID            string   `json:"praAppId"`
 	Name                string   `json:"name,omitempty"`
 	Description         string   `json:"description,omitempty"`
 	Enabled             bool     `json:"enabled,omitempty"`
@@ -150,55 +151,34 @@ func Create(ctx context.Context, service *zscaler.Service, appSegmentPra AppSegm
 	return v, resp, nil
 }
 
-// return the new items that were added to slice1
-func difference(slice1 []AppsConfig, slice2 []AppsConfig) []AppsConfig {
-	var diff []AppsConfig
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1.Domain == s2.Domain || s1.Name == s2.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			diff = append(diff, s1)
-		}
-	}
-	return diff
-}
-
-func mapSraApp(PRAApps []PRAApps) []AppsConfig {
-	result := []AppsConfig{}
-	for _, app := range PRAApps {
-		result = append(result, AppsConfig{
-			Name:   app.Name,
-			Domain: app.Domain,
-			ID:     app.ID,
-			AppID:  app.AppID,
-		})
-	}
-	return result
-}
-
-func appToListStringIDs(apps []AppsConfig) []string {
-	result := []string{}
-	for _, app := range apps {
-		result = append(result, app.ID)
-	}
-	return result
-}
-
 func Update(ctx context.Context, service *zscaler.Service, id string, appSegmentPra *AppSegmentPRA) (*http.Response, error) {
+	// Step 1: Retrieve the existing resource to get current `appId` and `praAppId`
 	existingResource, _, err := Get(ctx, service, id)
 	if err != nil {
 		return nil, err
 	}
-	existingApps := mapSraApp(existingResource.PRAApps)
-	newApps := difference(appSegmentPra.CommonAppsDto.AppsConfig, existingApps)
-	removedApps := difference(existingApps, appSegmentPra.CommonAppsDto.AppsConfig)
-	appSegmentPra.CommonAppsDto.AppsConfig = newApps
-	appSegmentPra.CommonAppsDto.DeletedSraApps = appToListStringIDs(removedApps)
+
+	// Set the primary app ID
+	appSegmentPra.ID = existingResource.ID
+
+	// Step 2: Map existing `praApps` entries by `Name` to get `praAppId` for each sub-application
+	existingPraApps := make(map[string]PRAApps)
+	for _, praApp := range existingResource.PRAApps {
+		existingPraApps[praApp.Name] = praApp
+	}
+
+	// Step 3: Inject `appId` and `praAppId` into each entry in `appsConfig`
+	for i, appConfig := range appSegmentPra.CommonAppsDto.AppsConfig {
+		if existingApp, ok := existingPraApps[appConfig.Name]; ok {
+			appSegmentPra.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID // main app ID
+			appSegmentPra.CommonAppsDto.AppsConfig[i].PRAAppID = existingApp.ID   // praAppId for sub-app
+		}
+	}
+
+	// Check if `commonAppsDto` actually has entries, set to nil if empty
+	if len(appSegmentPra.CommonAppsDto.AppsConfig) == 0 {
+		appSegmentPra.CommonAppsDto = CommonAppsDto{}
+	}
 	path := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+appSegmentPraEndpoint, id)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, appSegmentPra, nil)
 	if err != nil {
