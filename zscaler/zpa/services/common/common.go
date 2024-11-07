@@ -60,6 +60,28 @@ type Conditions struct {
 	RHS string `json:"rhs,omitempty"`
 }
 
+type CustomCommonControls struct {
+	ID                               string                   `json:"id,omitempty"`
+	Name                             string                   `json:"name,omitempty"`
+	Action                           string                   `json:"action,omitempty"`
+	ActionValue                      string                   `json:"actionValue,omitempty"`
+	AssociatedInspectionProfileNames []AssociatedProfileNames `json:"associatedInspectionProfileNames,omitempty"`
+	Attachment                       string                   `json:"attachment,omitempty"`
+	ControlGroup                     string                   `json:"controlGroup,omitempty"`
+	ControlNumber                    string                   `json:"controlNumber,omitempty"`
+	ControlType                      string                   `json:"controlType,omitempty"`
+	CreationTime                     string                   `json:"creationTime,omitempty"`
+	DefaultAction                    string                   `json:"defaultAction,omitempty"`
+	DefaultActionValue               string                   `json:"defaultActionValue,omitempty"`
+	Description                      string                   `json:"description,omitempty"`
+	ModifiedBy                       string                   `json:"modifiedBy,omitempty"`
+	ModifiedTime                     string                   `json:"modifiedTime,omitempty"`
+	ParanoiaLevel                    string                   `json:"paranoiaLevel,omitempty"`
+	ProtocolType                     string                   `json:"protocolType,omitempty"`
+	Severity                         string                   `json:"severity,omitempty"`
+	Version                          string                   `json:"version,omitempty"`
+}
+
 type AssociatedProfileNames struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
@@ -69,6 +91,21 @@ type AssociatedProfileNames struct {
 type CommonConfigDetails struct {
 	Name   string `json:"name,omitempty"`
 	Reason string `json:"reason,omitempty"`
+}
+
+type ZPNSubModuleUpgrade struct {
+	ID              string `json:"id,omitempty"`
+	CreationTime    string `json:"creationTime,omitempty"`
+	CurrentVersion  string `json:"currentVersion,omitempty"`
+	EntityGid       string `json:"entityGid,omitempty"`
+	EntityType      string `json:"entityType,omitempty"`
+	ExpectedVersion string `json:"expectedVersion,omitempty"`
+	ModifiedBy      string `json:"modifiedBy,omitempty"`
+	ModifiedTime    string `json:"modifiedTime,omitempty"`
+	PreviousVersion string `json:"previousVersion,omitempty"`
+	Role            string `json:"role,omitempty"`
+	UpgradeStatus   string `json:"upgradeStatus,omitempty"`
+	UpgradeTime     string `json:"upgradeTime,omitempty"`
 }
 
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"

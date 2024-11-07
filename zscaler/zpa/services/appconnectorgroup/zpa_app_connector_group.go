@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorcontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -16,76 +17,41 @@ const (
 )
 
 type AppConnectorGroup struct {
-	CityCountry                   string           `json:"cityCountry"`
-	CountryCode                   string           `json:"countryCode,omitempty"`
-	CreationTime                  string           `json:"creationTime,omitempty"`
-	Description                   string           `json:"description,omitempty"`
-	DNSQueryType                  string           `json:"dnsQueryType,omitempty"`
-	Enabled                       bool             `json:"enabled"`
-	GeoLocationID                 string           `json:"geoLocationId,omitempty"`
-	ID                            string           `json:"id,omitempty"`
-	Latitude                      string           `json:"latitude,omitempty"`
-	Location                      string           `json:"location,omitempty"`
-	Longitude                     string           `json:"longitude,omitempty"`
-	ModifiedBy                    string           `json:"modifiedBy,omitempty"`
-	ModifiedTime                  string           `json:"modifiedTime,omitempty"`
-	Name                          string           `json:"name,omitempty"`
-	OverrideVersionProfile        bool             `json:"overrideVersionProfile"`
-	PRAEnabled                    bool             `json:"praEnabled"`
-	WAFDisabled                   bool             `json:"wafDisabled"`
-	UpgradeDay                    string           `json:"upgradeDay,omitempty"`
-	UpgradeTimeInSecs             string           `json:"upgradeTimeInSecs,omitempty"`
-	VersionProfileID              string           `json:"versionProfileId,omitempty"`
-	VersionProfileName            string           `json:"versionProfileName,omitempty"`
-	VersionProfileVisibilityScope string           `json:"versionProfileVisibilityScope,omitempty"`
-	TCPQuickAckApp                bool             `json:"tcpQuickAckApp"`
-	TCPQuickAckAssistant          bool             `json:"tcpQuickAckAssistant"`
-	UseInDrMode                   bool             `json:"useInDrMode"`
-	TCPQuickAckReadAssistant      bool             `json:"tcpQuickAckReadAssistant"`
-	LSSAppConnectorGroup          bool             `json:"lssAppConnectorGroup"`
-	MicroTenantID                 string           `json:"microtenantId,omitempty"`
-	MicroTenantName               string           `json:"microtenantName,omitempty"`
-	AppServerGroup                []AppServerGroup `json:"serverGroups,omitempty"`
-	Connectors                    []Connector      `json:"connectors,omitempty"`
-}
-
-type Connector struct {
-	ApplicationStartTime             string                 `json:"applicationStartTime,omitempty"`
-	AppConnectorGroupID              string                 `json:"appConnectorGroupId,omitempty"`
-	AppConnectorGroupName            string                 `json:"appConnectorGroupName,omitempty"`
-	ControlChannelStatus             string                 `json:"controlChannelStatus,omitempty"`
-	CreationTime                     string                 `json:"creationTime,omitempty"`
-	CtrlBrokerName                   string                 `json:"ctrlBrokerName,omitempty"`
-	CurrentVersion                   string                 `json:"currentVersion,omitempty"`
-	Description                      string                 `json:"description,omitempty"`
-	Enabled                          bool                   `json:"enabled,omitempty"`
-	ExpectedUpgradeTime              string                 `json:"expectedUpgradeTime,omitempty"`
-	ExpectedVersion                  string                 `json:"expectedVersion,omitempty"`
-	Fingerprint                      string                 `json:"fingerprint,omitempty"`
-	ID                               string                 `json:"id,omitempty"`
-	IPACL                            string                 `json:"ipAcl,omitempty"`
-	IssuedCertID                     string                 `json:"issuedCertId,omitempty"`
-	LastBrokerConnectTime            string                 `json:"lastBrokerConnectTime,omitempty"`
-	LastBrokerConnectTimeDuration    string                 `json:"lastBrokerConnectTimeDuration,omitempty"`
-	LastBrokerDisconnectTime         string                 `json:"lastBrokerDisconnectTime,omitempty"`
-	LastBrokerDisconnectTimeDuration string                 `json:"lastBrokerDisconnectTimeDuration,omitempty"`
-	LastUpgradeTime                  string                 `json:"lastUpgradeTime,omitempty"`
-	Latitude                         string                 `json:"latitude,omitempty"`
-	Location                         string                 `json:"location,omitempty"`
-	Longitude                        string                 `json:"longitude,omitempty"`
-	ModifiedBy                       string                 `json:"modifiedBy,omitempty"`
-	ModifiedTime                     string                 `json:"modifiedTime,omitempty"`
-	Name                             string                 `json:"name,omitempty"`
-	ProvisioningKeyID                string                 `json:"provisioningKeyId"`
-	ProvisioningKeyName              string                 `json:"provisioningKeyName"`
-	Platform                         string                 `json:"platform,omitempty"`
-	PreviousVersion                  string                 `json:"previousVersion,omitempty"`
-	PrivateIP                        string                 `json:"privateIp,omitempty"`
-	PublicIP                         string                 `json:"publicIp,omitempty"`
-	SargeVersion                     string                 `json:"sargeVersion,omitempty"`
-	EnrollmentCert                   map[string]interface{} `json:"enrollmentCert,omitempty"`
-	UpgradeAttempt                   string                 `json:"upgradeAttempt,omitempty"`
-	UpgradeStatus                    string                 `json:"upgradeStatus,omitempty"`
+	CityCountry                   string                                `json:"cityCountry"`
+	CountryCode                   string                                `json:"countryCode,omitempty"`
+	CreationTime                  string                                `json:"creationTime,omitempty"`
+	Description                   string                                `json:"description,omitempty"`
+	DNSQueryType                  string                                `json:"dnsQueryType,omitempty"`
+	Enabled                       bool                                  `json:"enabled"`
+	ConnectorGroupType            string                                `json:"connectorGroupType,omitempty"`
+	GeoLocationID                 string                                `json:"geoLocationId,omitempty"`
+	ID                            string                                `json:"id,omitempty"`
+	Latitude                      string                                `json:"latitude,omitempty"`
+	Location                      string                                `json:"location,omitempty"`
+	Longitude                     string                                `json:"longitude,omitempty"`
+	ModifiedBy                    string                                `json:"modifiedBy,omitempty"`
+	ModifiedTime                  string                                `json:"modifiedTime,omitempty"`
+	Name                          string                                `json:"name,omitempty"`
+	OverrideVersionProfile        bool                                  `json:"overrideVersionProfile"`
+	PRAEnabled                    bool                                  `json:"praEnabled"`
+	WAFDisabled                   bool                                  `json:"wafDisabled"`
+	UpgradeDay                    string                                `json:"upgradeDay,omitempty"`
+	UpgradeTimeInSecs             string                                `json:"upgradeTimeInSecs,omitempty"`
+	VersionProfileID              string                                `json:"versionProfileId,omitempty"`
+	VersionProfileName            string                                `json:"versionProfileName,omitempty"`
+	VersionProfileVisibilityScope string                                `json:"versionProfileVisibilityScope,omitempty"`
+	TCPQuickAckApp                bool                                  `json:"tcpQuickAckApp"`
+	TCPQuickAckAssistant          bool                                  `json:"tcpQuickAckAssistant"`
+	UseInDrMode                   bool                                  `json:"useInDrMode"`
+	TCPQuickAckReadAssistant      bool                                  `json:"tcpQuickAckReadAssistant"`
+	LSSAppConnectorGroup          bool                                  `json:"lssAppConnectorGroup"`
+	MicroTenantID                 string                                `json:"microtenantId,omitempty"`
+	MicroTenantName               string                                `json:"microtenantName,omitempty"`
+	SiteID                        string                                `json:"siteId,omitempty"`
+	SiteName                      string                                `json:"siteName,omitempty"`
+	AppServerGroup                []AppServerGroup                      `json:"serverGroups,omitempty"`
+	Connectors                    []appconnectorcontroller.AppConnector `json:"connectors,omitempty"`
+	NPAssistantGroup              NPAssistantGroup                      `json:"npAssistantGroup,omitempty"`
 }
 
 type AppServerGroup struct {
@@ -98,6 +64,40 @@ type AppServerGroup struct {
 	ModifiedBy       string `json:"modifiedBy,omitempty"`
 	ModifiedTime     string `json:"modifiedTime,omitempty"`
 	Name             string `json:"name,omitempty"`
+}
+
+type NPAssistantGroup struct {
+	AppConnectorGroupID string      `json:"appConnectorGroupId,omitempty"`
+	CreationTime        string      `json:"creationTime,omitempty"`
+	ID                  string      `json:"id,omitempty"`
+	LanSubnets          []LanSubnet `json:"lanSubnets,omitempty"`
+	ModifiedBy          string      `json:"modifiedBy,omitempty"`
+	ModifiedTime        string      `json:"modifiedTime,omitempty"`
+}
+
+type LanSubnet struct {
+	AppConnectorGroupID string        `json:"appConnectorGroupId,omitempty"`
+	CreationTime        string        `json:"creationTime,omitempty"`
+	Description         string        `json:"description,omitempty"`
+	FQDNs               []string      `json:"fqdns,omitempty"`
+	ID                  string        `json:"id,omitempty"`
+	ModifiedBy          string        `json:"modifiedBy,omitempty"`
+	ModifiedTime        string        `json:"modifiedTime,omitempty"`
+	Name                string        `json:"name,omitempty"`
+	NPDnsNsRecord       NPDnsNsRecord `json:"npDnsNsRecord,omitempty"`
+	NPServerIPs         []string      `json:"npserverips,omitempty"`
+	OldAuditString      string        `json:"oldAuditString,omitempty"`
+	Subnet              string        `json:"subnet,omitempty"`
+}
+
+type NPDnsNsRecord struct {
+	CreationTime  string   `json:"creationTime,omitempty"`
+	FQDN          []string `json:"fqdn,omitempty"`
+	ID            string   `json:"id,omitempty"`
+	ModifiedBy    string   `json:"modifiedBy,omitempty"`
+	ModifiedTime  string   `json:"modifiedTime,omitempty"`
+	Name          string   `json:"name,omitempty"`
+	NameserverIPs []string `json:"nameserverIps,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, appConnectorGroupID string) (*AppConnectorGroup, *http.Response, error) {
