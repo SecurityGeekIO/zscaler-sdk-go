@@ -132,7 +132,7 @@ func TestCBIProfileController(t *testing.T) {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
 	// Test resource retrieval by name
-	retrievedResource, _, err = GetByName(context.Background(), service, updateName)
+	retrievedResource, _, err = GetByNameOrID(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}

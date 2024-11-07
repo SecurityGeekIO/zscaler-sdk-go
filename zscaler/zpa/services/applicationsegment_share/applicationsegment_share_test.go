@@ -143,7 +143,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		MatchStyle:            "EXCLUSIVE",
 		MicroTenantID:         microtenantAID.ID,
 		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
+		ServerGroups: []servergroup.ServerGroup{
 			{ID: serverGroupA.ID},
 		},
 		TCPAppPortRange: []common.NetworkPorts{

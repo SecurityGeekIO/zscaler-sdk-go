@@ -39,17 +39,28 @@ func Get(ctx context.Context, service *zscaler.Service, bannerID string) (*CBIBa
 	return v, resp, nil
 }
 
-func GetByName(ctx context.Context, service *zscaler.Service, bannerName string) (*CBIBannerController, *http.Response, error) {
+func GetByNameOrID(ctx context.Context, service *zscaler.Service, identifier string) (*CBIBannerController, *http.Response, error) {
+	// Retrieve all banners
 	list, resp, err := GetAll(ctx, service)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Try to find by ID
 	for _, banner := range list {
-		if strings.EqualFold(banner.Name, bannerName) {
-			return &banner, resp, nil
+		if banner.ID == identifier {
+			return Get(ctx, service, banner.ID)
 		}
 	}
-	return nil, resp, fmt.Errorf("no cloud browser isolation banner named '%s' was found", bannerName)
+
+	// Try to find by name
+	for _, banner := range list {
+		if strings.EqualFold(banner.Name, identifier) {
+			return Get(ctx, service, banner.ID)
+		}
+	}
+
+	return nil, resp, fmt.Errorf("no isolation banner named or with ID '%s' was found", identifier)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, cbiBanner *CBIBannerController) (*CBIBannerController, *http.Response, error) {

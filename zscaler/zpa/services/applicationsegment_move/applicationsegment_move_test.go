@@ -181,7 +181,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		InspectTrafficWithZia: false,
 		MatchStyle:            "EXCLUSIVE",
 		DomainNames:           []string{"test.example.com"},
-		ServerGroups: []applicationsegment.AppServerGroups{
+		ServerGroups: []servergroup.ServerGroup{
 			{ID: serverGroupParent.ID},
 		},
 		TCPAppPortRange: []common.NetworkPorts{
