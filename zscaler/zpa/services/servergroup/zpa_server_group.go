@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appservercontroller"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
@@ -16,21 +18,21 @@ const (
 )
 
 type ServerGroup struct {
-	ID                 string               `json:"id,omitempty"`
-	Enabled            bool                 `json:"enabled"`
-	Name               string               `json:"name,omitempty"`
-	Description        string               `json:"description,omitempty"`
-	IpAnchored         bool                 `json:"ipAnchored"`
-	ConfigSpace        string               `json:"configSpace,omitempty"`
-	DynamicDiscovery   bool                 `json:"dynamicDiscovery"`
-	CreationTime       string               `json:"creationTime,omitempty"`
-	ModifiedBy         string               `json:"modifiedBy,omitempty"`
-	ModifiedTime       string               `json:"modifiedTime,omitempty"`
-	MicroTenantID      string               `json:"microtenantId,omitempty"`
-	MicroTenantName    string               `json:"microtenantName,omitempty"`
-	AppConnectorGroups []AppConnectorGroups `json:"appConnectorGroups"`
-	Servers            []ApplicationServer  `json:"servers"`
-	Applications       []Applications       `json:"applications"`
+	ID                 string                                  `json:"id,omitempty"`
+	Enabled            bool                                    `json:"enabled"`
+	Name               string                                  `json:"name,omitempty"`
+	Description        string                                  `json:"description,omitempty"`
+	IpAnchored         bool                                    `json:"ipAnchored"`
+	ConfigSpace        string                                  `json:"configSpace,omitempty"`
+	DynamicDiscovery   bool                                    `json:"dynamicDiscovery"`
+	CreationTime       string                                  `json:"creationTime,omitempty"`
+	ModifiedBy         string                                  `json:"modifiedBy,omitempty"`
+	ModifiedTime       string                                  `json:"modifiedTime,omitempty"`
+	MicroTenantID      string                                  `json:"microtenantId,omitempty"`
+	MicroTenantName    string                                  `json:"microtenantName,omitempty"`
+	AppConnectorGroups []appconnectorgroup.AppConnectorGroup   `json:"appConnectorGroups"`
+	Servers            []appservercontroller.ApplicationServer `json:"servers"`
+	Applications       []Applications                          `json:"applications"`
 }
 
 type Applications struct {

@@ -60,7 +60,7 @@ func TestServerGroup(t *testing.T) {
 		Name:             name,
 		Description:      name,
 		DynamicDiscovery: true,
-		AppConnectorGroups: []AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{
 				ID: appConnGroup.ID,
 			},

@@ -109,7 +109,7 @@ func TestApplicationSegmentShare(t *testing.T) {
 		Enabled:          true,
 		DynamicDiscovery: true,
 		MicroTenantID:    microtenantAID.ID,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{ID: appConnGroupA.ID},
 		},
 	})

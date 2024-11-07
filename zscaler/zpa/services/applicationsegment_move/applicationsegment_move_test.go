@@ -100,7 +100,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		Enabled:          true,
 		DynamicDiscovery: true,
 		MicroTenantID:    microtenantID,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{ID: appConnGroup.ID},
 		},
 	})
@@ -148,7 +148,7 @@ func TestApplicationSegmentMove(t *testing.T) {
 		Description:      baseDescription + "-parent-server",
 		Enabled:          true,
 		DynamicDiscovery: true,
-		AppConnectorGroups: []servergroup.AppConnectorGroups{
+		AppConnectorGroups: []appconnectorgroup.AppConnectorGroup{
 			{ID: appConnGroupParent.ID},
 		},
 	})
