@@ -11,24 +11,28 @@ import (
 )
 
 const (
-	mgmtConfig           = "/zpa/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV1         = "/mgmtconfig/v1/admin/customers/"
+	mgmtConfigV2         = "/mgmtconfig/v2/admin/customers/"
 	segmentGroupEndpoint = "/segmentGroup"
 )
 
 type SegmentGroup struct {
-	Applications        []Application `json:"applications"`
-	ConfigSpace         string        `json:"configSpace,omitempty"`
-	CreationTime        string        `json:"creationTime,omitempty"`
-	Description         string        `json:"description,omitempty"`
-	Enabled             bool          `json:"enabled"`
-	ID                  string        `json:"id,omitempty"`
-	ModifiedBy          string        `json:"modifiedBy,omitempty"`
-	ModifiedTime        string        `json:"modifiedTime,omitempty"`
-	Name                string        `json:"name"`
-	PolicyMigrated      bool          `json:"policyMigrated"`
-	TcpKeepAliveEnabled string        `json:"tcpKeepAliveEnabled,omitempty"`
-	MicroTenantID       string        `json:"microtenantId,omitempty"`
-	MicroTenantName     string        `json:"microtenantName,omitempty"`
+	ID                  string             `json:"id,omitempty"`
+	Name                string             `json:"name"`
+	Description         string             `json:"description,omitempty"`
+	Enabled             bool               `json:"enabled"`
+	ConfigSpace         string             `json:"configSpace,omitempty"`
+	CreationTime        string             `json:"creationTime,omitempty"`
+	ModifiedBy          string             `json:"modifiedBy,omitempty"`
+	ModifiedTime        string             `json:"modifiedTime,omitempty"`
+	PolicyMigrated      bool               `json:"policyMigrated"`
+	TcpKeepAliveEnabled string             `json:"tcpKeepAliveEnabled,omitempty"`
+	MicroTenantID       string             `json:"microtenantId,omitempty"`
+	MicroTenantName     string             `json:"microtenantName,omitempty"`
+	AddedApps           string             `json:"addedApps,omitempty"`
+	DeletedApps         string             `json:"deletedApps,omitempty"`
+	Applications        []Application      `json:"applications"`
+	ApplicationNames    []ApplicationNames `json:"applicationNames,omitempty"`
 }
 
 type Application struct {
@@ -69,9 +73,14 @@ type AppServerGroup struct {
 	Name             string `json:"name"`
 }
 
+type ApplicationNames struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name"`
+}
+
 func Get(ctx context.Context, service *zscaler.Service, segmentGroupID string) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
-	relativeURL := fmt.Sprintf("%s/%s", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupID)
+	relativeURL := fmt.Sprintf("%s/%s", mgmtConfigV1+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupID)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
 	if err != nil {
 		return nil, nil, err
@@ -80,7 +89,7 @@ func Get(ctx context.Context, service *zscaler.Service, segmentGroupID string) (
 }
 
 func GetByName(ctx context.Context, service *zscaler.Service, segmentName string) (*SegmentGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.GetCustomerID() + segmentGroupEndpoint
+	relativeURL := mgmtConfigV1 + service.Client.GetCustomerID() + segmentGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](ctx, service.Client, relativeURL, common.Filter{Search: segmentName, MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
@@ -95,7 +104,7 @@ func GetByName(ctx context.Context, service *zscaler.Service, segmentName string
 
 func Create(ctx context.Context, service *zscaler.Service, segmentGroup *SegmentGroup) (*SegmentGroup, *http.Response, error) {
 	v := new(SegmentGroup)
-	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroup, &v)
+	resp, err := service.Client.NewRequestDo(ctx, "POST", mgmtConfigV1+service.Client.GetCustomerID()+segmentGroupEndpoint, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroup, &v)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -103,7 +112,16 @@ func Create(ctx context.Context, service *zscaler.Service, segmentGroup *Segment
 }
 
 func Update(ctx context.Context, service *zscaler.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
+	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
+	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func UpdateV2(ctx context.Context, service *zscaler.Service, segmentGroupId string, segmentGroupRequest *SegmentGroup) (*http.Response, error) {
+	path := fmt.Sprintf("%v/%v", mgmtConfigV2+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, segmentGroupRequest, nil)
 	if err != nil {
 		return nil, err
@@ -112,7 +130,7 @@ func Update(ctx context.Context, service *zscaler.Service, segmentGroupId string
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, segmentGroupId string) (*http.Response, error) {
-	path := fmt.Sprintf("%v/%v", mgmtConfig+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
+	path := fmt.Sprintf("%v/%v", mgmtConfigV1+service.Client.GetCustomerID()+segmentGroupEndpoint, segmentGroupId)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
 	if err != nil {
 		return nil, err
@@ -121,7 +139,7 @@ func Delete(ctx context.Context, service *zscaler.Service, segmentGroupId string
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]SegmentGroup, *http.Response, error) {
-	relativeURL := mgmtConfig + service.Client.GetCustomerID() + segmentGroupEndpoint
+	relativeURL := mgmtConfigV1 + service.Client.GetCustomerID() + segmentGroupEndpoint
 	list, resp, err := common.GetAllPagesGenericWithCustomFilters[SegmentGroup](ctx, service.Client, relativeURL, common.Filter{MicroTenantID: service.MicroTenantID()})
 	if err != nil {
 		return nil, nil, err
