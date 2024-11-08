@@ -67,7 +67,7 @@ func TestAccessRedirectionPolicy(t *testing.T) {
 			Description: name,
 			PolicySetID: accessPolicySet.ID,
 			Action:      "REDIRECT_PREFERRED",
-			ServiceEdgeGroups: []ServiceEdgeGroups{
+			ServiceEdgeGroups: []serviceedgegroup.ServiceEdgeGroup{
 				{
 					ID: svcEdgeGroup.ID,
 				},
