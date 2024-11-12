@@ -150,6 +150,8 @@ type WebDLPRules struct {
 	SubRules []SubRule `json:"subRules,omitempty"`
 
 	UserRiskScoreLevels []string `json:"userRiskScoreLevels,omitempty"`
+
+	InspectHttpGetEnabled bool `json:"inspectHttpGetEnabled,omitempty"`
 }
 
 type SubRule struct {

@@ -1,7 +1,7 @@
 package networkservices
 
-/*
 import (
+	"context"
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
@@ -120,7 +120,7 @@ func TestFWFilteringNWServices(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := GetAllNetworkServices(service)
+	resources, err := GetAllNetworkServices(context.Background(), service)
 	if err != nil {
 		t.Errorf("Error retrieving resources: %v", err)
 	}
@@ -203,4 +203,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

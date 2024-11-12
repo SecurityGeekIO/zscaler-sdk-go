@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dlpDictionariesEndpoint          = "/dlpDictionaries"
+	dlpDictionariesEndpoint          = "/zia/api/v1/dlpDictionaries"
 	dlpPredefinedIdentifiersEndpoint = "/zia/api/v1/predefinedIdentifiers"
 )
 

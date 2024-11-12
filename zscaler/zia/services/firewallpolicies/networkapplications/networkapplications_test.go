@@ -1,7 +1,7 @@
 package networkapplications
 
-/*
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net/url"
@@ -19,7 +19,7 @@ func TestNetworkApplications(t *testing.T) {
 	}
 
 	// Fetching the first page of network applications
-	nwApplications, err := GetFirstPage(service, "")
+	nwApplications, err := GetFirstPage(context.Background(), service, "")
 	if err != nil {
 		t.Errorf("Error getting network applications: %v", err)
 		return
@@ -35,7 +35,7 @@ func TestNetworkApplications(t *testing.T) {
 	t.Log("Getting network application by ID: " + nwApplicationID)
 
 	// Testing GetNetworkApplication with the selected application ID and locale
-	nwApplication, err := GetNetworkApplication(service, nwApplicationID, locale)
+	nwApplication, err := GetNetworkApplication(context.Background(), service, nwApplicationID, locale)
 	if err != nil {
 		t.Errorf("Error getting network application by ID: %v", err)
 		return
@@ -47,7 +47,7 @@ func TestNetworkApplications(t *testing.T) {
 
 	// Negative Test: Try to retrieve a network application with a non-existent ID
 	nonExistentID := "ThisApplicationDoesNotExist"
-	_, err = GetNetworkApplication(service, nonExistentID, locale)
+	_, err = GetNetworkApplication(context.Background(), service, nonExistentID, locale)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent ID, got nil")
 		return
@@ -62,7 +62,7 @@ func TestFilteringByParentCategory(t *testing.T) {
 	}
 
 	// Fetching only the first page of network applications
-	nwApplications, err := GetFirstPage(service, "")
+	nwApplications, err := GetFirstPage(context.Background(), service, "")
 	if err != nil {
 		t.Fatalf("Error getting the first page of network applications: %v", err)
 	}
@@ -98,7 +98,7 @@ func TestLocaleSpecificResponse(t *testing.T) {
 	for _, locale := range locales {
 		t.Run("Locale: "+locale, func(t *testing.T) {
 			// Using GetFirstPage instead of GetAll
-			applications, err := GetFirstPage(service, locale)
+			applications, err := GetFirstPage(context.Background(), service, locale)
 			if err != nil {
 				t.Errorf("Error fetching applications for locale %s: %v", locale, err)
 				return
@@ -121,7 +121,7 @@ func TestDeprecatedApplications(t *testing.T) {
 		return
 	}
 
-	nwApplications, err := GetFirstPage(service, "")
+	nwApplications, err := GetFirstPage(context.Background(), service, "")
 	if err != nil {
 		t.Fatalf("Error getting network applications: %v", err)
 	}
@@ -147,7 +147,7 @@ func TestDescriptionField(t *testing.T) {
 		return
 	}
 
-	nwApplications, err := GetFirstPage(service, "")
+	nwApplications, err := GetFirstPage(context.Background(), service, "")
 	if err != nil {
 		t.Fatalf("Error getting network applications: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestInvalidLocaleResponses(t *testing.T) {
 	invalidLocales := []string{"abc", "xyz", "123"}
 	for _, locale := range invalidLocales {
 		t.Run("Invalid Locale: "+locale, func(t *testing.T) {
-			_, err := GetFirstPage(service, locale)
+			_, err := GetFirstPage(context.Background(), service, locale)
 			if err == nil {
 				t.Errorf("Expected error for invalid locale %s, but got none", locale)
 			}
@@ -188,7 +188,7 @@ func TestRandomizedLocaleSpecificResponse(t *testing.T) {
 
 	for _, locale := range locales {
 		t.Run("Locale: "+locale, func(t *testing.T) {
-			applications, err := GetFirstPage(service, locale)
+			applications, err := GetFirstPage(context.Background(), service, locale)
 			if err != nil {
 				t.Errorf("Error fetching applications for locale %s: %v", locale, err)
 				return
@@ -217,7 +217,7 @@ func TestResponseFormatValidation(t *testing.T) {
 	}
 
 	// Fetching only the first page of network applications
-	nwApplications, err := GetFirstPage(service, "")
+	nwApplications, err := GetFirstPage(context.Background(), service, "")
 	if err != nil {
 		t.Errorf("Error getting the first page of network applications: %v", err)
 		return
@@ -246,4 +246,3 @@ func GetFirstPage(ctx context.Context, service *zscaler.Service, locale string) 
 	err := service.Client.Read(ctx, endpoint, &networkApplications)
 	return networkApplications, err
 }
-*/

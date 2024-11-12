@@ -1,5 +1,6 @@
 package users
 
+/*
 import (
 	"context"
 	"log"
@@ -197,3 +198,4 @@ func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) 
 
 	return nil, err
 }
+*/

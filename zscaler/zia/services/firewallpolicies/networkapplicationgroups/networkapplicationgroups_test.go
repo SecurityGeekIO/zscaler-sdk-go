@@ -1,7 +1,7 @@
 package networkapplicationgroups
 
-/*
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -96,7 +96,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		t.Fatalf("Error updating resource: %v", err)
 	}
 
-	updatedResource, err := GetNetworkApplicationGroups(service, createdResource.ID)
+	updatedResource, err := GetNetworkApplicationGroups(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Errorf("Error retrieving resource: %v", err)
 	}
@@ -108,7 +108,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 	}
 
 	// Test resource retrieval by name
-	retrievedResource, err = GetNetworkApplicationGroupsByName(service, updateName)
+	retrievedResource, err = GetNetworkApplicationGroupsByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Errorf("Error retrieving resource by name: %v", err)
 	}
@@ -119,7 +119,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, createdResource.Name)
 	}
 	// Test resources retrieval
-	resources, err := GetAllNetworkApplicationGroups(service)
+	resources, err := GetAllNetworkApplicationGroups(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
@@ -142,7 +142,7 @@ func TestNetworkApplicationGroups(t *testing.T) {
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
-	_, err = GetNetworkApplicationGroups(service, createdResource.ID)
+	_, err = GetNetworkApplicationGroups(context.Background(), service, createdResource.ID)
 	if err == nil {
 		t.Fatalf("Expected error retrieving deleted resource, but got nil")
 	}
@@ -154,7 +154,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*NetworkApplicationGroups,
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = GetNetworkApplicationGroups(s, id)
+		resource, err = GetNetworkApplicationGroups(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -171,7 +171,7 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = GetNetworkApplicationGroups(service, 0)
+	_, err = GetNetworkApplicationGroups(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error retrieving non-existent resource, but got nil")
 	}
@@ -207,9 +207,8 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, err = GetNetworkApplicationGroupsByName(service, "non_existent_name")
+	_, err = GetNetworkApplicationGroupsByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

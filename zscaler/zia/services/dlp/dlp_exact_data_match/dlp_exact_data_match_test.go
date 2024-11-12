@@ -1,7 +1,7 @@
 package dlp_exact_data_match
 
-/*
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -27,7 +27,7 @@ func TestDLPEDM_data(t *testing.T) {
 	}
 	name := templates[0].ProjectName
 	t.Log("Getting edm template by name:" + name)
-	template, err := GetDLPEDMByName(service, name)
+	template, err := GetDLPEDMByName(context.Background(), service, name)
 	if err != nil {
 		t.Errorf("Error getting edm template by name: %v", err)
 		return
@@ -38,7 +38,7 @@ func TestDLPEDM_data(t *testing.T) {
 	}
 	// Negative Test: Try to retrieve an edm template with a non-existent name
 	nonExistentName := "ThisEDMTemplateDoesNotExist"
-	_, err = GetDLPEDMByName(service, nonExistentName)
+	_, err = GetDLPEDMByName(context.Background(), service, nonExistentName)
 	if err == nil {
 		t.Errorf("Expected error when getting by non-existent name, got nil")
 		return
@@ -64,7 +64,7 @@ func TestGetById(t *testing.T) {
 	testID := templates[0].SchemaID
 
 	// Retrieve the server by ID
-	template, err := GetDLPEDMSchemaID(service, testID)
+	template, err := GetDLPEDMSchemaID(context.Background(), service, testID)
 	if err != nil {
 		t.Errorf("Error retrieving edm template with ID %d: %v", testID, err)
 		return
@@ -127,7 +127,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 
 	for _, variation := range variations {
 		t.Logf("Attempting to retrieve group with name variation: %s", variation)
-		template, err := GetDLPEDMByName(service, variation)
+		template, err := GetDLPEDMByName(context.Background(), service, variation)
 		if err != nil {
 			t.Errorf("Error getting edm template with name variation '%s': %v", variation, err)
 			continue
@@ -183,4 +183,3 @@ func TestEDMFields(t *testing.T) {
 		}
 	}
 }
-*/

@@ -1,7 +1,7 @@
 package dlp_idm_profile_lite
 
-/*
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -28,7 +28,7 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 		}
 		name := profiles[0].TemplateName
 		t.Log("Getting idm profile by name:", name, "with activeOnly:", activeOnly)
-		profile, err := GetDLPProfileLiteByName(service, name, activeOnly)
+		profile, err := GetDLPProfileLiteByName(context.Background(), service, name, activeOnly)
 		if err != nil {
 			t.Errorf("Error getting idm profile by name with activeOnly %t: %v", activeOnly, err)
 			return
@@ -40,7 +40,7 @@ func TestDLPIDMProfileLite_data(t *testing.T) {
 
 		// Additional step to test GetDLPProfileLiteID
 		t.Run("GetDLPProfileLiteID", func(t *testing.T) {
-			profileLite, err := GetDLPProfileLiteID(service, profile.ProfileID, activeOnly)
+			profileLite, err := GetDLPProfileLiteID(context.Background(), service, profile.ProfileID, activeOnly)
 			if err != nil {
 				t.Errorf("Error getting DLP Profile Lite ID %d with activeOnly %t: %v", profile.ProfileID, activeOnly, err)
 				return
@@ -125,7 +125,7 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 	for _, activeOnly := range []bool{true, false} {
 		for _, variation := range variations {
 			t.Logf("Attempting to retrieve group with name variation: %s with activeOnly %t", variation, activeOnly)
-			profile, err := GetDLPProfileLiteByName(service, variation, activeOnly)
+			profile, err := GetDLPProfileLiteByName(context.Background(), service, variation, activeOnly)
 			if err != nil {
 				t.Errorf("Error getting idm profile with name variation '%s' and activeOnly %t: %v", variation, activeOnly, err)
 				continue
@@ -137,4 +137,3 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
-*/

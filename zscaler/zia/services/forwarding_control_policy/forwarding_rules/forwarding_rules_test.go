@@ -2,6 +2,7 @@ package forwarding_rules
 
 /*
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -175,7 +176,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*ForwardingRules, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}

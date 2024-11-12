@@ -1,7 +1,7 @@
 package dlp_notification_templates
 
-/*
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -235,7 +235,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*DlpNotificationTemplates,
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -293,4 +293,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

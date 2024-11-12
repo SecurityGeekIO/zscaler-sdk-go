@@ -1,6 +1,5 @@
 package security_policy_settings
 
-/*
 import (
 	"context"
 	"fmt"
@@ -123,4 +122,3 @@ func areSlicesEqual(s1, s2 []string) bool {
 	}
 	return true
 }
-*/

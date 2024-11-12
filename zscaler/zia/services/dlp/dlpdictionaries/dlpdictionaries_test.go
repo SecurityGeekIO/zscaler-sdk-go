@@ -1,7 +1,7 @@
 package dlpdictionaries
 
-/*
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -154,7 +154,7 @@ func TestDLPDictionaries(t *testing.T) {
 	}
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, delErr := DeleteDlpDictionary(service, createdResource.ID)
+		_, delErr := DeleteDlpDictionary(context.Background(), service, createdResource.ID)
 		return delErr
 	})
 	_, err = Get(context.Background(), service, createdResource.ID)
@@ -171,7 +171,7 @@ func TestGetPredefinedIdentifiers(t *testing.T) {
 
 	t.Run("Successful fetch of predefined identifiers", func(t *testing.T) {
 		dictionaryName := "CRED_LEAKAGE"
-		identifiers, dictionaryID, err := GetPredefinedIdentifiers(service, dictionaryName)
+		identifiers, dictionaryID, err := GetPredefinedIdentifiers(context.Background(), service, dictionaryName)
 		require.NoError(t, err)
 		assert.NotZero(t, dictionaryID)
 		assert.NotEmpty(t, identifiers)
@@ -181,14 +181,14 @@ func TestGetPredefinedIdentifiers(t *testing.T) {
 
 	t.Run("Error fetching dictionary by name", func(t *testing.T) {
 		dictionaryName := "InvalidDictionaryName" // Replace with a name that doesn't exist
-		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		_, _, err := GetPredefinedIdentifiers(context.Background(), service, dictionaryName)
 		assert.Error(t, err)
 	})
 
 	t.Run("Error reading predefined identifiers", func(t *testing.T) {
 		// Assuming there's no predefined identifier for this dictionary
 		dictionaryName := "AnotherInvalidDictionaryName" // Replace with another name that doesn't exist
-		_, _, err := GetPredefinedIdentifiers(service, dictionaryName)
+		_, _, err := GetPredefinedIdentifiers(context.Background(), service, dictionaryName)
 		assert.Error(t, err)
 	})
 }
@@ -199,7 +199,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*DlpDictionary, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -228,7 +228,7 @@ func TestDeleteNonExistentResource(t *testing.T) {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = DeleteDlpDictionary(service, 0)
+	_, err = DeleteDlpDictionary(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
 	}
@@ -257,4 +257,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

@@ -1,7 +1,7 @@
 package applicationservices
 
-/*
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -101,4 +101,3 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
-*/

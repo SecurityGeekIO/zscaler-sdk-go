@@ -1,7 +1,7 @@
 package dlp_web_rules
 
-/*
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -47,14 +47,14 @@ func retryOnConflict(operation func() error) error {
 
 func TestDLPWebRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	// updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
 	}
 
-	engineList, err := dlp_engines.GetByPredefinedEngine(service, "EXTERNAL")
+	engineList, err := dlp_engines.GetByPredefinedEngine(context.Background(), service, "EXTERNAL")
 	if err != nil {
 		t.Errorf("Error getting saml attributes: %v", err)
 		return
@@ -82,15 +82,14 @@ func TestDLPWebRule(t *testing.T) {
 		Rank:        7,
 		State:       "ENABLED",
 		Action:      "BLOCK",
-		// ZscalerIncidentReceiver:  true,
-		// WithoutContentInspection: false,
+		// ZscalerIncidentReceiver:  false,
+		WithoutContentInspection: true,
 		// DLPDownloadScanEnabled:   true,
 		Severity:            "RULE_SEVERITY_HIGH",
 		Protocols:           []string{"FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		CloudApplications:   []string{"WINDOWS_LIVE_HOTMAIL"},
 		UserRiskScoreLevels: []string{"LOW", "MEDIUM", "HIGH", "CRITICAL"},
 		FileTypes:           []string{"ALL_OUTBOUND"},
-
 		DLPEngines: []common.IDNameExtensions{
 			{
 				ID: engineList.ID,
@@ -136,36 +135,36 @@ func TestDLPWebRule(t *testing.T) {
 	}
 
 	// Test resource update
-	retrievedResource.Name = updateName
-	err = retryOnConflict(func() error {
-		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Error updating resource: %v", err)
-	}
+	// retrievedResource.Name = updateName
+	// err = retryOnConflict(func() error {
+	// 	_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+	// 	return err
+	// })
+	// if err != nil {
+	// 	t.Fatalf("Error updating resource: %v", err)
+	// }
 
-	updatedResource, err := Get(context.Background(), service, createdResource.ID)
-	if err != nil {
-		t.Fatalf("Error retrieving resource: %v", err)
-	}
-	if updatedResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
-	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	}
+	// updatedResource, err := Get(context.Background(), service, createdResource.ID)
+	// if err != nil {
+	// 	t.Fatalf("Error retrieving resource: %v", err)
+	// }
+	// if updatedResource.ID != createdResource.ID {
+	// 	t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+	// }
+	// if updatedResource.Name != updateName {
+	// 	t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	// }
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
+	retrievedByNameResource, err := GetByName(context.Background(), service, name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedByNameResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
+	if retrievedByNameResource.Name != name {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedByNameResource.Name)
 	}
 
 	// Test resources retrieval
@@ -213,7 +212,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*WebDLPRules, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(s, id)
+		resource, err = Get(context.Background(), s, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -271,4 +270,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/

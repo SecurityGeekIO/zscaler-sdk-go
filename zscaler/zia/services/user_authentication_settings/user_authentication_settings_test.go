@@ -1,6 +1,5 @@
 package user_authentication_settings
 
-/*
 import (
 	"context"
 	"fmt"
@@ -129,4 +128,3 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
-*/

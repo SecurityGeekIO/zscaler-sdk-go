@@ -1,7 +1,7 @@
 package appservicegroups
 
-/*
 import (
+	"context"
 	"log"
 	"strings"
 	"testing"
@@ -104,4 +104,3 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
-*/
