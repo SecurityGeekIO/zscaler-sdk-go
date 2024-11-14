@@ -13,19 +13,19 @@ import (
 
 const (
 	intermediateCaCertificatesEndpoint = "/zia/api/v1/intermediateCaCertificate"
-	intCADownloadAttestationEndpoint   = "/intermediateCaCertificate/downloadAttestation"
-	intCADownloadCSREndpoint           = "/intermediateCaCertificate/downloadCsr"
-	intCADownloadPublicKeyEndpoint     = "/intermediateCaCertificate/downloadPublicKey"
-	intCAGenerateCSREndpoint           = "/intermediateCaCertificate/generateCsr"
-	intCAFinalizeCSREndpoint           = "/intermediateCaCertificate/finalizeCert"
-	intCAKeyPairEndpoint               = "/intermediateCaCertificate/keyPair"
-	intCACertMakeDefaultEndpoint       = "/intermediateCaCertificate/makeDefault"
-	intCAReadyToUseEndpoint            = "/intermediateCaCertificate/readyToUse"
-	intCAShowCertEndpoint              = "/intermediateCaCertificate/showCert"
-	intCAShowCSREndpoint               = "/intermediateCaCertificate/showCsr"
-	intCAUploadCert                    = "/intermediateCaCertificate/uploadCert"
-	intCAUploadCertChain               = "/intermediateCaCertificate/uploadCertChain"
-	intCAVerifyKeyAttestation          = "/intermediateCaCertificate/verifyKeyAttestation"
+	intCADownloadAttestationEndpoint   = "/zia/api/v1/intermediateCaCertificate/downloadAttestation"
+	intCADownloadCSREndpoint           = "/zia/api/v1/intermediateCaCertificate/downloadCsr"
+	intCADownloadPublicKeyEndpoint     = "/zia/api/v1/intermediateCaCertificate/downloadPublicKey"
+	intCAGenerateCSREndpoint           = "/zia/api/v1/intermediateCaCertificate/generateCsr"
+	intCAFinalizeCSREndpoint           = "/zia/api/v1/intermediateCaCertificate/finalizeCert"
+	intCAKeyPairEndpoint               = "/zia/api/v1/intermediateCaCertificate/keyPair"
+	intCACertMakeDefaultEndpoint       = "/zia/api/v1/intermediateCaCertificate/makeDefault"
+	intCAReadyToUseEndpoint            = "/zia/api/v1/intermediateCaCertificate/readyToUse"
+	intCAShowCertEndpoint              = "/zia/api/v1/intermediateCaCertificate/showCert"
+	intCAShowCSREndpoint               = "/zia/api/v1/intermediateCaCertificate/showCsr"
+	intCAUploadCert                    = "/zia/api/v1/intermediateCaCertificate/uploadCert"
+	intCAUploadCertChain               = "/zia/api/v1/intermediateCaCertificate/uploadCertChain"
+	intCAVerifyKeyAttestation          = "/zia/api/v1/intermediateCaCertificate/verifyKeyAttestation"
 )
 
 type IntermediateCACertificate struct {

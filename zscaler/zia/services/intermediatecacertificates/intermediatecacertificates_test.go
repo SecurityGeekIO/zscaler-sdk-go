@@ -1,6 +1,5 @@
 package intermediatecacertificates
 
-/*
 import (
 	"context"
 	"strings"
@@ -100,4 +99,3 @@ func TestCaseSensitivityOfGetByName(t *testing.T) {
 		}
 	}
 }
-*/

@@ -1,6 +1,5 @@
 package sandbox_report
 
-/*
 import (
 	"context"
 	"fmt"
@@ -57,4 +56,3 @@ func TestGetReportMD5Hash(t *testing.T) {
 		}
 	}
 }
-*/

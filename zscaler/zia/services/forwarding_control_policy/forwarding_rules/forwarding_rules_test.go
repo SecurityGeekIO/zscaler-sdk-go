@@ -1,6 +1,5 @@
 package forwarding_rules
 
-/*
 import (
 	"context"
 	"fmt"
@@ -238,4 +237,3 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
-*/
