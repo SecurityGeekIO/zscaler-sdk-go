@@ -628,18 +628,27 @@ func WithLegacyClient(useLegacyClient bool) ConfigSetter {
 
 func WithZiaLegacyClient(ziaClient *ziaClient.Client) ConfigSetter {
 	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &legacyClient{}
+		}
 		c.LegacyClient.ziaClient = ziaClient
 	}
 }
 
 func WithZpaLegacyClient(zpaClient *zpaClient.Client) ConfigSetter {
 	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &legacyClient{}
+		}
 		c.LegacyClient.zpaClient = zpaClient
 	}
 }
 
 func WithZccLegacyClient(zccClient *zccClient.Client) ConfigSetter {
 	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &legacyClient{}
+		}
 		c.LegacyClient.zccClient = zccClient
 	}
 }
