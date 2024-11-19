@@ -20,6 +20,9 @@ const (
 
 func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
 	if client.oauth2Credentials.UseLegacyClient {
+		if client.oauth2Credentials.LegacyClient == nil || client.oauth2Credentials.LegacyClient.zpaClient == nil {
+			return nil, legacyClientError
+		}
 		return client.oauth2Credentials.LegacyClient.zpaClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
 	}
 	// Call the custom request handler
@@ -95,7 +98,7 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 }
 
 func (c *Client) GetCustomerID() string {
-	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID != "" {
+	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient != nil && c.oauth2Credentials.LegacyClient.zpaClient != nil && c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID != "" {
 		return c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID
 	}
 	return c.oauth2Credentials.Zscaler.Client.CustomerID

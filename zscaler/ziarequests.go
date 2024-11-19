@@ -12,9 +12,14 @@ import (
 	"strings"
 )
 
+var legacyClientError = fmt.Errorf("legacy client is not set")
+
 // Create sends a POST request to create an object.
 func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.Create(removeOneApiEndpointPrefix(endpoint), o)
 	}
 
@@ -56,6 +61,9 @@ func (c *Client) Create(ctx context.Context, endpoint string, o interface{}) (in
 // Read ...
 func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.Read(removeOneApiEndpointPrefix(endpoint), o)
 	}
 
@@ -74,6 +82,9 @@ func (c *Client) Read(ctx context.Context, endpoint string, o interface{}) error
 // UpdateWithPut sends an update (PUT request) with the given object.
 func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.UpdateWithPut(removeOneApiEndpointPrefix(endpoint), o)
 	}
 	return c.updateGeneric(ctx, endpoint, o, "PUT", contentTypeJSON)
@@ -82,6 +93,9 @@ func (c *Client) UpdateWithPut(ctx context.Context, endpoint string, o interface
 // Update sends an update (PATCH request) with the given object.
 func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (interface{}, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.Update(removeOneApiEndpointPrefix(endpoint), o)
 	}
 	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
@@ -113,6 +127,12 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 
 // Delete sends a DELETE request to the specified endpoint.
 func (c *Client) Delete(ctx context.Context, endpoint string) error {
+	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return legacyClientError
+		}
+		return c.oauth2Credentials.LegacyClient.ziaClient.Delete(removeOneApiEndpointPrefix(endpoint))
+	}
 	_, _, _, err := c.ExecuteRequest(ctx, "DELETE", endpoint, nil, nil, contentTypeJSON)
 	if err != nil {
 		return err
@@ -123,6 +143,9 @@ func (c *Client) Delete(ctx context.Context, endpoint string) error {
 // BulkDelete sends a POST request for bulk deletion.
 func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interface{}) (*http.Response, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.BulkDelete(removeOneApiEndpointPrefix(endpoint), payload)
 	}
 
@@ -150,6 +173,9 @@ func (c *Client) BulkDelete(ctx context.Context, endpoint string, payload interf
 
 func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.CreateWithSlicePayload(removeOneApiEndpointPrefix(endpoint), slice)
 	}
 
@@ -183,6 +209,9 @@ func (c *Client) CreateWithSlicePayload(ctx context.Context, endpoint string, sl
 
 func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, slice interface{}) ([]byte, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.UpdateWithSlicePayload(removeOneApiEndpointPrefix(endpoint), slice)
 	}
 
@@ -212,6 +241,9 @@ func (c *Client) UpdateWithSlicePayload(ctx context.Context, endpoint string, sl
 // CreateWithRawPayload sends an HTTP POST request with a raw string payload.
 func (c *Client) CreateWithRawPayload(ctx context.Context, endpoint string, payload string) ([]byte, error) {
 	if c.oauth2Credentials.UseLegacyClient {
+		if c.oauth2Credentials.LegacyClient == nil || c.oauth2Credentials.LegacyClient.ziaClient == nil {
+			return nil, legacyClientError
+		}
 		return c.oauth2Credentials.LegacyClient.ziaClient.CreateWithRawPayload(removeOneApiEndpointPrefix(endpoint), payload)
 	}
 
