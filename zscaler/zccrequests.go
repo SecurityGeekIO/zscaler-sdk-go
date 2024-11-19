@@ -15,6 +15,9 @@ import (
 // NewRequestDo for ZCC with OAuth2 authentication and centralized request handling.
 // This function is consistent with the ZPA request handler.
 func (client *Client) NewZccRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
+	if client.oauth2Credentials.UseLegacyClient {
+		return client.oauth2Credentials.LegacyClient.zccClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
+	}
 	// Handle query parameters from options and any additional logic
 	if options == nil {
 		options = struct{}{}

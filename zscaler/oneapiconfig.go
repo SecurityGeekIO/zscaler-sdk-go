@@ -46,9 +46,10 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
-
-	// Start token renewal ticker
-	cli.startTokenRenewalTicker()
+	if !config.UseLegacyClient {
+		// Start token renewal ticker
+		cli.startTokenRenewalTicker()
+	}
 
 	// Return the service directly
 	return NewService(cli), nil

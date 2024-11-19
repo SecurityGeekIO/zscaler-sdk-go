@@ -19,6 +19,9 @@ const (
 )
 
 func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
+	if client.oauth2Credentials.UseLegacyClient {
+		return client.oauth2Credentials.LegacyClient.zpaClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
+	}
 	// Call the custom request handler
 	// Handle query parameters from options and any additional logic
 	if options == nil {
@@ -92,16 +95,10 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 }
 
 func (c *Client) GetCustomerID() string {
-	return c.oauth2Credentials.Zscaler.Client.CustomerID
-}
-
-func (client *Client) GetFullPath(endpoint string) (string, error) {
-	customerID := client.GetCustomerID()
-	if customerID == "" {
-		return "", fmt.Errorf("CustomerID is not set")
+	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID != "" {
+		return c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID
 	}
-	// Construct the full path with mgmtConfig and CustomerID
-	return fmt.Sprintf("%s%s%s", mgmtConfig, customerID, endpoint), nil
+	return c.oauth2Credentials.Zscaler.Client.CustomerID
 }
 
 func getMicrotenantIDFromBody(body interface{}) string {

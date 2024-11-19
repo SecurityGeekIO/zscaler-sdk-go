@@ -15,6 +15,9 @@ import (
 	"syscall"
 	"time"
 
+	zccClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc"
+	ziaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
+	zpaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
@@ -51,6 +54,12 @@ type AuthToken struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	Expiry      time.Time
+}
+
+type legacyClient struct {
+	ziaClient *ziaClient.Client
+	zpaClient *zpaClient.Client
+	zccClient *zccClient.Client
 }
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
@@ -102,6 +111,8 @@ type Configuration struct {
 	}
 	PrivateKeySigner jose.Signer
 	CacheManager     cache.Cache
+	UseLegacyClient  bool
+	LegacyClient     *legacyClient
 }
 
 // NewConfiguration is the main configuration function, implementing the ConfigSetter pattern.
@@ -606,4 +617,29 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func WithLegacyClient(useLegacyClient bool) ConfigSetter {
+	return func(c *Configuration) {
+		c.UseLegacyClient = useLegacyClient
+	}
+
+}
+
+func WithZiaLegacyClient(ziaClient *ziaClient.Client) ConfigSetter {
+	return func(c *Configuration) {
+		c.LegacyClient.ziaClient = ziaClient
+	}
+}
+
+func WithZpaLegacyClient(zpaClient *zpaClient.Client) ConfigSetter {
+	return func(c *Configuration) {
+		c.LegacyClient.zpaClient = zpaClient
+	}
+}
+
+func WithZccLegacyClient(zccClient *zccClient.Client) ConfigSetter {
+	return func(c *Configuration) {
+		c.LegacyClient.zccClient = zccClient
+	}
 }

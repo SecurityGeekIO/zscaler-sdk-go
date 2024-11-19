@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"html"
+	"strings"
 )
 
 func decodeJSON(respData []byte, v interface{}) error {
@@ -36,4 +37,18 @@ func unescapeHTML(entity interface{}) {
 		return
 	}
 	_ = json.Unmarshal(data, entity)
+}
+
+func removeOneApiEndpointPrefix(endpoint string) string {
+	// removes url prefix from oneapi to legacy api (/zia, /zpa, /zcc)
+	if strings.HasPrefix(endpoint, "/zia") {
+		return strings.TrimPrefix(endpoint, "/zia")
+	}
+	if strings.HasPrefix(endpoint, "/zpa") {
+		return strings.TrimPrefix(endpoint, "/zpa")
+	}
+	if strings.HasPrefix(endpoint, "/zcc") {
+		return strings.TrimPrefix(endpoint, "/zcc")
+	}
+	return endpoint
 }
