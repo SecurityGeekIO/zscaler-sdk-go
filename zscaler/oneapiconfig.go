@@ -52,7 +52,7 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 	}
 
 	// Return the service directly
-	return NewService(cli), nil
+	return NewService(cli, nil), nil
 }
 
 // startTokenRenewalTicker starts a ticker to renew the token before it expires.

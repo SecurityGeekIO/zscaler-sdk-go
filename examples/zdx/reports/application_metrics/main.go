@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/reports/applications"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc/services"
 	"github.com/olekukonko/tablewriter"
+	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/reports/applications"
+	"github.com/zscaler/zscaler-sdk-go/zdx"
+	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
 )
 
 type AppMetric struct {

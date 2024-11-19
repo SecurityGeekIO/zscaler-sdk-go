@@ -14,6 +14,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
 )
 
 const (
@@ -141,4 +142,18 @@ func NewZdxClient() (*zdx.Client, error) {
 	}
 	zdxClient := zdx.NewClient(config)
 	return zdxClient, nil
+}
+
+func NewZiaClient() (*zia.Client, error) {
+	username := os.Getenv("ZIA_USERNAME")
+	password := os.Getenv("ZIA_PASSWORD")
+	apiKey := os.Getenv("ZIA_API_KEY")
+	ziaCloud := os.Getenv("ZIA_CLOUD")
+
+	cli, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
+	if err != nil {
+		log.Printf("[ERROR] creating client failed: %v\n", err)
+		return nil, err
+	}
+	return cli, nil
 }
