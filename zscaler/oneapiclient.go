@@ -111,7 +111,7 @@ type Configuration struct {
 	}
 	PrivateKeySigner jose.Signer
 	CacheManager     cache.Cache
-	UseLegacyClient  bool
+	UseLegacyClient  bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
 	LegacyClient     *legacyClient
 }
 
