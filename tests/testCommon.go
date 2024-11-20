@@ -142,24 +142,3 @@ func NewZdxClient() (*zdx.Client, error) {
 	zdxClient := zdx.NewClient(config)
 	return zdxClient, nil
 }
-
-// func NewZiaClient() (*zscaler.Service, error) {
-// 	username := os.Getenv("ZIA_USERNAME")
-// 	password := os.Getenv("ZIA_PASSWORD")
-// 	apiKey := os.Getenv("ZIA_API_KEY")
-// 	ziaCloud := os.Getenv("ZIA_CLOUD")
-
-// 	// Create the ZIA legacy client
-// 	legacyClient, err := zia.NewClient(username, password, apiKey, ziaCloud, "zscaler-sdk-go")
-// 	if err != nil {
-// 		log.Printf("[ERROR] creating ZIA legacy client failed: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	// Create the OneAPI client (if needed; here, it's passed as nil for simplicity)
-// 	oneAPIClient := &zscaler.Client{}
-
-// 	// Instantiate the Service with both clients
-// 	service := zscaler.NewService(oneAPIClient, &zscaler.LegacyClient{ZiaClient: legacyClient})
-// 	return service, nil
-// }

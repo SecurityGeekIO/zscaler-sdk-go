@@ -113,12 +113,34 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 
 // NewClient Returns a Client from credentials passed as parameters.
 func NewClient(username, password, apiKey, ziaCloud, userAgent string) (*Client, error) {
+	// Fallback to environment variables if credentials are not provided
+	if username == "" {
+		username = os.Getenv("ZIA_USERNAME")
+	}
+	if password == "" {
+		password = os.Getenv("ZIA_PASSWORD")
+	}
+	if apiKey == "" {
+		apiKey = os.Getenv("ZIA_API_KEY")
+	}
+	if ziaCloud == "" {
+		ziaCloud = os.Getenv("ZIA_CLOUD")
+	}
+	if userAgent == "" {
+		userAgent = "zscaler-sdk-go" // Default user agent
+	}
+
+	// Validate required credentials
+	if username == "" || password == "" || apiKey == "" || ziaCloud == "" {
+		return nil, fmt.Errorf("missing required ZIA credentials: username, password, apiKey, or ziaCloud")
+	}
+
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	rateLimiter := rl.NewRateLimiter(2, 1, 1, 1)
 	httpClient := getHTTPClient(logger, rateLimiter)
-	url := fmt.Sprintf("https://zsapi.%s.net/%s", ziaCloud, ziaAPIVersion)
+	url := fmt.Sprintf("https://zsapi.%s.net", ziaCloud)
 	if ziaCloud == "zspreview" {
-		url = fmt.Sprintf("https://admin.%s.net/%s", ziaCloud, ziaAPIVersion)
+		url = fmt.Sprintf("https://admin.%s.net", ziaCloud)
 	}
 	cacheDisabled, _ := strconv.ParseBool(os.Getenv("ZSCALER_SDK_CACHE_DISABLED"))
 	cli := &Client{
@@ -162,7 +184,9 @@ func MakeAuthRequestZIA(credentials *Credentials, url string, client *http.Clien
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url+ziaAPIAuthURL, bytes.NewReader(data))
+	// Add `/api/v1` only for the authentication request
+	authURL := fmt.Sprintf("%s/%s%s", url, ziaAPIVersion, ziaAPIAuthURL)
+	req, err := http.NewRequest("POST", authURL, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -519,32 +543,6 @@ func (c *Client) GetSandboxURL() string {
 func (c *Client) GetSandboxToken() string {
 	return os.Getenv("ZIA_SANDBOX_TOKEN")
 }
-
-// func (c *Client) startSessionTicker() {
-// 	c.Lock()
-// 	defer c.Unlock()
-
-// 	if c.sessionTicker != nil {
-// 		c.stopTicker <- true
-// 		c.sessionTicker.Stop()
-// 	}
-
-// 	tickerInterval := c.sessionTimeout - 1*time.Minute
-// 	c.sessionTicker = time.NewTicker(tickerInterval)
-// 	go func() {
-// 		for {
-// 			select {
-// 			case <-c.sessionTicker.C:
-// 				err := c.refreshSession()
-// 				if err != nil {
-// 					c.Logger.Printf("[ERROR] Failed to refresh session: %v\n", err)
-// 				}
-// 			case <-c.stopTicker:
-// 				return
-// 			}
-// 		}
-// 	}()
-// }
 
 // startSessionTicker starts a ticker to refresh the session periodically
 func (c *Client) startSessionTicker() {
