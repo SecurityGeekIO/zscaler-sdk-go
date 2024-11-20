@@ -122,7 +122,7 @@ func sweep() error {
 }
 
 func sweepAppConnectorGroups(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := appconnectorgroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get app connector groups: %v", err)
@@ -143,7 +143,7 @@ func sweepAppConnectorGroups(client *zscaler.Client) error {
 }
 
 func sweepApplicationServers(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := appservercontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application server: %v", err)
@@ -164,7 +164,7 @@ func sweepApplicationServers(client *zscaler.Client) error {
 }
 
 func sweepApplicationSegment(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := applicationsegment.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get application segment: %v", err)
@@ -185,7 +185,7 @@ func sweepApplicationSegment(client *zscaler.Client) error {
 }
 
 func sweepBaCertificateController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := bacertificate.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get browser access certificate: %v", err)
@@ -206,7 +206,7 @@ func sweepBaCertificateController(client *zscaler.Client) error {
 }
 
 func sweepCBIBannerController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := cbibannercontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi banner controller: %v", err)
@@ -227,7 +227,7 @@ func sweepCBIBannerController(client *zscaler.Client) error {
 }
 
 func sweepCBICertificateController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := cbicertificatecontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi certificate controller: %v", err)
@@ -248,7 +248,7 @@ func sweepCBICertificateController(client *zscaler.Client) error {
 }
 
 func sweepCBIProfileController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := cbiprofilecontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get cbi profile controller: %v", err)
@@ -269,7 +269,7 @@ func sweepCBIProfileController(client *zscaler.Client) error {
 }
 
 func sweepInspectionCustomControl(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := inspection_custom_controls.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get inspection custom control: %v", err)
@@ -290,7 +290,7 @@ func sweepInspectionCustomControl(client *zscaler.Client) error {
 }
 
 func sweepInspectionProfile(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := inspection_profile.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get inspection profile: %v", err)
@@ -311,7 +311,7 @@ func sweepInspectionProfile(client *zscaler.Client) error {
 }
 
 func sweepLSSController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := lssconfigcontroller.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get lss config controller: %v", err)
@@ -332,7 +332,7 @@ func sweepLSSController(client *zscaler.Client) error {
 }
 
 func sweepMicrotenants(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := microtenants.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get microtenants: %v", err)
@@ -353,7 +353,7 @@ func sweepMicrotenants(client *zscaler.Client) error {
 }
 
 func sweepSegmentGroup(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := segmentgroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get segment group: %v", err)
@@ -374,7 +374,7 @@ func sweepSegmentGroup(client *zscaler.Client) error {
 }
 
 func sweepServerGroup(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := servergroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get server group: %v", err)
@@ -395,7 +395,7 @@ func sweepServerGroup(client *zscaler.Client) error {
 }
 
 func sweepServiceEdgeGroup(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := serviceedgegroup.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get service edge group: %v", err)
@@ -416,7 +416,7 @@ func sweepServiceEdgeGroup(client *zscaler.Client) error {
 }
 
 func sweepProvisioningKey(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 
 	// Define the association types to iterate over
 	associationTypes := []string{"CONNECTOR_GRP", "SERVICE_EDGE_GRP"}
@@ -443,7 +443,7 @@ func sweepProvisioningKey(client *zscaler.Client) error {
 }
 
 func sweepPolicySetController(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 
 	policyTypes := []string{"ACCESS_POLICY", "TIMEOUT_POLICY", "CLIENT_FORWARDING_POLICY", "ISOLATION_POLICY", "INSPECTION_POLICY", "CREDENTIAL_POLICY", "CAPABILITIES_POLICY", "CLIENTLESS_SESSION_PROTECTION_POLICY", "REDIRECTION_POLICY"}
 
@@ -477,7 +477,7 @@ func sweepPolicySetController(client *zscaler.Client) error {
 }
 
 func sweeppracredential(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := pracredential.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get credential controller: %v", err)
@@ -498,7 +498,7 @@ func sweeppracredential(client *zscaler.Client) error {
 }
 
 func sweepPRAConsole(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := praconsole.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get pra console: %v", err)
@@ -519,7 +519,7 @@ func sweepPRAConsole(client *zscaler.Client) error {
 }
 
 func sweepPRAPortal(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, _, err := praportal.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get pra portal: %v", err)
@@ -540,7 +540,7 @@ func sweepPRAPortal(client *zscaler.Client) error {
 }
 
 func sweepPrivilegedApproval(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 
 	// Retrieve all privileged approvals
 	approvals, _, err := praapproval.GetAll(context.Background(), service)

@@ -17,7 +17,7 @@ const (
 // Service defines the structure that contains the common client
 type Service struct {
 	Client        *Client // use the common Zscaler OneAPI Client here
-	LegacyClient  *legacyClient
+	LegacyClient  *LegacyClient
 	microTenantID *string
 	// for some resources
 	SortOrder SortOrder
@@ -25,7 +25,7 @@ type Service struct {
 }
 
 // NewService is a generic function to instantiate a Service with the Zscaler OneAPI Client
-func NewService(client *Client, legacyClient *legacyClient) *Service {
+func NewService(client *Client, legacyClient *LegacyClient) *Service {
 	return &Service{
 		Client:       client,
 		LegacyClient: legacyClient,

@@ -16,10 +16,10 @@ import (
 // This function is consistent with the ZPA request handler.
 func (client *Client) NewZccRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
 	if client.oauth2Credentials.UseLegacyClient {
-		if client.oauth2Credentials.LegacyClient == nil || client.oauth2Credentials.LegacyClient.zccClient == nil {
-			return nil, legacyClientError
+		if client.oauth2Credentials.LegacyClient == nil || client.oauth2Credentials.LegacyClient.ZccClient == nil {
+			return nil, errLegacyClientNotSet
 		}
-		return client.oauth2Credentials.LegacyClient.zccClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
+		return client.oauth2Credentials.LegacyClient.ZccClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
 	}
 	// Handle query parameters from options and any additional logic
 	if options == nil {
