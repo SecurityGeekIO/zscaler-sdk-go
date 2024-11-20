@@ -3,7 +3,6 @@ module github.com/SecurityGeekIO/zscaler-sdk-go/v3
 go 1.22.5
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.732.0
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/golang-jwt/jwt/v5 v5.2.1
