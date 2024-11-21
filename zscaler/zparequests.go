@@ -4,26 +4,21 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/common"
 	"github.com/google/go-querystring/query"
-)
-
-const (
-	mgmtConfig = "/mgmtconfig/v1/admin/customers/"
 )
 
 func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
 	if client.oauth2Credentials.UseLegacyClient {
-		if client.oauth2Credentials.LegacyClient == nil || client.oauth2Credentials.LegacyClient.zpaClient == nil {
-			return nil, legacyClientError
+		if client.oauth2Credentials.LegacyClient == nil || client.oauth2Credentials.LegacyClient.ZpaClient == nil {
+			return nil, errLegacyClientNotSet
 		}
-		return client.oauth2Credentials.LegacyClient.zpaClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
+		return client.oauth2Credentials.LegacyClient.ZpaClient.NewRequestDo(method, removeOneApiEndpointPrefix(endpoint), options, body, v)
 	}
 	// Call the custom request handler
 	// Handle query parameters from options and any additional logic
@@ -60,7 +55,7 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	if err != nil {
 		return nil, err
 	}
-	q = client.injectMicrotentantID(body, q)
+	q = common.InjectMicrotentantID(body, q, client.oauth2Credentials.Zscaler.Client.MicrotenantID)
 	query = q.Encode()
 	endpoint = path
 	if query != "" {
@@ -98,58 +93,8 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 }
 
 func (c *Client) GetCustomerID() string {
-	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient != nil && c.oauth2Credentials.LegacyClient.zpaClient != nil && c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID != "" {
-		return c.oauth2Credentials.LegacyClient.zpaClient.Config.CustomerID
+	if c.oauth2Credentials.UseLegacyClient && c.oauth2Credentials.LegacyClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient != nil && c.oauth2Credentials.LegacyClient.ZpaClient.Config.CustomerID != "" {
+		return c.oauth2Credentials.LegacyClient.ZpaClient.Config.CustomerID
 	}
 	return c.oauth2Credentials.Zscaler.Client.CustomerID
-}
-
-func getMicrotenantIDFromBody(body interface{}) string {
-	if body == nil {
-		return ""
-	}
-
-	d, err := json.Marshal(body)
-	if err != nil {
-		return ""
-	}
-	dataMap := map[string]interface{}{}
-	err = json.Unmarshal(d, &dataMap)
-	if err != nil {
-		return ""
-	}
-	if microTenantID, ok := dataMap["microtenantId"]; ok && microTenantID != nil && microTenantID != "" {
-		return fmt.Sprintf("%v", microTenantID)
-	}
-	return ""
-}
-
-func getMicrotenantIDFromEnvVar(body interface{}) string {
-	return os.Getenv("ZPA_MICROTENANT_ID")
-}
-
-func (client *Client) injectMicrotentantID(body interface{}, q url.Values) url.Values {
-	if q.Has("microtenantId") && q.Get("microtenantId") != "" {
-		return q
-	}
-
-	microTenantID := getMicrotenantIDFromBody(body)
-	if microTenantID != "" {
-		q.Add("microtenantId", microTenantID)
-		return q
-	}
-
-	microTenantID = getMicrotenantIDFromEnvVar(body)
-	if microTenantID != "" {
-		q.Add("microtenantId", microTenantID)
-		return q
-	}
-
-	microTenantID = client.oauth2Credentials.Zscaler.Client.MicrotenantID
-	if microTenantID != "" {
-		q.Add("microtenantId", microTenantID)
-		return q
-	}
-
-	return q
 }

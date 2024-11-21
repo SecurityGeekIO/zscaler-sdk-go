@@ -15,12 +15,12 @@ import (
 	"syscall"
 	"time"
 
-	zccClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zcc"
-	ziaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zia"
-	zpaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zpa"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -56,10 +56,10 @@ type AuthToken struct {
 	Expiry      time.Time
 }
 
-type legacyClient struct {
-	ziaClient *ziaClient.Client
-	zpaClient *zpaClient.Client
-	zccClient *zccClient.Client
+type LegacyClient struct {
+	ZiaClient *zia.Client
+	ZpaClient *zpa.Client
+	ZccClient *zcc.Client
 }
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
@@ -112,7 +112,7 @@ type Configuration struct {
 	PrivateKeySigner jose.Signer
 	CacheManager     cache.Cache
 	UseLegacyClient  bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
-	LegacyClient     *legacyClient
+	LegacyClient     *LegacyClient
 }
 
 // NewConfiguration is the main configuration function, implementing the ConfigSetter pattern.
@@ -626,29 +626,29 @@ func WithLegacyClient(useLegacyClient bool) ConfigSetter {
 
 }
 
-func WithZiaLegacyClient(ziaClient *ziaClient.Client) ConfigSetter {
+func WithZiaLegacyClient(ziaClient *zia.Client) ConfigSetter {
 	return func(c *Configuration) {
 		if c.LegacyClient == nil {
-			c.LegacyClient = &legacyClient{}
+			c.LegacyClient = &LegacyClient{}
 		}
-		c.LegacyClient.ziaClient = ziaClient
+		c.LegacyClient.ZiaClient = ziaClient
 	}
 }
 
-func WithZpaLegacyClient(zpaClient *zpaClient.Client) ConfigSetter {
+func WithZpaLegacyClient(zpaClient *zpa.Client) ConfigSetter {
 	return func(c *Configuration) {
 		if c.LegacyClient == nil {
-			c.LegacyClient = &legacyClient{}
+			c.LegacyClient = &LegacyClient{}
 		}
-		c.LegacyClient.zpaClient = zpaClient
+		c.LegacyClient.ZpaClient = zpaClient
 	}
 }
 
-func WithZccLegacyClient(zccClient *zccClient.Client) ConfigSetter {
+func WithZccLegacyClient(zccClient *zcc.Client) ConfigSetter {
 	return func(c *Configuration) {
 		if c.LegacyClient == nil {
-			c.LegacyClient = &legacyClient{}
+			c.LegacyClient = &LegacyClient{}
 		}
-		c.LegacyClient.zccClient = zccClient
+		c.LegacyClient.ZccClient = zccClient
 	}
 }

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/administration"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zdx/services/administration"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/zdx"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("[ERROR] creating client failed: %v\n", err)
 	}
 	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+	service := zscaler.NewService(cli)
 
 	// Prompt the user to choose a resource type
 	fmt.Println("Choose the Resource Type:")
@@ -102,7 +102,7 @@ func promptForFilters(reader *bufio.Reader) administration.GetDepartmentsFilters
 	}
 }
 
-func getDepartments(service *services.Service, filters administration.GetDepartmentsFilters) {
+func getDepartments(service *zscaler.Service, filters administration.GetDepartmentsFilters) {
 	departments, _, err := administration.GetDepartments(service, filters)
 	if err != nil {
 		log.Fatalf("Error getting departments: %v", err)
@@ -110,7 +110,7 @@ func getDepartments(service *services.Service, filters administration.GetDepartm
 	displayDepartments(departments)
 }
 
-func getLocations(service *services.Service, filters administration.GetDepartmentsFilters) {
+func getLocations(service *zscaler.Service, filters administration.GetDepartmentsFilters) {
 	locations, _, err := administration.GetLocations(service, administration.GetLocationsFilters(filters))
 	if err != nil {
 		log.Fatalf("Error getting locations: %v", err)

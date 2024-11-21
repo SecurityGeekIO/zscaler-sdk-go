@@ -1,3 +1,9 @@
+github.com/SecurityGeekIO/zscaler-sdk-go v1.8.0 h1:Q5QszJi9ws8fSMZR+apCtEu+H+J/RZ+lFC1JHezFhYs=
+github.com/SecurityGeekIO/zscaler-sdk-go v1.8.0/go.mod h1:fATVkl+DI4zl5xIvLqD/FrzjKf/poT66xXyZVK7pzxM=
+github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.732.0 h1:zQlF6hACsWAhT5rEbuN1uL8BcvF8/RZuG6669+sSlsg=
+github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.732.0/go.mod h1:NUpfpPqQFimtukVSzVaG5NomeLwTGafX/wSE9x0IUsw=
+github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.6 h1:Yk0RQ8+jHLD2xODFIy0zp82vycG3i6IQcxG3oB9ffZM=
+github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.6/go.mod h1:X0hk78kW6iX4a2YKlpKyzOteDIFicRHmGRzdFV8DR+k=
 github.com/allegro/bigcache/v3 v3.1.0 h1:H2Vp8VOvxcrB91o86fUSVJFqeuz8kpyyB02eH3bSzwk=
 github.com/allegro/bigcache/v3 v3.1.0/go.mod h1:aPyh7jEvrog9zAwx5N7+JUQX5dZTSGpxF1LAR4dr35I=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -48,8 +54,6 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.61.0 h1:ZZhcqDEormPSBqynjUz8H88ifP6+2MenkHiZiqFJfEs=
-github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.61.0/go.mod h1:lbdgIlORFfkAGvju4szC7SLxpLddJJKvZ6brfOECIL4=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
