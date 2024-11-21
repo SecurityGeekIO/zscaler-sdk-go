@@ -1,6 +1,8 @@
 module alerts
 
-go 1.22.4
+go 1.22.5
+
+toolchain go1.23.1
 
 require (
 	github.com/olekukonko/tablewriter v0.0.5
@@ -8,6 +10,7 @@ require (
 )
 
 require (
+	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -23,5 +26,4 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.6
 )

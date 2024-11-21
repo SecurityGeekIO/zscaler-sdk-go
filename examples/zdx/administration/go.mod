@@ -5,14 +5,21 @@ go 1.22.5
 toolchain go1.23.1
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go v1.8.0
-	github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.732.0
 	github.com/olekukonko/tablewriter v0.0.5
 
 )
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.6
+	github.com/allegro/bigcache/v3 v3.1.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+require (
+	github.com/SecurityGeekIO/zscaler-sdk-go/v3 v3.0.8
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

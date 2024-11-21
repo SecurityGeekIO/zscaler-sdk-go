@@ -9,12 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/alerts"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/olekukonko/tablewriter"
-	"github.com/zscaler/zscaler-sdk-go/v2/zcc/services"
-	"github.com/zscaler/zscaler-sdk-go/v2/zdx/services/alerts"
-	"github.com/zscaler/zscaler-sdk-go/zdx"
-	"github.com/zscaler/zscaler-sdk-go/zdx/services/common"
 )
 
 func main() {
@@ -124,7 +123,7 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	}
 }
 
-func getOngoingAlerts(service *zscaler.Service, filters common.GetFromToFilters) {
+func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters) {
 	alertsResponse, _, err := alerts.GetOngoingAlerts(service, filters)
 	if err != nil {
 		log.Fatalf("Error getting ongoing alerts: %v", err)
@@ -132,7 +131,7 @@ func getOngoingAlerts(service *zscaler.Service, filters common.GetFromToFilters)
 	displayAlerts(alertsResponse.Alerts)
 }
 
-func getHistoricalAlerts(service *zscaler.Service, filters common.GetFromToFilters) {
+func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) {
 	alertsResponse, _, err := alerts.GetHistoricalAlerts(service, filters)
 	if err != nil {
 		log.Fatalf("Error getting historical alerts: %v", err)
@@ -140,7 +139,7 @@ func getHistoricalAlerts(service *zscaler.Service, filters common.GetFromToFilte
 	displayAlerts(alertsResponse.Alerts)
 }
 
-func getAlertDetails(service *zscaler.Service, alertID string) {
+func getAlertDetails(service *services.Service, alertID string) {
 	alertDetails, _, err := alerts.GetAlert(service, alertID)
 	if err != nil {
 		log.Fatalf("Error getting alert details: %v", err)
@@ -148,7 +147,7 @@ func getAlertDetails(service *zscaler.Service, alertID string) {
 	displayAlertDetails(*alertDetails) // Dereference the pointer
 }
 
-func getAffectedDevices(service *zscaler.Service, alertID string, filters common.GetFromToFilters) {
+func getAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) {
 	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(service, alertID, filters)
 	if err != nil {
 		log.Fatalf("Error getting affected devices: %v", err)
