@@ -15,9 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	// zccClient "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zcc"
-	// ziaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zia"
-	// zpaClient "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zpa"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
