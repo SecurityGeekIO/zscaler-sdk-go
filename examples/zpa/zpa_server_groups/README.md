@@ -4,9 +4,9 @@ package main
 import (
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/servergroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 )
 
 func main() {

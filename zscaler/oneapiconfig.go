@@ -19,6 +19,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -46,12 +47,13 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
-
-	// Start token renewal ticker
-	cli.startTokenRenewalTicker()
+	if !config.UseLegacyClient {
+		// Start token renewal ticker
+		cli.startTokenRenewalTicker()
+	}
 
 	// Return the service directly
-	return NewService(cli), nil
+	return NewService(cli, nil), nil
 }
 
 // startTokenRenewalTicker starts a ticker to renew the token before it expires.
@@ -368,7 +370,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken))
 		} else if resp.StatusCode > 299 {
 			resp.Body.Close()
-			return nil, resp, nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		} else if resp.StatusCode < 300 {
 			break
 		}

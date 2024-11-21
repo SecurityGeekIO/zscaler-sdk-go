@@ -1,8 +1,8 @@
 [![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/.go-version)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/.go-version)
 [![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
 [![codecov](https://codecov.io/github/zscaler/zscaler-sdk-go/graph/badge.svg?token=OVX3UWIWSK)](https://codecov.io/github/zscaler/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v2/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/LICENSE)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
 <img src="https://raw.githubusercontent.com/zscaler/zscaler-terraformer/master/images/zscaler_terraformer-logo.svg" width="400">
@@ -32,9 +32,9 @@ To install the Zscaler GO SDK in your project:
 
   - Create a module file by running `go mod init`
   - You can skip this step if you already use `go mod`
-  - Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v2@latest`. This will add
+  - Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v3@latest`. This will add
     the SDK to your `go.mod` file.
-  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"`.
+  - Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"`.
 
 ### You'll also need
 
@@ -378,7 +378,7 @@ We're happy to accept contributions and PRs! Please see the [contribution
 guide](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
 structure a contribution.
 
-[sdkapiref]: https://pkg.go.dev/github.com/SecurityGeekIO/zscaler-sdk-go/v2
+[sdkapiref]: https://pkg.go.dev/github.com/SecurityGeekIO/zscaler-sdk-go/v3
 [github-issues]: https://github.com/SecurityGeekIO/zscaler-sdk-go/issues
 [github-releases]: https://github.com/SecurityGeekIO/zscaler-sdk-go/releases
 
