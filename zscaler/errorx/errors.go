@@ -1,4 +1,4 @@
-package zia
+package errorx
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func (r *ErrorResponse) Error() string {
 	return fmt.Sprintf("FAILED: %v", r.Err)
 }
 
-func checkErrorInResponse(res *http.Response, respErr error) error {
+func CheckErrorInResponse(res *http.Response, respErr error) error {
 	if c := res.StatusCode; c >= 200 && c <= 299 {
 		return respErr
 	}

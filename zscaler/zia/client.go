@@ -15,6 +15,7 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/uuid"
 )
 
@@ -131,7 +132,7 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 
 		resp.Body.Close()
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
-			return nil, checkErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+			return nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 		}
 	}
 

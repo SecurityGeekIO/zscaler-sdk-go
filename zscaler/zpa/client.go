@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -20,6 +19,8 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 type Client struct {
@@ -184,49 +185,6 @@ func (client *Client) newRequestDoCustom(method, urlStr string, options, body, v
 	return resp, err
 }
 
-func getMicrotenantIDFromBody(body interface{}) string {
-	if body == nil {
-		return ""
-	}
-
-	d, err := json.Marshal(body)
-	if err != nil {
-		return ""
-	}
-	dataMap := map[string]interface{}{}
-	err = json.Unmarshal(d, &dataMap)
-	if err != nil {
-		return ""
-	}
-	if microTenantID, ok := dataMap["microtenantId"]; ok && microTenantID != nil && microTenantID != "" {
-		return fmt.Sprintf("%v", microTenantID)
-	}
-	return ""
-}
-
-func getMicrotenantIDFromEnvVar(body interface{}) string {
-	return os.Getenv("ZPA_MICROTENANT_ID")
-}
-
-func (client *Client) injectMicrotentantID(body interface{}, q url.Values) url.Values {
-	if q.Has("microtenantId") && q.Get("microtenantId") != "" {
-		return q
-	}
-
-	microTenantID := getMicrotenantIDFromBody(body)
-	if microTenantID != "" {
-		q.Add("microtenantId", microTenantID)
-		return q
-	}
-
-	microTenantID = getMicrotenantIDFromEnvVar(body)
-	if microTenantID != "" {
-		q.Add("microtenantId", microTenantID)
-		return q
-	}
-	return q
-}
-
 func (client *Client) getRequest(method, urlPath string, options, body interface{}) (*http.Request, error) {
 	var buf io.ReadWriter
 	if body != nil {
@@ -256,7 +214,7 @@ func (client *Client) getRequest(method, urlPath string, options, body interface
 	}
 	// Here, injectMicrotenantID or any similar function should ensure
 	// it's not duplicating query parameters that may already be present in urlPath
-	q = client.injectMicrotentantID(body, q)
+	q = common.InjectMicrotentantID(body, q, "")
 
 	// Merge query params from urlPath and options. Avoid overwriting any existing params.
 	for key, values := range parsedPath.Query() {
@@ -304,7 +262,7 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	if err == nil {
 		resp.Body = io.NopCloser(bytes.NewBuffer(respData))
 	}
-	if err := checkErrorInResponse(resp, respData); err != nil {
+	if err := errorx.CheckErrorInResponse(resp, err); err != nil {
 		return resp, err
 	}
 

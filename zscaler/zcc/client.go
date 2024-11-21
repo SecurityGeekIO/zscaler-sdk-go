@@ -16,6 +16,7 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 type Client struct {
@@ -191,7 +192,7 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 		return nil, err
 	}
 
-	if err := checkErrorInResponse(resp); err != nil {
+	if err := errorx.CheckErrorInResponse(resp, err); err != nil {
 		return resp, err
 	}
 
