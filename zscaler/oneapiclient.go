@@ -18,6 +18,9 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -51,6 +54,12 @@ type AuthToken struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	Expiry      time.Time
+}
+
+type LegacyClient struct {
+	ZiaClient *zia.Client
+	ZpaClient *zpa.Client
+	ZccClient *zcc.Client
 }
 
 // Configuration struct holds the config for ZIA, ZPA, and common fields like HTTPClient and AuthToken.
@@ -102,6 +111,8 @@ type Configuration struct {
 	}
 	PrivateKeySigner jose.Signer
 	CacheManager     cache.Cache
+	UseLegacyClient  bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
+	LegacyClient     *LegacyClient
 }
 
 // NewConfiguration is the main configuration function, implementing the ConfigSetter pattern.
@@ -606,4 +617,38 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func WithLegacyClient(useLegacyClient bool) ConfigSetter {
+	return func(c *Configuration) {
+		c.UseLegacyClient = useLegacyClient
+	}
+
+}
+
+func WithZiaLegacyClient(ziaClient *zia.Client) ConfigSetter {
+	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &LegacyClient{}
+		}
+		c.LegacyClient.ZiaClient = ziaClient
+	}
+}
+
+func WithZpaLegacyClient(zpaClient *zpa.Client) ConfigSetter {
+	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &LegacyClient{}
+		}
+		c.LegacyClient.ZpaClient = zpaClient
+	}
+}
+
+func WithZccLegacyClient(zccClient *zcc.Client) ConfigSetter {
+	return func(c *Configuration) {
+		if c.LegacyClient == nil {
+			c.LegacyClient = &LegacyClient{}
+		}
+		c.LegacyClient.ZccClient = zccClient
+	}
 }

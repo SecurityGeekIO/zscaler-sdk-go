@@ -121,7 +121,7 @@ func sweep() error {
 }
 
 func sweepAdminUsers(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := admins.GetAllAdminUsers(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get admin users: %v", err)
@@ -143,7 +143,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 
 /*
 	func sweepDLPEngines(client *zscaler.Client) error {
-		service := zscaler.NewService(client)
+		service := zscaler.NewService(client, nil)
 		resources, err := dlp_engines.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp engines: %v", err)
@@ -164,7 +164,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 	}
 
 	func sweepDLPNotificationTemplates(client *zscaler.Client) error {
-		service := zscaler.NewService(client)
+		service := zscaler.NewService(client, nil)
 		resources, err := dlp_notification_templates.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp notification templates: %v", err)
@@ -185,7 +185,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 	}
 
 	func sweepADLPWebRules(client *zscaler.Client) error {
-		service := zscaler.NewService(client)
+		service := zscaler.NewService(client, nil)
 		resources, err := dlp_web_rules.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp web rules: %v", err)
@@ -206,7 +206,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 	}
 
 	func sweepDLPDictionaries(client *zscaler.Client) error {
-		service := zscaler.NewService(client)
+		service := zscaler.NewService(client, nil)
 		resources, err := dlpdictionaries.GetAll(context.Background(), service)
 		if err != nil {
 			log.Printf("[ERROR] Failed to get dlp dictionaries: %v", err)
@@ -227,7 +227,7 @@ func sweepAdminUsers(client *zscaler.Client) error {
 	}
 */
 func sweepFirewallFilteringRules(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := filteringrules.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall filtering rule: %v", err)
@@ -248,7 +248,7 @@ func sweepFirewallFilteringRules(client *zscaler.Client) error {
 }
 
 func sweepIPDestinationGroup(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := ipdestinationgroups.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip destination group: %v", err)
@@ -269,7 +269,7 @@ func sweepIPDestinationGroup(client *zscaler.Client) error {
 }
 
 func sweepIPSourceGroup(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := ipsourcegroups.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get ip source group: %v", err)
@@ -290,7 +290,7 @@ func sweepIPSourceGroup(client *zscaler.Client) error {
 }
 
 func sweepNetworkAplicationGroups(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := networkapplicationgroups.GetAllNetworkApplicationGroups(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network application groups: %v", err)
@@ -311,7 +311,7 @@ func sweepNetworkAplicationGroups(client *zscaler.Client) error {
 }
 
 func sweepNetworkServiceGroups(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := networkservicegroups.GetAllNetworkServiceGroups(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network service groups: %v", err)
@@ -332,7 +332,7 @@ func sweepNetworkServiceGroups(client *zscaler.Client) error {
 }
 
 func sweepNetworkServices(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := networkservices.GetAllNetworkServices(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get network services: %v", err)
@@ -354,7 +354,7 @@ func sweepNetworkServices(client *zscaler.Client) error {
 
 /*
 func sweepForwardingControlRules(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := forwarding_rules.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get forwarding control rules: %v", err)
@@ -398,7 +398,7 @@ func sweepZPAGateways(client *zscaler.Client) error {
 */
 
 func sweepLocationManagement(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := locationmanagement.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get location management: %v", err)
@@ -419,7 +419,7 @@ func sweepLocationManagement(client *zscaler.Client) error {
 }
 
 func sweepRuleLabels(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := rule_labels.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to rule labels: %v", err)
@@ -441,7 +441,7 @@ func sweepRuleLabels(client *zscaler.Client) error {
 
 // TODO: Need to review method calls.
 func sweepSandboxSettings(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	// First, fetch the current list of MD5 hashes
 	currentSettings, err := sandbox_settings.Get(context.Background(), service)
 	if err != nil {
@@ -474,7 +474,7 @@ func sweepSandboxSettings(client *zscaler.Client) error {
 
 // TODO: Need to review method calls.
 func sweepSecurityPolicySettings(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 
 	// First, fetch the current lists of whitelist and blacklist URLs
 	currentSettings, err := security_policy_settings.GetListUrls(context.Background(), service)
@@ -508,7 +508,7 @@ func sweepSecurityPolicySettings(client *zscaler.Client) error {
 }
 
 func sweepUserAuthenticationSettings(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 
 	currentSettings, err := user_authentication_settings.Get(context.Background(), service)
 	if err != nil {
@@ -535,7 +535,7 @@ func sweepUserAuthenticationSettings(client *zscaler.Client) error {
 }
 
 func sweepGRETunnels(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := gretunnels.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get gre tunnels: %v", err)
@@ -556,7 +556,7 @@ func sweepGRETunnels(client *zscaler.Client) error {
 }
 
 func sweepStaticIP(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := staticips.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get static ip: %v", err)
@@ -577,7 +577,7 @@ func sweepStaticIP(client *zscaler.Client) error {
 }
 
 func sweepVPNCredentials(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := vpncredentials.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get vpn credentials: %v", err)
@@ -598,7 +598,7 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 }
 
 func sweepURLCategories(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := urlcategories.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url categories: %v", err)
@@ -619,7 +619,7 @@ func sweepURLCategories(client *zscaler.Client) error {
 }
 
 func sweepURLFilteringPolicies(client *zscaler.Client) error {
-	service := zscaler.NewService(client)
+	service := zscaler.NewService(client, nil)
 	resources, err := urlfilteringpolicies.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get url filtering policies: %v", err)

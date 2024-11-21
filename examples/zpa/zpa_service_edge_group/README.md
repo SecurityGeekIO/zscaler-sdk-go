@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zpa/services/serviceedgegroup"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
 
 func main() {

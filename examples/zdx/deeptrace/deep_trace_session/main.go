@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v2/zscaler/zdx/services/troubleshooting/deeptrace"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 	"github.com/olekukonko/tablewriter"
 )
 
