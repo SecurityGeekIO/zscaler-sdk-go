@@ -56,6 +56,7 @@ type AuthToken struct {
 	Expiry      time.Time
 }
 
+// Legacy struct holds and instance of each legacy API client to support backwards compatibility
 type LegacyClient struct {
 	ZiaClient *zia.Client
 	ZpaClient *zpa.Client
@@ -69,8 +70,9 @@ type Configuration struct {
 	ZPAHTTPClient  *http.Client
 	ZIAHTTPClient  *http.Client
 	ZCCHTTPClient  *http.Client
-	UserAgent      string `json:"userAgent,omitempty"`
-	Debug          bool   `json:"debug,omitempty"`
+	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`
+	UserAgent      string            `json:"userAgent,omitempty"`
+	Debug          bool              `json:"debug,omitempty"`
 	UserAgentExtra string
 	Context        context.Context
 	Zscaler        struct {
@@ -91,24 +93,24 @@ type Configuration struct {
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
 				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
-			}
+			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZSCALER_CLIENT_PROXY_PORT"`
 				Host     string `yaml:"host" envconfig:"ZSCALER_CLIENT_PROXY_HOST"`
 				Username string `yaml:"username" envconfig:"ZSCALER_CLIENT_PROXY_USERNAME"`
 				Password string `yaml:"password" envconfig:"ZSCALER_CLIENT_PROXY_PASSWORD"`
-			}
+			} `yaml:"proxy"`
 			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
 				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
 				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
 				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
-			}
-		}
+			} `yaml:"rateLimit"`
+		} `yaml:"client"`
 		Testing struct {
 			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZSCALER_TESTING_DISABLE_HTTPS_CHECK"`
-		}
-	}
+		} `yaml:"testing"`
+	} `yaml:"zscaler"`
 	PrivateKeySigner jose.Signer
 	CacheManager     cache.Cache
 	UseLegacyClient  bool `yaml:"useLegacyClient" envconfig:"ZSCALER_USE_LEGACY_CLIENT"`
@@ -119,10 +121,11 @@ type Configuration struct {
 func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	logger := logger.GetDefaultLogger(loggerPrefix)
 	cfg := &Configuration{
-		Logger:    logger,
-		UserAgent: fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
-		Debug:     false,
-		Context:   context.Background(), // Set default context
+		DefaultHeader: make(map[string]string),
+		Logger:        logger,
+		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		Debug:         false,
+		Context:       context.Background(), // Set default context
 	}
 
 	cfg.Zscaler.Client.RateLimit.MaxRetries = MaxNumOfRetries
@@ -405,6 +408,11 @@ func readConfigFromEnvironment(c Configuration) *Configuration {
 		return &c
 	}
 	return &c
+}
+
+// AddDefaultHeader adds a new HTTP header to the default header in the request
+func (c *Configuration) AddDefaultHeader(key string, value string) {
+	c.DefaultHeader[key] = value
 }
 
 type ConfigSetter func(*Configuration)
