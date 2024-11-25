@@ -68,8 +68,8 @@ type AuthToken struct {
 }
 
 type Configuration struct {
-	Logger logger.Logger
 	sync.Mutex
+	Logger logger.Logger
 	HTTPClient     *http.Client
 	BaseURL        *url.URL
 	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`

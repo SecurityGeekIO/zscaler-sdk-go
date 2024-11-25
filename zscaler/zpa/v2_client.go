@@ -45,10 +45,6 @@ func NewClient(config *Configuration) (*Client, error) {
 		config.HTTPClient = getHTTPClient(config.Logger, nil, config)
 	}
 
-	if config.HTTPClient == nil {
-		config.HTTPClient = getHTTPClient(config.Logger, nil, config)
-	}
-
 	// Initialize cache if enabled
 	if config.ZPA.Client.Cache.Enabled {
 		if config.CacheManager == nil {

@@ -1,24 +1,6 @@
 package zia
 
-import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"reflect"
-	"strings"
-	"time"
-
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/uuid"
-)
-
+/*
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
 	key := cache.CreateCacheKey(req)
 	if c.cacheEnabled {
@@ -354,3 +336,4 @@ func (c *Client) BulkDelete(endpoint string, payload interface{}) (*http.Respons
 	// If the response is not empty, this might indicate an error or unexpected behavior
 	return &http.Response{StatusCode: 200}, fmt.Errorf("unexpected response: %s", string(resp))
 }
+*/
