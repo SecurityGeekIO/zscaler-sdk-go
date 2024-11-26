@@ -69,7 +69,7 @@ type AuthToken struct {
 
 type Configuration struct {
 	sync.Mutex
-	Logger logger.Logger
+	Logger         logger.Logger
 	HTTPClient     *http.Client
 	BaseURL        *url.URL
 	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`
@@ -82,7 +82,7 @@ type Configuration struct {
 			ZPAClientID      string     `yaml:"clientId" envconfig:"ZPA_CLIENT_ID"`
 			ZPAClientSecret  string     `yaml:"clientSecret" envconfig:"ZPA_CLIENT_SECRET"`
 			ZPACustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
-			ZPACloud         string     `yaml:"Cloud" envconfig:"ZPA_CLOUD"`
+			ZPACloud         string     `yaml:"cloud" envconfig:"ZPA_CLOUD"`
 			ZPAMicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
 			AuthToken        *AuthToken `yaml:"authToken"`
 			AccessToken      *AuthToken `yaml:"accessToken"`
@@ -140,21 +140,25 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.CacheManager = newCache(cfg)
 	logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZPA.Client.Cache.DefaultTtl, cfg.ZPA.Client.Cache.DefaultTti)
 
-	// Initialize testing configurations
-	cfg.ZPA.Testing.DisableHttpsCheck = false
+	// Read configuration from YAML (lowest precedence)
+	readConfigFromSystem(cfg)
 
-	// Load environment variables for client credentials and cloud
-	cfg.ZPA.Client.ZPAClientID = os.Getenv(ZPA_CLIENT_ID)
-	cfg.ZPA.Client.ZPAClientSecret = os.Getenv(ZPA_CLIENT_SECRET)
-	cfg.ZPA.Client.ZPACustomerID = os.Getenv(ZPA_CUSTOMER_ID)
-	cfg.ZPA.Client.ZPACloud = os.Getenv(ZPA_CLOUD)
+	// Read environment variables (medium precedence)
+	readConfigFromEnvironment(cfg)
 
+	// Apply ConfigSetter functions
+	for _, confSetter := range conf {
+		confSetter(cfg)
+	}
+	logger.Printf("[DEBUG] Configuration setters applied.")
+
+	// Validate credentials after both setters and environment variables
 	if cfg.ZPA.Client.ZPAClientID == "" || cfg.ZPA.Client.ZPAClientSecret == "" || cfg.ZPA.Client.ZPACustomerID == "" {
-		logger.Printf("[ERROR] Missing ZPA credentials. Ensure environment variables are set.")
+		logger.Printf("[ERROR] Missing ZPA credentials. Ensure they are provided via setters or environment variables.")
 		return nil, errors.New("missing required ZPA credentials")
 	}
 
-	// Set the base URL based on the cloud environment
+	// Determine the base URL based on the ZPACloud value
 	rawURL := defaultBaseURL
 	switch strings.ToUpper(cfg.ZPA.Client.ZPACloud) {
 	case "PRODUCTION", "":
@@ -187,11 +191,6 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg.BaseURL = parsedURL
 	logger.Printf("[DEBUG] Base URL parsed successfully: %s", parsedURL)
 
-	// Read additional configurations from the system and environment
-	readConfigFromSystem(cfg)
-	readConfigFromEnvironment(cfg)
-	logger.Printf("[DEBUG] System and environment configurations loaded.")
-
 	// Set up HTTP clients
 	setHttpClients(cfg)
 	if cfg.HTTPClient == nil {
@@ -200,12 +199,6 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	}
 	logger.Printf("[DEBUG] HTTP clients configured.")
 
-	// Apply each ConfigSetter function
-	for _, confSetter := range conf {
-		confSetter(cfg)
-	}
-	logger.Printf("[DEBUG] Configuration setters applied.")
-
 	// Authenticate the client and populate the AuthToken
 	authToken, err := Authenticate(cfg.Context, cfg, logger)
 	if err != nil {
@@ -213,12 +206,6 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		return nil, fmt.Errorf("authentication failed: %w", err)
 	}
 	cfg.ZPA.Client.AuthToken = authToken
-
-	// Validate critical configuration fields
-	if cfg.ZPA.Client.ZPAClientID == "" || cfg.ZPA.Client.ZPAClientSecret == "" || cfg.ZPA.Client.ZPACustomerID == "" {
-		logger.Printf("[ERROR] Missing client credentials (ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID).")
-		return nil, fmt.Errorf("client credentials (ZPA_CLIENT_ID, ZPA_CLIENT_SECRET, ZPA_CUSTOMER_ID) are missing")
-	}
 
 	// Add the AuthToken to the context
 	if cfg.ZPA.Client.AuthToken != nil && cfg.ZPA.Client.AuthToken.AccessToken != "" {
@@ -237,14 +224,14 @@ type ConfigSetter func(*Configuration)
 
 // ConfigSetter type defines a function that modifies a Config struct.
 // WithClientID sets the ClientID in the Config.
-func WithClientID(clientID string) ConfigSetter {
+func WithZPAClientID(clientID string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZPA.Client.ZPAClientID = clientID
 	}
 }
 
 // WithClientSecret sets the ClientSecret in the Config.
-func WithClientSecret(clientSecret string) ConfigSetter {
+func WithZPAClientSecret(clientSecret string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZPA.Client.ZPAClientSecret = clientSecret
 	}
@@ -259,6 +246,12 @@ func WithZPACustomerID(customerID string) ConfigSetter {
 func WithZPAMicrotenantID(microtenantID string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZPA.Client.ZPAMicrotenantID = microtenantID
+	}
+}
+
+func WithZPACloud(cloud string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZPA.Client.ZPACloud = cloud
 	}
 }
 
@@ -445,11 +438,12 @@ func readConfigFromSystem(c *Configuration) *Configuration {
 }
 
 func readConfigFromEnvironment(c *Configuration) *Configuration {
-	err := envconfig.Process("zscaler", &c)
+	err := envconfig.Process("zscaler", c)
 	if err != nil {
-		fmt.Println("error parsing")
+		c.Logger.Printf("[ERROR] Error parsing environment variables: %v", err)
 		return c
 	}
+	c.Logger.Printf("[DEBUG] Successfully parsed environment variables.")
 	return c
 }
 

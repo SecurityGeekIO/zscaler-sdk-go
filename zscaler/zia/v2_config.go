@@ -108,12 +108,11 @@ type Configuration struct {
 	Context        context.Context
 	ZIA            struct {
 		Client struct {
-			ZIAUsername  string `yaml:"username" envconfig:"ZIA_USERNAME"`
-			ZIAPassword  string `yaml:"password" envconfig:"ZIA_PASSWORD"`
-			ZIAApiKey    string `yaml:"apiKey" envconfig:"ZIA_API_KEY"`
-			ZIACloud     string `yaml:"Cloud" envconfig:"ZIA_CLOUD"`
-			SandboxToken string `yaml:"sandboxToken" envconfig:"ZIA_SANDBOX_TOKEN"`
-			Cache        struct {
+			ZIAUsername string `yaml:"username" envconfig:"ZIA_USERNAME"`
+			ZIAPassword string `yaml:"password" envconfig:"ZIA_PASSWORD"`
+			ZIAApiKey   string `yaml:"apiKey" envconfig:"ZIA_API_KEY"`
+			ZIACloud    string `yaml:"cloud" envconfig:"ZIA_CLOUD"`
+			Cache       struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZIA_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTI"`
@@ -165,25 +164,22 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		cfg.ZIA.Client.Cache.DefaultTti = time.Minute * 8
 	}
 	cfg.CacheManager = newCache(cfg)
-	//logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZIA.Client.Cache.DefaultTtl, cfg.ZIA.Client.Cache.DefaultTti)
+	logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", cfg.ZIA.Client.Cache.DefaultTtl, cfg.ZIA.Client.Cache.DefaultTti)
 
 	// Initialize testing configurations
 	cfg.ZIA.Testing.DisableHttpsCheck = false
-
-	// Load environment variables for client credentials and cloud
-	cfg.ZIA.Client.ZIAUsername = os.Getenv(ZIA_USERNAME)
-	cfg.ZIA.Client.ZIAPassword = os.Getenv(ZIA_PASSWORD)
-	cfg.ZIA.Client.ZIAApiKey = os.Getenv(ZIA_API_KEY)
-	cfg.ZIA.Client.ZIACloud = os.Getenv(ZIA_CLOUD)
 
 	// Apply additional configurations from ConfigSetters
 	for _, confSetter := range conf {
 		confSetter(cfg)
 	}
 
-	// Load additional configurations from system and environment
+	// Read configuration from YAML (lowest precedence)
 	readConfigFromSystem(cfg)
+
+	// Read environment variables (medium precedence)
 	readConfigFromEnvironment(cfg)
+
 	// logger.Printf("[DEBUG] System and environment configurations loaded.")
 
 	// Validate critical configuration fields
@@ -244,13 +240,6 @@ func WithZiaAPIKey(apiKey string) ConfigSetter {
 func WithZiaCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZIA.Client.ZIACloud = cloud
-	}
-}
-
-// WithSandboxToken is a ConfigSetter that sets the Sandbox token for the Zscaler Client.
-func WithSandboxToken(token string) ConfigSetter {
-	return func(cfg *Configuration) {
-		cfg.ZIA.Client.SandboxToken = token
 	}
 }
 
@@ -466,7 +455,7 @@ func readConfigFromSystem(c *Configuration) *Configuration {
 }
 
 func readConfigFromEnvironment(c *Configuration) *Configuration {
-	err := envconfig.Process("zscaler", &c)
+	err := envconfig.Process("zscaler", c)
 	if err != nil {
 		fmt.Println("error parsing")
 		return c

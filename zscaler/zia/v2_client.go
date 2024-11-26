@@ -30,11 +30,19 @@ import (
 
 // NewClient Returns a Client from credentials passed as parameters.
 func NewClient(config *Configuration) (*Client, error) {
-	logger := logger.GetDefaultLogger(loggerPrefix)
+
 	if config == nil {
 		return nil, errors.New("configuration cannot be nil")
 	}
 
+	// Enable Debug logging if the Debug flag is set
+	if config.Debug {
+		_ = os.Setenv("ZSCALER_SDK_LOG", "true")
+		_ = os.Setenv("ZSCALER_SDK_VERBOSE", "true")
+		config.Logger = logger.GetDefaultLogger(loggerPrefix)
+	}
+
+	logger := logger.GetDefaultLogger(loggerPrefix)
 	// logger.Printf("[DEBUG] Initializing client with provided configuration.")
 
 	// Validate ZIA Cloud
@@ -506,14 +514,6 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-func (c *Client) GetSandboxURL() string {
-	return "https://csbapi." + c.cloud + ".net"
-}
-
-func (c *Client) GetSandboxToken() string {
-	return os.Getenv("ZIA_SANDBOX_TOKEN")
-}
-
 // startSessionTicker starts a ticker to refresh the session periodically
 func (c *Client) startSessionTicker() {
 	if c.sessionTimeout > 0 {
@@ -622,7 +622,6 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
-	isSandboxRequest := baseUrl == c.GetSandboxURL()
 	req, err = http.NewRequest(method, fullURL, body)
 	if err != nil {
 		return nil, err
@@ -631,17 +630,9 @@ func (c *Client) GenericRequest(baseUrl, endpoint, method string, body io.Reader
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
-	var otherHeaders map[string]string
-	if !isSandboxRequest {
-		err = c.checkSession()
-		if err != nil {
-			return nil, err
-		}
-		otherHeaders = map[string]string{"JSessionID": c.session.JSessionID}
-	}
+
 	reqID := uuid.New().String()
 	start := time.Now()
-	logger.LogRequest(c.Logger, req, reqID, otherHeaders, !isSandboxRequest)
 	for retry := 1; retry <= 5; retry++ {
 		resp, err = c.do(req, start, reqID)
 		if err != nil {

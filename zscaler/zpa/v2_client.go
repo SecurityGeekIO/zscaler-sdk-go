@@ -12,6 +12,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -38,6 +39,13 @@ type Client struct {
 func NewClient(config *Configuration) (*Client, error) {
 	if config == nil {
 		return nil, errors.New("configuration cannot be nil")
+	}
+
+	// Enable Debug logging if the Debug flag is set
+	if config.Debug {
+		_ = os.Setenv("ZSCALER_SDK_LOG", "true")
+		_ = os.Setenv("ZSCALER_SDK_VERBOSE", "true")
+		config.Logger = logger.GetDefaultLogger("zpa-logger: ")
 	}
 
 	// Ensure HTTP clients are properly initialized
