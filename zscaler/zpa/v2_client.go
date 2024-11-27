@@ -29,7 +29,6 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
 	cache  cache.Cache

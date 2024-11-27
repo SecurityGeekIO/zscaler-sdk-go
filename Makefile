@@ -158,7 +158,7 @@ ziaActivator:
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
 	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/ziaActivator ./zia/activation_cli/ziaActivator.go
+	@go build -o $(DESTINATION)/ziaActivator ./zscaler/zia/activation_cli/ziaActivator.go
 
 zconActivator: GOOS=$(shell go env GOOS)
 zconActivator: GOARCH=$(shell go env GOARCH)
@@ -169,12 +169,12 @@ zconActivator: DESTINATION=/usr/local/bin
 endif
 zconActivator:
 	@echo "==> Installing zconActivator cli $(DESTINATION)"
-	cd ./zcon/services/activation_cli
+	cd ./zscaler/zcon/services/activation_cli
 	go mod vendor && go mod tidy
 	@mkdir -p $(DESTINATION)
-	@rm -f $(DESTINATION)/ziaActivator
-	@go build -o $(DESTINATION)/zconActivator ./zcon/services/activation_cli/zconActivator.go
-	zconActivator
+	@rm -f $(DESTINATION)/zconActivator
+	@go build -o $(DESTINATION)/zconActivator ./zscaler/zcon/services/activation_cli/zconActivator.go
+
 
 check-fmt:
 	@which $(GOFMT) > /dev/null || GO111MODULE=on go install mvdan.cc/gofumpt@latest

@@ -47,6 +47,9 @@ func removeOneApiEndpointPrefix(endpoint string) string {
 	if strings.HasPrefix(endpoint, "/zpa") {
 		return strings.TrimPrefix(endpoint, "/zpa")
 	}
+	if strings.HasPrefix(endpoint, "/zcc/papi") {
+		return strings.TrimPrefix(endpoint, "/zcc/papi")
+	}
 	if strings.HasPrefix(endpoint, "/zcc") {
 		return strings.TrimPrefix(endpoint, "/zcc")
 	}
