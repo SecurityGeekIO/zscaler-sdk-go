@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/kelseyhightower/envconfig"
@@ -102,7 +101,6 @@ type Configuration struct {
 			DisableHttpsCheck bool `yaml:"disableHttpsCheck" envconfig:"ZCC_TESTING_DISABLE_HTTPS_CHECK"`
 		} `yaml:"testing"`
 	} `yaml:"zcc"`
-	CacheManager cache.Cache
 }
 
 func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
