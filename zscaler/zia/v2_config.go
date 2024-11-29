@@ -151,13 +151,31 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 			Context:       context.Background(),
 		}
 
-		// logger.Printf("[DEBUG] Initializing configuration with default values.")
+		// Apply ConfigSetters first to ensure all values are set before use
+		for _, confSetter := range conf {
+			confSetter(globalConfig)
+		}
 
-		// Set default rate limit and request timeout values
-		globalConfig.ZIA.Client.RateLimit.MaxRetries = MaxNumOfRetries
-		globalConfig.ZIA.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
-		globalConfig.ZIA.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
-		globalConfig.ZIA.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
+		// Parse and validate the base URL
+		if globalConfig.ZIA.Client.ZIACloud == "" {
+			logger.Printf("[ERROR] Missing ZIA cloud configuration.")
+			return
+		}
+
+		// Debug log to ensure ZIACloud is set correctly
+		logger.Printf("[DEBUG] ZIACloud: %s", globalConfig.ZIA.Client.ZIACloud)
+
+		rawURL := fmt.Sprintf("https://zsapi.%s.net", globalConfig.ZIA.Client.ZIACloud)
+		if globalConfig.ZIA.Client.ZIACloud == "zspreview" {
+			rawURL = fmt.Sprintf("https://admin.%s.net", globalConfig.ZIA.Client.ZIACloud)
+		}
+
+		parsedURL, err := url.Parse(rawURL)
+		if err != nil {
+			logger.Printf("[ERROR] Error occurred while parsing the base URL: %v", err)
+			return
+		}
+		globalConfig.BaseURL = parsedURL
 
 		// Initialize cache with defaults
 		if globalConfig.ZIA.Client.Cache.DefaultTtl == 0 {
@@ -167,7 +185,12 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 			globalConfig.ZIA.Client.Cache.DefaultTti = time.Minute * 8
 		}
 		globalConfig.CacheManager = newCache(globalConfig)
-		//logger.Printf("[DEBUG] Cache initialized with TTL: %s, TTI: %s", globalConfig.ZIA.Client.Cache.DefaultTtl, globalConfig.ZIA.Client.Cache.DefaultTti)
+
+		// Set default rate limit and request timeout values
+		globalConfig.ZIA.Client.RateLimit.MaxRetries = MaxNumOfRetries
+		globalConfig.ZIA.Client.RateLimit.RetryWaitMax = time.Second * time.Duration(RetryWaitMaxSeconds)
+		globalConfig.ZIA.Client.RateLimit.RetryWaitMin = time.Second * time.Duration(RetryWaitMinSeconds)
+		globalConfig.ZIA.Client.RequestTimeout = time.Duration(requestTimeout) * time.Second
 
 		// Initialize testing configurations
 		globalConfig.ZIA.Testing.DisableHttpsCheck = false
@@ -176,18 +199,6 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 		readConfigFromSystem(globalConfig)
 		readConfigFromEnvironment(globalConfig)
 
-		// Parse and validate the base URL
-		rawURL := fmt.Sprintf("https://zsapi.%s.net", globalConfig.ZIA.Client.ZIACloud)
-		if globalConfig.ZIA.Client.ZIACloud == "zspreview" {
-			rawURL = fmt.Sprintf("https://admin.%s.net", globalConfig.ZIA.Client.ZIACloud)
-		}
-		parsedURL, err := url.Parse(rawURL)
-		if err != nil {
-			logger.Printf("[ERROR] Error occurred while parsing the base URL: %v", err)
-			return
-		}
-		globalConfig.BaseURL = parsedURL
-
 		// Set up HTTP clients
 		setHttpClients(globalConfig)
 		if globalConfig.HTTPClient == nil {
@@ -195,22 +206,16 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 			return
 		}
 
-		// Apply additional configurations from ConfigSetters
-		for _, confSetter := range conf {
-			confSetter(globalConfig)
-		}
-
 		// Validate critical configuration fields
 		if globalConfig.ZIA.Client.ZIAUsername == "" ||
 			globalConfig.ZIA.Client.ZIAPassword == "" ||
-			globalConfig.ZIA.Client.ZIAApiKey == "" ||
-			globalConfig.ZIA.Client.ZIACloud == "" {
-			logger.Printf("[ERROR] Missing client credentials (ZIA_USERNAME, ZIA_PASSWORD, ZIA_API_KEY, ZIA_CLOUD).")
+			globalConfig.ZIA.Client.ZIAApiKey == "" {
+			logger.Printf("[ERROR] Missing client credentials (ZIA_USERNAME, ZIA_PASSWORD, ZIA_API_KEY).")
 			return
 		}
 
 		// Log success initialization
-		//logger.Printf("[DEBUG] Configuration successfully initialized.")
+		logger.Printf("[INFO] Configuration successfully initialized.")
 	})
 
 	if globalConfig.UserAgentExtra != "" {

@@ -1,4 +1,4 @@
-package urlfilteringpolicies
+package filetypecontrol
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/cloudbrowserisolation"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -44,43 +43,29 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestURLFilteringRuleIsolation(t *testing.T) {
+func TestFileTypeControlRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
-	}
-	cbiProfileList, err := cloudbrowserisolation.GetAll(context.Background(), service)
-	if err != nil {
-		t.Errorf("Error getting cbi profile: %v", err)
-		return
-	}
-	if len(cbiProfileList) == 0 {
-		t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
 	}
 
-	rule := URLFilteringRule{
-		Name:           name,
-		Description:    name,
-		Order:          1,
-		Rank:           7,
-		State:          "ENABLED",
-		Action:         "BLOCK",
-		URLCategories:  []string{"ANY"},
-		Protocols:      []string{"HTTPS_RULE", "HTTP_RULE"},
-		RequestMethods: []string{"CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "OTHER", "POST", "PUT", "TRACE"},
-		UserAgentTypes: []string{"OPERA", "FIREFOX", "MSIE", "MSEDGE", "CHROME", "SAFARI", "MSCHREDGE"},
-		CBIProfile: CBIProfile{
-			ID:   cbiProfileList[0].ID,
-			Name: cbiProfileList[0].Name,
-			URL:  cbiProfileList[0].URL,
-		},
+	rule := FileTypeRules{
+		Name:              name,
+		Description:       name,
+		Order:             1,
+		Rank:              7,
+		State:             "ENABLED",
+		FilteringAction:   "ALLOW",
+		Operation:         "DOWNLOAD",
+		Protocols:         []string{"FOHTTP_RULE", "FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
+		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
+		FileTypes:         []string{"FTCATEGORY_ALZ", "FTCATEGORY_P7Z", "FTCATEGORY_B64"},
 	}
 
-	var createdResource *URLFilteringRule
+	var createdResource *FileTypeRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
@@ -108,13 +93,13 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved url filtering rule '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
 	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -131,6 +116,7 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 	if updatedResource.Name != updateName {
 		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
 	}
+
 	// Test resource retrieval by name
 	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
@@ -183,8 +169,8 @@ func TestURLFilteringRuleIsolation(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *zscaler.Service, id int) (*URLFilteringRule, error) {
-	var resource *URLFilteringRule
+func tryRetrieveResource(s *zscaler.Service, id int) (*FileTypeRules, error) {
+	var resource *FileTypeRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -203,7 +189,6 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
 
 	_, err = Get(context.Background(), service, 0)
@@ -216,8 +201,8 @@ func TestDeleteNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
+
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
@@ -228,10 +213,9 @@ func TestUpdateNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
 
-	_, _, err = Update(context.Background(), service, 0, &URLFilteringRule{})
+	_, err = Update(context.Background(), service, 0, &FileTypeRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -241,73 +225,10 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
-		return
 	}
+
 	_, err = GetByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-	}
-}
-
-func TestUrlAndAppSettings(t *testing.T) {
-	// Initialize the API client
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		t.Fatalf("Error creating client: %v", err)
-	}
-
-	// Context for API calls
-	ctx := context.Background()
-
-	// Step 1: Retrieve existing URL and App Settings
-	initialSettings, err := GetUrlAndAppSettings(ctx, service)
-	if err != nil {
-		t.Fatalf("Error retrieving URL and App settings: %v", err)
-	}
-
-	t.Logf("Initial settings retrieved: %+v", initialSettings)
-
-	// Step 2: Update the URL and App Settings
-	newSettings := URLAdvancedPolicySettings{
-		EnableDynamicContentCat:           true,
-		ConsiderEmbeddedSites:             true,
-		EnforceSafeSearch:                 true,
-		EnableOffice365:                   false,
-		EnableMsftO365:                    false,
-		EnableUcaasZoom:                   false,
-		EnableUcaasLogMeIn:                false,
-		EnableUcaasRingCentral:            false,
-		EnableUcaasWebex:                  false,
-		EnableUcaasTalkdesk:               false,
-		EnableChatGptPrompt:               false,
-		EnableMicrosoftCoPilotPrompt:      false,
-		EnableGeminiPrompt:                false,
-		EnablePOEPrompt:                   false,
-		EnableMetaPrompt:                  false,
-		EnablePerPlexityPrompt:            false,
-		BlockSkype:                        false,
-		EnableNewlyRegisteredDomains:      true,
-		EnableBlockOverrideForNonAuthUser: true,
-		//EnableCIPACompliance:              true,
-	}
-
-	updatedSettings, _, err := UpdateUrlAndAppSettings(ctx, service, newSettings)
-	if err != nil {
-		t.Fatalf("Error updating URL and App settings: %v", err)
-	}
-
-	t.Logf("Updated settings: %+v", updatedSettings)
-
-	// Step 3: Retrieve the updated settings and validate the changes
-	retrievedSettings, err := GetUrlAndAppSettings(ctx, service)
-	if err != nil {
-		t.Fatalf("Error retrieving updated settings: %v", err)
-	}
-
-	t.Logf("Retrieved updated settings: %+v", retrievedSettings)
-
-	// Assert that the updated settings match the new settings
-	if *retrievedSettings != newSettings {
-		t.Errorf("Updated settings do not match the expected values. Got: %+v, Expected: %+v", retrievedSettings, newSettings)
 	}
 }

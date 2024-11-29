@@ -800,7 +800,6 @@ func (c *Client) Update(ctx context.Context, endpoint string, o interface{}) (in
 	return c.updateGeneric(ctx, endpoint, o, "PATCH", "application/merge-patch+json")
 }
 
-// Update ...
 func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface{}, method, contentType string) (interface{}, error) {
 	if o == nil {
 		return nil, errors.New("tried to update with a nil payload not a Struct")
@@ -809,19 +808,31 @@ func (c *Client) updateGeneric(ctx context.Context, endpoint string, o interface
 	if t.Kind() != reflect.Struct {
 		return nil, errors.New("tried to update with a " + t.Kind().String() + " not a Struct")
 	}
+
 	data, err := json.Marshal(o)
 	if err != nil {
 		return nil, err
 	}
 
+	// Send the HTTP request
 	resp, err := c.Request(ctx, endpoint, method, data, contentType)
 	if err != nil {
 		return nil, err
 	}
 
+	// Check for an empty response body (e.g., 204 No Content)
+	if len(resp) == 0 {
+		return nil, nil // Return nil for responseObject and no error
+	}
+
+	// Unmarshal response body into the provided struct type
 	responseObject := reflect.New(t).Interface()
 	err = json.Unmarshal(resp, &responseObject)
-	return responseObject, err
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response body: %w", err)
+	}
+
+	return responseObject, nil
 }
 
 // Delete ...
