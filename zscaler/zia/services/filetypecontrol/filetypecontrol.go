@@ -105,6 +105,7 @@ type FileTypeRules struct {
 	// The list of ZPA Application Segments for which this rule is applicable. This field is applicable only for the ZPA Gateway forwarding method.
 	ZPAAppSegments []common.ZPAAppSegments `json:"zpaAppSegments"`
 
+	// A Boolean value that indicates whether packet capture (PCAP) is enabled or not
 	CapturePCAP bool `json:"capturePCAP"`
 
 	// File operation performed. This field is not applicable to the Lite API.
