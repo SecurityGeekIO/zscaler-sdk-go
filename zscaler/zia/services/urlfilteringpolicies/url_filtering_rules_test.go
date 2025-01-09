@@ -248,3 +248,74 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+
+func TestUrlAndAppSettings(t *testing.T) {
+	// Initialize the API client
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Fatalf("Error creating client: %v", err)
+	}
+
+	// Context for API calls
+	ctx := context.Background()
+
+	// Step 1: Retrieve existing URL and App Settings
+	initialSettings, err := GetUrlAndAppSettings(ctx, service)
+	if err != nil {
+		t.Fatalf("Error retrieving URL and App settings: %v", err)
+	}
+
+	t.Logf("Initial settings retrieved: %+v", initialSettings)
+
+	// Step 2: Update the URL and App Settings with test changes
+	updatedSettings := *initialSettings // Start with initial settings to ensure a complete payload
+	updatedSettings.EnableDynamicContentCat = true
+	updatedSettings.ConsiderEmbeddedSites = false
+	updatedSettings.EnforceSafeSearch = false
+	// updatedSettings.EnableOffice365 = false
+	updatedSettings.EnableNewlyRegisteredDomains = false
+	updatedSettings.EnableBlockOverrideForNonAuthUser = false
+
+	t.Logf("Payload to be sent: %+v", updatedSettings)
+
+	// Send the update request
+	_, _, err = UpdateUrlAndAppSettings(ctx, service, updatedSettings)
+	if err != nil {
+		t.Fatalf("Error updating URL and App settings: %v", err)
+	}
+	t.Logf("Updated settings sent successfully")
+
+	// Step 3: Retrieve the updated settings
+	retrievedSettings, err := GetUrlAndAppSettings(ctx, service)
+	if err != nil {
+		t.Fatalf("Error retrieving updated settings: %v", err)
+	}
+	t.Logf("Retrieved updated settings: %+v", retrievedSettings)
+
+	// Step 4: Validate changes
+	if retrievedSettings.EnableDynamicContentCat != updatedSettings.EnableDynamicContentCat {
+		t.Errorf("EnableDynamicContentCat mismatch: Expected: %v, Got: %v", updatedSettings.EnableDynamicContentCat, retrievedSettings.EnableDynamicContentCat)
+	}
+	if retrievedSettings.ConsiderEmbeddedSites != updatedSettings.ConsiderEmbeddedSites {
+		t.Errorf("ConsiderEmbeddedSites mismatch: Expected: %v, Got: %v", updatedSettings.ConsiderEmbeddedSites, retrievedSettings.ConsiderEmbeddedSites)
+	}
+	if retrievedSettings.EnforceSafeSearch != updatedSettings.EnforceSafeSearch {
+		t.Errorf("EnforceSafeSearch mismatch: Expected: %v, Got: %v", updatedSettings.EnforceSafeSearch, retrievedSettings.EnforceSafeSearch)
+	}
+	if retrievedSettings.EnableOffice365 != updatedSettings.EnableOffice365 {
+		t.Errorf("EnableOffice365 mismatch: Expected: %v, Got: %v", updatedSettings.EnableOffice365, retrievedSettings.EnableOffice365)
+	}
+	if retrievedSettings.EnableNewlyRegisteredDomains != updatedSettings.EnableNewlyRegisteredDomains {
+		t.Errorf("EnableNewlyRegisteredDomains mismatch: Expected: %v, Got: %v", updatedSettings.EnableNewlyRegisteredDomains, retrievedSettings.EnableNewlyRegisteredDomains)
+	}
+	if retrievedSettings.EnableBlockOverrideForNonAuthUser != updatedSettings.EnableBlockOverrideForNonAuthUser {
+		t.Errorf("EnableBlockOverrideForNonAuthUser mismatch: Expected: %v, Got: %v", updatedSettings.EnableBlockOverrideForNonAuthUser, retrievedSettings.EnableBlockOverrideForNonAuthUser)
+	}
+
+	// Step 5: Revert to the original settings
+	_, _, err = UpdateUrlAndAppSettings(ctx, service, *initialSettings)
+	if err != nil {
+		t.Fatalf("Error reverting URL and App settings to original values: %v", err)
+	}
+	t.Logf("Reverted settings to original values: %+v", initialSettings)
+}

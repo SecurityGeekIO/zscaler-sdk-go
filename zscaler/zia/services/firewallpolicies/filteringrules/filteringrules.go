@@ -28,8 +28,11 @@ type FirewallFilteringRules struct {
 	// Admin rank of the Firewall Filtering policy rule
 	Rank int `json:"rank"`
 
-	AccessControl     string `json:"accessControl,omitempty"`
-	EnableFullLogging bool   `json:"enableFullLogging"`
+	// The admin’s access privilege to this rule based on the assigned role
+	AccessControl string `json:"accessControl,omitempty"`
+
+	// A Boolean value that indicates whether full logging is enabled. A true value indicates that full logging is enabled, whereas a false value indicates that aggregate logging is enabled.
+	EnableFullLogging bool `json:"enableFullLogging"`
 
 	// The action the Firewall Filtering policy rule takes when packets match the rule
 	Action string `json:"action,omitempty"`
