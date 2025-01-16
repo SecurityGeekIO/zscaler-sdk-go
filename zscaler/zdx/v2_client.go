@@ -144,7 +144,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 
 	if cfg.ZDX.Testing.DisableHttpsCheck {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
