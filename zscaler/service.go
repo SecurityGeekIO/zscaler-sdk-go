@@ -119,7 +119,6 @@ func NewLegacyZccClient(config *zcc.Configuration) (*Service, error) {
 		WithLegacyClient(true),
 		WithZccLegacyClient(zccClient),
 		WithDebug(config.Debug),
-		// add other config mapping, if necessary
 	)
 }
 
@@ -136,4 +135,13 @@ func NewLegacyZpaClient(config *zpa.Configuration) (*Service, error) {
 		WithDebug(config.Debug),
 		// add other config mapping, if necessary
 	)
+}
+
+type ScimService struct {
+	ScimClient *zpa.ScimClient
+}
+
+// NewScimService initializes a SCIM-based ZPA Service with *zpa.ScimConfig
+func NewScimService(scimClient *zpa.ScimClient) *ScimService {
+	return &ScimService{ScimClient: scimClient}
 }
