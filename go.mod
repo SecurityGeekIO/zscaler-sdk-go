@@ -3,10 +3,9 @@ module github.com/SecurityGeekIO/zscaler-sdk-go/v3
 go 1.22.5
 
 require (
-	github.com/SecurityGeekIO/zscaler-sdk-go/v2 v2.732.0
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/go-jose/go-jose/v3 v3.0.3
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
@@ -14,6 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/okta/okta-sdk-golang/v2 v2.20.0
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/text v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -33,6 +33,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/patrickmn/go-cache v0.0.0-20180815053127-5633e0862627 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
