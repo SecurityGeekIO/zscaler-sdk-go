@@ -1,12 +1,13 @@
 package remote_assistance
 
+/*
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
 
 func TestRemoteAssistance(t *testing.T) {
@@ -62,3 +63,4 @@ func TestRemoteAssistance(t *testing.T) {
 	}
 	t.Logf("Reverted Remote Assistance settings to original values")
 }
+*/

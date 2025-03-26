@@ -119,6 +119,7 @@ func NewLegacyZccClient(config *zcc.Configuration) (*Service, error) {
 		WithLegacyClient(true),
 		WithZccLegacyClient(zccClient),
 		WithDebug(config.Debug),
+		// add other config mapping, if necessary
 	)
 }
 

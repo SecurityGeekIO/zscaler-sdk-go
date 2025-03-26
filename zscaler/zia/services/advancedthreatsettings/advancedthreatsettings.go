@@ -205,7 +205,6 @@ func GetMaliciousURLs(ctx context.Context, service *zscaler.Service) (*Malicious
 	if err != nil {
 		return nil, err
 	}
-
 	service.Client.GetLogger().Printf("[DEBUG] Returning malicious urls from Get: %v", urls)
 	return &urls, nil
 }
@@ -244,23 +243,11 @@ func GetSecurityExceptions(ctx context.Context, service *zscaler.Service) (*Secu
 }
 
 func UpdateSecurityExceptions(ctx context.Context, service *zscaler.Service, urls SecurityExceptions) (*SecurityExceptions, error) {
-	currentUrls, err := GetSecurityExceptions(ctx, service)
+	// Overwrite the bypass URLs with the provided list
+	_, err := service.Client.UpdateWithPut(ctx, securityExceptionsEndpoint, urls)
 	if err != nil {
 		return nil, err
 	}
-	newUrls := zscaler.Difference(urls.BypassUrls, currentUrls.BypassUrls)
-	removedUrls := zscaler.Difference(currentUrls.BypassUrls, urls.BypassUrls)
-	if len(newUrls) > 0 {
-		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=ADD_TO_LIST", securityExceptionsEndpoint), SecurityExceptions{newUrls})
-		if err != nil {
-			return nil, err
-		}
-	}
-	if len(removedUrls) > 0 {
-		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", securityExceptionsEndpoint), SecurityExceptions{removedUrls})
-		if err != nil {
-			return nil, err
-		}
-	}
+
 	return &urls, nil
 }

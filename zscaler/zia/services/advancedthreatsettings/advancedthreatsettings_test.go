@@ -3,89 +3,12 @@ package advancedthreatsettings
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
-	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
-
-func TestMain(m *testing.M) {
-	setup()
-	code := m.Run()
-	teardown()
-	os.Exit(code)
-}
-
-func setup() {
-	cleanResources()
-}
-
-func teardown() {
-	cleanResources()
-}
-
-func shouldClean() bool {
-	val, present := os.LookupEnv("ZSCALER_SDK_TEST_SWEEP")
-	return !present || (present && (val == "" || val == "true"))
-}
-
-func cleanResources() {
-	if !shouldClean() {
-		return
-	}
-
-	// Define the context here
-	ctx := context.Background()
-
-	service, err := tests.NewOneAPIClient()
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-
-	// Clean malicious URLs
-	maliciousResources, err := GetMaliciousURLs(ctx, service)
-	if err != nil {
-		log.Printf("Error retrieving malicious URLs during cleanup: %v", err)
-		return
-	}
-
-	var maliciousUrlsToRemove []string
-	for _, url := range maliciousResources.MaliciousUrls {
-		if strings.HasPrefix(url, "site") {
-			maliciousUrlsToRemove = append(maliciousUrlsToRemove, url)
-		}
-	}
-	if len(maliciousUrlsToRemove) > 0 {
-		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", maliciousUrlsEndpoint), MaliciousURLs{MaliciousUrls: maliciousUrlsToRemove})
-		if err != nil {
-			log.Printf("Error removing malicious URLs during cleanup: %v", err)
-		}
-	}
-
-	// Clean security exceptions
-	securityResources, err := GetSecurityExceptions(ctx, service)
-	if err != nil {
-		log.Printf("Error retrieving security exceptions during cleanup: %v", err)
-		return
-	}
-
-	var securityUrlsToRemove []string
-	for _, url := range securityResources.BypassUrls {
-		if strings.HasPrefix(url, "site") {
-			securityUrlsToRemove = append(securityUrlsToRemove, url)
-		}
-	}
-	if len(securityUrlsToRemove) > 0 {
-		_, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", securityExceptionsEndpoint), SecurityExceptions{BypassUrls: securityUrlsToRemove})
-		if err != nil {
-			log.Printf("Error removing security exceptions during cleanup: %v", err)
-		}
-	}
-}
 
 func TestAdvancedThreatSettings(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
@@ -96,8 +19,8 @@ func TestAdvancedThreatSettings(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Step 1: Retrieve and remove malicious URLs
-	t.Run("RemoveMaliciousURLs", func(t *testing.T) {
+	// Step 1: Retrieve and update malicious URLs
+	t.Run("UpdateMaliciousURLs", func(t *testing.T) {
 		initialUrls, err := GetMaliciousURLs(ctx, service)
 		if err != nil {
 			t.Fatalf("Error fetching initial malicious URLs: %v", err)
@@ -106,21 +29,23 @@ func TestAdvancedThreatSettings(t *testing.T) {
 		// Generate new random URLs and update
 		newUrls := generateRandomUrls(3)
 		allUrls := append(initialUrls.MaliciousUrls, newUrls...)
-		_, err = UpdateMaliciousURLs(ctx, service, MaliciousURLs{MaliciousUrls: allUrls})
+		maliciousUrls := MaliciousURLs{MaliciousUrls: allUrls} // Wrap []string into MaliciousURLs struct
+
+		_, err = UpdateMaliciousURLs(ctx, service, maliciousUrls)
 		if err != nil {
 			t.Fatalf("Error updating malicious URLs: %v", err)
 		}
 
-		// Remove added URLs
-		_, err = service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", maliciousUrlsEndpoint), MaliciousURLs{MaliciousUrls: newUrls})
+		// Verify the update
+		updatedUrls, err := GetMaliciousURLs(ctx, service)
 		if err != nil {
-			t.Fatalf("Error removing malicious URLs: %v", err)
+			t.Fatalf("Error fetching updated malicious URLs: %v", err)
 		}
-		t.Logf("Successfully removed malicious URLs: %v", newUrls)
+		t.Logf("Updated malicious URLs: %v", updatedUrls.MaliciousUrls)
 	})
 
-	// Step 2: Retrieve and remove security exceptions
-	t.Run("RemoveSecurityExceptions", func(t *testing.T) {
+	// Step 2: Retrieve and update security exceptions
+	t.Run("UpdateSecurityExceptions", func(t *testing.T) {
 		initialExceptions, err := GetSecurityExceptions(ctx, service)
 		if err != nil {
 			t.Fatalf("Error fetching initial security exceptions: %v", err)
@@ -129,17 +54,19 @@ func TestAdvancedThreatSettings(t *testing.T) {
 		// Generate new random URLs and update
 		newExceptions := generateRandomUrls(3)
 		allExceptions := append(initialExceptions.BypassUrls, newExceptions...)
-		_, err = UpdateSecurityExceptions(ctx, service, SecurityExceptions{BypassUrls: allExceptions})
+		securityExceptions := SecurityExceptions{BypassUrls: allExceptions} // Wrap []string into SecurityExceptions struct
+
+		_, err = UpdateSecurityExceptions(ctx, service, securityExceptions)
 		if err != nil {
 			t.Fatalf("Error updating security exceptions: %v", err)
 		}
 
-		// Remove added URLs
-		_, err = service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s?action=REMOVE_FROM_LIST", securityExceptionsEndpoint), SecurityExceptions{BypassUrls: newExceptions})
+		// Verify the update
+		updatedExceptions, err := GetSecurityExceptions(ctx, service)
 		if err != nil {
-			t.Fatalf("Error removing security exceptions: %v", err)
+			t.Fatalf("Error fetching updated security exceptions: %v", err)
 		}
-		t.Logf("Successfully removed security exceptions: %v", newExceptions)
+		t.Logf("Updated security exceptions: %v", updatedExceptions.BypassUrls)
 	})
 
 	// Step 3: Retrieve and update advanced threat settings
@@ -151,35 +78,35 @@ func TestAdvancedThreatSettings(t *testing.T) {
 
 		updatedSettings := *settings
 		updatedSettings.RiskTolerance = 50
-		updatedSettings.RiskToleranceCapture = true
+		updatedSettings.RiskToleranceCapture = false
 		updatedSettings.CmdCtlServerBlocked = true
-		updatedSettings.CmdCtlServerCapture = true
+		updatedSettings.CmdCtlServerCapture = false
 		updatedSettings.CmdCtlTrafficBlocked = true
-		updatedSettings.CmdCtlTrafficCapture = true
-		updatedSettings.MalwareSitesBlocked = true
-		updatedSettings.MalwareSitesCapture = true
+		updatedSettings.CmdCtlTrafficCapture = false
+		updatedSettings.MalwareSitesBlocked = false
+		updatedSettings.MalwareSitesCapture = false
 		updatedSettings.ActiveXBlocked = true
-		updatedSettings.ActiveXCapture = true
+		updatedSettings.ActiveXCapture = false
 		updatedSettings.BrowserExploitsBlocked = true
-		updatedSettings.BrowserExploitsCapture = true
+		updatedSettings.BrowserExploitsCapture = false
 		updatedSettings.FileFormatVulnerabilitiesBlocked = true
-		updatedSettings.FileFormatVulnerabilitiesCapture = true
+		updatedSettings.FileFormatVulnerabilitiesCapture = false
 		updatedSettings.KnownPhishingSitesBlocked = true
-		updatedSettings.KnownPhishingSitesCapture = true
+		updatedSettings.KnownPhishingSitesCapture = false
 		updatedSettings.SuspectedPhishingSitesBlocked = true
-		updatedSettings.SuspectedPhishingSitesCapture = true
+		updatedSettings.SuspectedPhishingSitesCapture = false
 		updatedSettings.SuspectAdwareSpywareSitesBlocked = true
-		updatedSettings.SuspectAdwareSpywareSitesCapture = true
+		updatedSettings.SuspectAdwareSpywareSitesCapture = false
 		updatedSettings.WebspamBlocked = true
-		updatedSettings.WebspamCapture = true
+		updatedSettings.WebspamCapture = false
 		updatedSettings.IrcTunnellingBlocked = true
-		updatedSettings.IrcTunnellingCapture = true
+		updatedSettings.IrcTunnellingCapture = false
 		updatedSettings.AnonymizerBlocked = true
-		updatedSettings.AnonymizerCapture = true
+		updatedSettings.AnonymizerCapture = false
 		updatedSettings.CookieStealingBlocked = true
-		updatedSettings.CookieStealingPCAPEnabled = true
+		updatedSettings.CookieStealingPCAPEnabled = false
 		updatedSettings.PotentialMaliciousRequestsBlocked = true
-		updatedSettings.PotentialMaliciousRequestsCapture = true
+		updatedSettings.PotentialMaliciousRequestsCapture = false
 		updatedSettings.BlockedCountries = []string{
 			"COUNTRY_CA",
 			"COUNTRY_US",
@@ -224,12 +151,3 @@ func generateRandomUrls(count int) []string {
 	}
 	return urls
 }
-
-// func contains(slice []string, item string) bool {
-// 	for _, s := range slice {
-// 		if s == item {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }

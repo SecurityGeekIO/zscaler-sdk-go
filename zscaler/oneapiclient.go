@@ -123,7 +123,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg := &Configuration{
 		DefaultHeader: make(map[string]string),
 		Logger:        logger,
-		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.0.0", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.1.4", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		Debug:         false,
 		Context:       context.Background(), // Set default context
 	}
@@ -193,10 +193,10 @@ func setHttpClients(cfg *Configuration) {
 	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
 	// Default case for unknown or unhandled services
-	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
+	// defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
 
 	// Pass the config to getHTTPClient so it can access proxy settings
-	cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
+	// cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
 	cfg.ZIAHTTPClient = getHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
 	cfg.ZCCHTTPClient = getHTTPClient(cfg.Logger, zccRateLimiter, cfg)

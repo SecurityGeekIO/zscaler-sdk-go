@@ -1,4 +1,4 @@
-package extranet
+package sslinspection
 
 import (
 	"context"
@@ -43,40 +43,44 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestExtranet(t *testing.T) {
+func TestFirewallFilteringRule(t *testing.T) {
 	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	extranet := Extranet{
+	rule := SSLInspectionRules{
 		Name:        name,
 		Description: name,
-		ExtranetIPPoolList: []ExtranetIPPoolList{
-			{
-				Name:         name,
-				IPStart:      "192.168.200.1",
-				IPEnd:        "192.168.200.21",
-				UseAsDefault: true,
+		Action: Action{
+			Type: "DECRYPT",
+			//ShowEUN:                    true, // "code":"INVALID_INPUT_ARGUMENT","message":"Show EUN cannot be set when action is DECRYPT.
+			OverrideDefaultCertificate: true,
+			DecryptSubActions: &DecryptSubActions{
+				ServerCertificates:              "BLOCK",
+				OcspCheck:                       true,
+				BlockSslTrafficWithNoSniEnabled: false,
+				MinClientTLSVersion:             "CLIENT_TLS_1_0",
+				MinServerTLSVersion:             "SERVER_TLS_1_0",
+				BlockUndecrypt:                  false,
+				HTTP2Enabled:                    true,
 			},
 		},
-		ExtranetDNSList: []ExtranetDNSList{
-			{
-				Name:               name,
-				PrimaryDNSServer:   "8.8.8.8",
-				SecondaryDNSServer: "4.4.2.2",
-				UseAsDefault:       true,
-			},
-		},
+		Order:             1,
+		Rank:              7,
+		State:             "ENABLED",
+		CloudApplications: []string{"CHATGPT_AI", "ANDI"},
+		Platforms:         []string{"SCAN_IOS", "SCAN_ANDROID", "SCAN_MACOS", "SCAN_WINDOWS", "NO_CLIENT_CONNECTOR", "SCAN_LINUX"},
 	}
 
-	var createdResource *Extranet
+	var createdResource *SSLInspectionRules
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, _, err = Create(context.Background(), service, &extranet)
+		createdResource, err = Create(context.Background(), service, &rule)
 		return err
 	})
 	if err != nil {
@@ -103,16 +107,37 @@ func TestExtranet(t *testing.T) {
 		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
+	// Test resource update
+	retrievedResource.Name = updateName
+	err = retryOnConflict(func() error {
+		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		return err
+	})
+	if err != nil {
+		t.Fatalf("Error updating resource: %v", err)
+	}
+
+	updatedResource, err := Get(context.Background(), service, createdResource.ID)
+	if err != nil {
+		t.Fatalf("Error retrieving resource: %v", err)
+	}
+	if updatedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
+	}
+	if updatedResource.Name != updateName {
+		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
+	}
+
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetExtranetByName(context.Background(), service, name)
+	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
 	if retrievedByNameResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
 	}
-	if retrievedByNameResource.Name != name {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", name, retrievedByNameResource.Name)
+	if retrievedByNameResource.Name != updateName {
+		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
 	}
 
 	// Test resources retrieval
@@ -155,8 +180,8 @@ func TestExtranet(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *zscaler.Service, id int) (*Extranet, error) {
-	var resource *Extranet
+func tryRetrieveResource(s *zscaler.Service, id int) (*SSLInspectionRules, error) {
+	var resource *SSLInspectionRules
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
@@ -171,50 +196,50 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*Extranet, error) {
 	return nil, err
 }
 
-// func TestRetrieveNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestRetrieveNonExistentResource(t *testing.T) {
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+	}
 
-// 	_, err = Get(context.Background(), service, 0)
-// 	if err == nil {
-// 		t.Error("Expected error retrieving non-existent resource, but got nil")
-// 	}
-// }
+	_, err = Get(context.Background(), service, 0)
+	if err == nil {
+		t.Error("Expected error retrieving non-existent resource, but got nil")
+	}
+}
 
-// func TestDeleteNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestDeleteNonExistentResource(t *testing.T) {
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+	}
 
-// 	_, err = Delete(context.Background(), service, 0)
-// 	if err == nil {
-// 		t.Error("Expected error deleting non-existent resource, but got nil")
-// 	}
-// }
+	_, err = Delete(context.Background(), service, 0)
+	if err == nil {
+		t.Error("Expected error deleting non-existent resource, but got nil")
+	}
+}
 
-// func TestUpdateNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestUpdateNonExistentResource(t *testing.T) {
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+	}
 
-// 	_, err = Update(context.Background(), service, 0, &FirewallFilteringRules{})
-// 	if err == nil {
-// 		t.Error("Expected error updating non-existent resource, but got nil")
-// 	}
-// }
+	_, err = Update(context.Background(), service, 0, &SSLInspectionRules{})
+	if err == nil {
+		t.Error("Expected error updating non-existent resource, but got nil")
+	}
+}
 
-// func TestGetByNameNonExistentResource(t *testing.T) {
-// 	service, err := tests.NewOneAPIClient()
-// 	if err != nil {
-// 		t.Errorf("Error creating client: %v", err)
-// 	}
+func TestGetByNameNonExistentResource(t *testing.T) {
+	service, err := tests.NewOneAPIClient()
+	if err != nil {
+		t.Errorf("Error creating client: %v", err)
+	}
 
-// 	_, err = GetByName(context.Background(), service, "non_existent_name")
-// 	if err == nil {
-// 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
-// 	}
-// }
+	_, err = GetByName(context.Background(), service, "non_existent_name")
+	if err == nil {
+		t.Error("Expected error retrieving resource by non-existent name, but got nil")
+	}
+}

@@ -53,7 +53,6 @@ func TestPassword(length int) string {
 
 // NewOneAPIClient instantiates a new OneAPI client for testing
 func NewOneAPIClient() (*zscaler.Service, error) {
-
 	// Fetch credentials directly from environment variables
 	clientID := os.Getenv("ZSCALER_CLIENT_ID")
 	clientSecret := os.Getenv("ZSCALER_CLIENT_SECRET")

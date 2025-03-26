@@ -16,29 +16,43 @@ const (
 )
 
 type Extranet struct {
-	ID                 int                  `json:"id,omitempty"`
-	Name               string               `json:"name"`
-	Description        string               `json:"description"`
-	ExtranetDNSList    []ExtranetDNSList    `json:"extranetDNSList"`
-	ExtranetIPPoolList []ExtranetIPPoolList `json:"extranetIpPoolList"` // Update casing
-	CreatedAt          int                  `json:"createdAt"`
-	ModifiedAt         int                  `json:"modifiedAt"`
-}
+	// The unique identifier for the extranet
+	ID int `json:"id"`
 
-type ExtranetIPPoolList struct {
-	ID           int    `json:"id,omitempty"` // Add missing ID field
-	Name         string `json:"name"`
-	IPStart      string `json:"ipStart"`
-	IPEnd        string `json:"ipEnd"`
-	UseAsDefault bool   `json:"useAsDefault"`
+	// The name of the extranet
+	Name string `json:"name"`
+
+	// The description of the extranet
+	Description string `json:"description"`
+
+	// Information about the DNS servers specified for the extranet
+	ExtranetDNSList []ExtranetDNSList `json:"extranetDNSList"`
+
+	// Information about the traffic selectors specified for the extranet. Type: Array
+	ExtranetIpPoolList string `json:"extranetIpPoolList"` // Placeholder for "TBD" - refine as needed
+
+	// The Unix timestamp when the extranet was created
+	CreatedAt int `json:"createdAt"`
+
+	// The Unix timestamp when the extranet was last modified
+	ModifiedAt int `json:"modifiedAt"`
 }
 
 type ExtranetDNSList struct {
-	ID                 int    `json:"id,omitempty"`
-	Name               string `json:"name"`
-	PrimaryDNSServer   string `json:"primaryDNSServer"`
+	// The ID generated for the DNS server configuration
+	ID int `json:"id"`
+
+	// The name of the DNS server
+	Name string `json:"name"`
+
+	// The IP address of the primary DNS server
+	PrimaryDNSServer string `json:"primaryDNSServer"`
+
+	// The IP address of the secondary DNS server
 	SecondaryDNSServer string `json:"secondaryDNSServer"`
-	UseAsDefault       bool   `json:"useAsDefault"`
+
+	// A Boolean value indicating that the DNS servers specified in the extranet are the designated default servers
+	UseAsDefault bool `json:"useAsDefault"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, extranetID int) (*Extranet, error) {
@@ -54,7 +68,7 @@ func Get(ctx context.Context, service *zscaler.Service, extranetID int) (*Extran
 
 func GetExtranetByName(ctx context.Context, service *zscaler.Service, extranetName string) (*Extranet, error) {
 	var extranets []Extranet
-	err := service.Client.Read(ctx, extranetEndpoint, &extranets) // Pass the address of extranets
+	err := common.ReadAllPages(ctx, service.Client, extranetEndpoint, &extranets)
 	if err != nil {
 		return nil, err
 	}
@@ -100,21 +114,10 @@ func Delete(ctx context.Context, service *zscaler.Service, extranetID int) (*htt
 	return nil, nil
 }
 
-// func GetAll(ctx context.Context, service *zscaler.Service) ([]Extranet, error) {
-// 	var extranet []Extranet
-// 	err := common.ReadAllPages(ctx, service.Client, extranetEndpoint, &extranet)
-// 	return extranet, err
-// }
-
 func GetAll(ctx context.Context, service *zscaler.Service) ([]Extranet, error) {
 	var extranet []Extranet
-	err := service.Client.Read(ctx, extranetEndpoint, &extranet)
-	if err != nil {
-		return nil, err
-	}
-
-	service.Client.GetLogger().Printf("[DEBUG] Returning %d extranet(s) from Get", len(extranet))
-	return extranet, nil
+	err := common.ReadAllPages(ctx, service.Client, extranetEndpoint, &extranet)
+	return extranet, err
 }
 
 func GetLite(ctx context.Context, service *zscaler.Service) ([]common.IDNameExternalID, error) {

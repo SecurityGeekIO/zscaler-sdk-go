@@ -98,10 +98,26 @@ func TestSandboxRules(t *testing.T) {
 		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
+	// **Send the full payload for update**: Add all fields from 'rule' + update name
+	ruleUpdate := SandboxRules{
+		ID:                 retrievedResource.ID,
+		Name:               updateName, // Only the name changes
+		Description:        rule.Description,
+		Order:              rule.Order,
+		Rank:               rule.Rank,
+		State:              rule.State,
+		FirstTimeEnable:    rule.FirstTimeEnable,
+		BaRuleAction:       rule.BaRuleAction,
+		MLActionEnabled:    rule.MLActionEnabled,
+		FirstTimeOperation: rule.FirstTimeOperation,
+		Protocols:          rule.Protocols,
+		BaPolicyCategories: rule.BaPolicyCategories,
+		FileTypes:          rule.FileTypes,
+	}
+
 	// Test resource update
-	retrievedResource.Name = updateName
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, err = Update(context.Background(), service, createdResource.ID, &ruleUpdate)
 		return err
 	})
 	if err != nil {
@@ -140,7 +156,7 @@ func TestSandboxRules(t *testing.T) {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
 
-	// check if the created resource is in the list
+	// Check if the created resource is in the list
 	found := false
 	for _, resource := range allResources {
 		if resource.ID == createdResource.ID {
@@ -217,7 +233,7 @@ func TestUpdateNonExistentResource(t *testing.T) {
 		t.Errorf("Error creating client: %v", err)
 	}
 
-	_, _, err = Update(context.Background(), service, 0, &SandboxRules{})
+	_, err = Update(context.Background(), service, 0, &SandboxRules{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
