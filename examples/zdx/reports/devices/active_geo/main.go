@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,13 +21,31 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
 
 	// Prompt for from time
 	fmt.Print("Enter start time in Unix Epoch (optional, defaults to 2 hours ago): ")
@@ -58,21 +77,12 @@ func main() {
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
-	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
-	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
-
-	// Define filters
-	fromInt, err := safeIntConversion(fromTime)
+	// Use SafeCastToInt for conversion with error handling
+	fromInt, err := common.SafeCastToInt(fromTime)
 	if err != nil {
 		log.Fatalf("[ERROR] %v\n", err)
 	}
-
-	toInt, err := safeIntConversion(toTime)
+	toInt, err := common.SafeCastToInt(toTime)
 	if err != nil {
 		log.Fatalf("[ERROR] %v\n", err)
 	}
@@ -85,7 +95,7 @@ func main() {
 	}
 
 	// Get geolocations
-	geoLocations, resp, err := devices.GetGeoLocations(service, filters)
+	geoLocations, resp, err := devices.GetGeoLocations(ctx, service, filters)
 	if err != nil {
 		log.Fatalf("Error getting geo locations: %v", err)
 	}
@@ -99,13 +109,6 @@ func main() {
 	} else {
 		displayGeoLocations(geoLocations)
 	}
-}
-
-func safeIntConversion(value int64) (int, error) {
-	if value > int64(int(^uint(0)>>1)) || value < int64(-int(^uint(0)>>1)-1) {
-		return 0, fmt.Errorf("value %d is out of range for int type", value)
-	}
-	return int(value), nil
 }
 
 func displayGeoLocations(geoLocations []devices.GeoLocation) {

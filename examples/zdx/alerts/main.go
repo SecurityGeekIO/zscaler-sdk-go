@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -19,21 +20,29 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("Error creating ZDX client: %v", err)
 	}
-	cli := zdx.NewClient(cfg)
-	service := services.New(cli)
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
 
 	// Prompt the user to choose an alert type
 	fmt.Println("Choose the Alert Type:")
@@ -47,29 +56,32 @@ func main() {
 
 	switch choice {
 	case "a":
-		// Prompt for optional filters
+		// Retrieve ongoing alerts
 		filters := promptForFilters(reader, false)
 		getOngoingAlerts(service, filters)
 	case "b":
-		// Prompt for optional filters
+		// Retrieve historical alerts
 		filters := promptForFilters(reader, false)
 		getHistoricalAlerts(service, filters)
 	case "c":
-		// Prompt for alert ID
+		// Retrieve alert details
 		fmt.Print("Enter alert ID: ")
-		alertID, _ := reader.ReadString('\n')
-		alertID = strings.TrimSpace(alertID)
+		alertID := strings.TrimSpace(readInput(reader))
 		getAlertDetails(service, alertID)
 	case "d":
-		// Prompt for alert ID and optional filters
+		// Retrieve affected devices for specific AlertID
 		fmt.Print("Enter alert ID: ")
-		alertID, _ := reader.ReadString('\n')
-		alertID = strings.TrimSpace(alertID)
+		alertID := strings.TrimSpace(readInput(reader))
 		filters := promptForFilters(reader, false)
 		getAffectedDevices(service, alertID, filters)
 	default:
 		log.Fatalf("[ERROR] Invalid choice: %s\n", choice)
 	}
+}
+
+func readInput(reader *bufio.Reader) string {
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
 }
 
 func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFromToFilters {
@@ -84,47 +96,48 @@ func promptForFilters(reader *bufio.Reader, defaultTo14Days bool) common.GetFrom
 	to = now.Unix()
 
 	fmt.Print("Enter start time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
-	fromInput, _ := reader.ReadString('\n')
-	fromInput = strings.TrimSpace(fromInput)
+	fromInput := readInput(reader)
 	if fromInput != "" {
-		parsedFrom, err := strconv.ParseInt(fromInput, 10, 64)
-		if err == nil {
-			if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-				log.Fatalf("[ERROR] Start time is out of range for int type\n")
-			}
-			from = parsedFrom
-		} else {
+		parsedFrom, err := strconv.ParseInt(fromInput, 10, 32)
+		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
+		from = parsedFrom
 	}
 
-	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to the previous 2 hours): ")
-	toInput, _ := reader.ReadString('\n')
-	toInput = strings.TrimSpace(toInput)
+	fmt.Print("Enter end time in Unix Epoch (optional: Defaults to now): ")
+	toInput := readInput(reader)
 	if toInput != "" {
-		parsedTo, err := strconv.ParseInt(toInput, 10, 64)
-		if err == nil {
-			if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-				log.Fatalf("[ERROR] End time is out of range for int type\n")
-			}
-			to = parsedTo
-		} else {
+		parsedTo, err := strconv.ParseInt(toInput, 10, 32)
+		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
+		to = parsedTo
 	}
 
 	if to-from > 14*24*60*60 {
 		log.Fatalf("[ERROR] The time range cannot exceed 14 days.\n")
 	}
 
+	fromInt, err := common.SafeCastToInt(from)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
+	toInt, err := common.SafeCastToInt(to)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
+
 	return common.GetFromToFilters{
-		From: int(from),
-		To:   int(to),
+		From: fromInt,
+		To:   toInt,
 	}
 }
 
 func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters) {
-	alertsResponse, _, err := alerts.GetOngoingAlerts(service, filters)
+	ctx := context.Background()
+	alertsResponse, _, err := alerts.GetOngoingAlerts(ctx, service, filters)
 	if err != nil {
 		log.Fatalf("Error getting ongoing alerts: %v", err)
 	}
@@ -132,7 +145,8 @@ func getOngoingAlerts(service *services.Service, filters common.GetFromToFilters
 }
 
 func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilters) {
-	alertsResponse, _, err := alerts.GetHistoricalAlerts(service, filters)
+	ctx := context.Background()
+	alertsResponse, _, err := alerts.GetHistoricalAlerts(ctx, service, filters)
 	if err != nil {
 		log.Fatalf("Error getting historical alerts: %v", err)
 	}
@@ -140,15 +154,17 @@ func getHistoricalAlerts(service *services.Service, filters common.GetFromToFilt
 }
 
 func getAlertDetails(service *services.Service, alertID string) {
-	alertDetails, _, err := alerts.GetAlert(service, alertID)
+	ctx := context.Background()
+	alertDetails, _, err := alerts.GetAlert(ctx, service, alertID)
 	if err != nil {
 		log.Fatalf("Error getting alert details: %v", err)
 	}
-	displayAlertDetails(*alertDetails) // Dereference the pointer
+	displayAlertDetails(*alertDetails)
 }
 
 func getAffectedDevices(service *services.Service, alertID string, filters common.GetFromToFilters) {
-	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(service, alertID, filters)
+	ctx := context.Background()
+	affectedDevicesResponse, _, err := alerts.GetAffectedDevices(ctx, service, alertID, filters)
 	if err != nil {
 		log.Fatalf("Error getting affected devices: %v", err)
 	}
@@ -165,7 +181,7 @@ func displayAlerts(alerts []alerts.Alert) {
 		if alert.EndedOn > 0 {
 			endedOn = time.Unix(int64(alert.EndedOn), 0).Format("2006-01-02 15:04:05")
 		} else {
-			endedOn = "N/A" // or some placeholder to indicate that it's still ongoing
+			endedOn = "N/A"
 		}
 		table.Append([]string{
 			strconv.Itoa(alert.ID),
@@ -183,7 +199,6 @@ func displayAlerts(alerts []alerts.Alert) {
 }
 
 func displayAlertDetails(alert alerts.Alert) {
-	// Display main alert details
 	mainTable := tablewriter.NewWriter(os.Stdout)
 	mainTable.SetHeader([]string{"ID", "Rule Name", "Severity", "Alert Type", "Status", "Started On", "Ended On"})
 
@@ -205,33 +220,6 @@ func displayAlertDetails(alert alerts.Alert) {
 		endedOn,
 	})
 	mainTable.Render()
-
-	// Display geolocation details
-	fmt.Println("\nGeolocation Details:")
-	geoTable := tablewriter.NewWriter(os.Stdout)
-	geoTable.SetHeader([]string{"Geolocation ID", "Num Devices"})
-	for _, geo := range alert.Geolocations {
-		geoTable.Append([]string{geo.ID, strconv.Itoa(geo.NumDevices)})
-	}
-	geoTable.Render()
-
-	// Display department details
-	fmt.Println("\nDepartment Details:")
-	deptTable := tablewriter.NewWriter(os.Stdout)
-	deptTable.SetHeader([]string{"Department Name", "Num Devices"})
-	for _, dept := range alert.Departments {
-		deptTable.Append([]string{dept.Name, strconv.Itoa(dept.NumDevices)})
-	}
-	deptTable.Render()
-
-	// Display location details
-	fmt.Println("\nLocation Details:")
-	locTable := tablewriter.NewWriter(os.Stdout)
-	locTable.SetHeader([]string{"Location Name", "Num Devices"})
-	for _, loc := range alert.Locations {
-		locTable.Append([]string{loc.Name, strconv.Itoa(loc.NumDevices)})
-	}
-	locTable.Render()
 }
 
 func displayAffectedDevices(devices []alerts.Device) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -26,13 +27,31 @@ type AppScore struct {
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
 	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
 
 	// Prompt for application ID
 	fmt.Print("Enter application ID: ")
@@ -63,9 +82,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
-		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
@@ -73,28 +89,26 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
-		}
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Use safe cast to convert int64 to int
+	fromInt, err := common.SafeCastToInt(fromTime)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("[ERROR] %v\n", err)
 	}
-	cli := zdx.NewClient(cfg)
-	appService := services.New(cli)
+	toInt, err := common.SafeCastToInt(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
 
-	// Define filters
 	filters := common.GetFromToFilters{
-		From: int(fromTime),
-		To:   int(toTime),
+		From: fromInt,
+		To:   toInt,
 	}
 
 	// Get app scores
-	scoresList, _, err := applications.GetAppScores(appService, appID, filters)
+	scoresList, _, err := applications.GetAppScores(ctx, service, appID, filters)
 	if err != nil {
 		log.Fatalf("[ERROR] getting app scores failed: %v\n", err)
 	}

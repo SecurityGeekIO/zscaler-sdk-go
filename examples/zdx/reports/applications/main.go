@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -16,21 +17,49 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-type App struct {
-	ID    int     `json:"id"`
-	Name  string  `json:"name"`
-	Score float32 `json:"score"`
+type AppMetric struct {
+	Metric    string
+	Unit      string
+	TimeStamp int64
+	Value     float64
 }
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	// Check for API key and secret in environment variables
 	apiKey := os.Getenv("ZDX_API_KEY_ID")
 	apiSecret := os.Getenv("ZDX_API_SECRET")
 
-	if apiKey == "" || apiSecret == "" {
-		log.Fatalf("[ERROR] API key and secret must be set in environment variables (ZDX_API_KEY_ID, ZDX_API_SECRET)\n")
+	// Initialize ZDX configuration
+	zdxCfg, err := zdx.NewConfiguration(
+		zdx.WithZDXAPIKeyID(apiKey),
+		zdx.WithZDXAPISecret(apiSecret),
+		// Uncomment the line below if connecting to a custom ZDX cloud
+		// zdx.WithZDXCloud("zdxbeta"),
+		zdx.WithDebug(true),
+	)
+	if err != nil {
+		log.Fatalf("Error creating ZDX configuration: %v", err)
+	}
+
+	// Initialize ZDX client
+	zdxClient, err := zdx.NewClient(zdxCfg)
+	if err != nil {
+		log.Fatalf("Error creating ZDX client: %v", err)
+	}
+
+	// Wrap the ZDX client in a Service instance
+	service := services.New(zdxClient)
+
+	ctx := context.Background()
+
+	// Prompt for application ID
+	fmt.Print("Enter application ID: ")
+	appIDInput, _ := reader.ReadString('\n')
+	appIDInput = strings.TrimSpace(appIDInput)
+	appID, err := strconv.Atoi(appIDInput)
+	if err != nil {
+		log.Fatalf("[ERROR] Invalid application ID: %v\n", err)
 	}
 
 	// Prompt for from time
@@ -53,9 +82,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid start time: %v\n", err)
 		}
-		if parsedFrom > int64(int(^uint(0)>>1)) || parsedFrom < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] Start time is out of range for int type\n")
-		}
 		fromTime = parsedFrom
 	}
 	if toInput != "" {
@@ -63,50 +89,51 @@ func main() {
 		if err != nil {
 			log.Fatalf("[ERROR] Invalid end time: %v\n", err)
 		}
-		if parsedTo > int64(int(^uint(0)>>1)) || parsedTo < int64(-int(^uint(0)>>1)-1) {
-			log.Fatalf("[ERROR] End time is out of range for int type\n")
-		}
 		toTime = parsedTo
 	}
 
-	// Create configuration and client
-	cfg, err := zdx.NewConfig(apiKey, apiSecret, "userAgent")
+	// Convert int64 values safely to int
+	fromInt, err := common.SafeCastToInt(fromTime)
 	if err != nil {
-		log.Fatalf("[ERROR] creating client failed: %v\n", err)
+		log.Fatalf("[ERROR] %v\n", err)
 	}
-	cli := zdx.NewClient(cfg)
-	appService := services.New(cli)
+	toInt, err := common.SafeCastToInt(toTime)
+	if err != nil {
+		log.Fatalf("[ERROR] %v\n", err)
+	}
 
-	// Define filters
 	filters := common.GetFromToFilters{
-		From: int(fromTime),
-		To:   int(toTime),
+		From: fromInt,
+		To:   toInt,
 	}
 
-	// Get all apps
-	appsList, _, err := applications.GetAllApps(appService, filters)
+	// Get app metrics
+	metricsList, _, err := applications.GetAppMetrics(ctx, service, appID, filters)
 	if err != nil {
-		log.Fatalf("[ERROR] getting all apps failed: %v\n", err)
+		log.Fatalf("[ERROR] getting app metrics failed: %v\n", err)
 	}
 
-	// Extract app details and display in table format
-	var appData []App
-	for _, app := range appsList {
-		appData = append(appData, App{
-			ID:    app.ID,
-			Name:  app.Name,
-			Score: app.Score,
-		})
+	// Extract app metric details and display in table format
+	var metricData []AppMetric
+	for _, metric := range metricsList {
+		for _, dp := range metric.DataPoints {
+			metricData = append(metricData, AppMetric{
+				Metric:    metric.Metric,
+				Unit:      metric.Unit,
+				TimeStamp: int64(dp.TimeStamp),
+				Value:     dp.Value,
+			})
+		}
 	}
 
 	// Display the data in a formatted table
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"App ID", "App Name", "Score"})
+	table.SetHeader([]string{"Metric", "Unit", "Timestamp", "Value"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
-	for _, app := range appData {
-		table.Append([]string{strconv.Itoa(app.ID), app.Name, fmt.Sprintf("%.2f", app.Score)})
+	for _, metric := range metricData {
+		table.Append([]string{metric.Metric, metric.Unit, strconv.FormatInt(metric.TimeStamp, 10), fmt.Sprintf("%.2f", metric.Value)})
 	}
 
 	table.Render()
