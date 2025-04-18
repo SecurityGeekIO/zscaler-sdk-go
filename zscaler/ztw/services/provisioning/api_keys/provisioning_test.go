@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcon/services"
 )
 
 func TestZConProvisioningAPIKey(t *testing.T) {
