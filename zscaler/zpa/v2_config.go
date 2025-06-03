@@ -31,7 +31,7 @@ const (
 )
 
 const (
-	VERSION           = "3.1.4"
+	VERSION           = "3.4.0"
 	ZPA_CLIENT_ID     = "ZPA_CLIENT_ID"
 	ZPA_CLIENT_SECRET = "ZPA_CLIENT_SECRET"
 	ZPA_CUSTOMER_ID   = "ZPA_CUSTOMER_ID"
@@ -90,7 +90,7 @@ type Configuration struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZPA_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZPA_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZPA_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZPA_CLIENT_CACHE_DEFAULT_SIZE"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZPA_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZPA_CLIENT_PROXY_PORT"`

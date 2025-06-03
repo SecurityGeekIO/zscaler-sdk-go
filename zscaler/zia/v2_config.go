@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	VERSION      = "3.1.4s"
+	VERSION      = "3.4.0"
 	ZIA_USERNAME = "ZIA_USERNAME"
 	ZIA_PASSWORD = "ZIA_PASSWORD"
 	ZIA_API_KEY  = "ZIA_API_KEY"
@@ -76,8 +76,10 @@ type Client struct {
 	cacheMaxSizeMB   int
 	rateLimiter      *rl.RateLimiter
 	sessionTicker    *time.Ticker
-	stopTicker       chan bool
-	refreshing       bool
+	// stopTicker       chan bool
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	refreshing bool
 }
 
 // Session ...
@@ -118,7 +120,7 @@ type Configuration struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZIA_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_SIZE"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZIA_CLIENT_PROXY_PORT"`

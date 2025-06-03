@@ -14,10 +14,11 @@ const (
 	mgmtConfig = "/zpa/mgmtconfig/v1/admin/customers/"
 )
 
-// TODO: because there isn't an endpoint to get all provisionning keys, we need to have all association type here
+// TODO: because there isn't an endpoint to get all provisioning keys, we need to have all association types here
 var ProvisioningKeyAssociationTypes []string = []string{
 	"CONNECTOR_GRP",
 	"SERVICE_EDGE_GRP",
+	"NP_ASSISTANT_GRP",
 }
 
 type ProvisioningKey struct {
@@ -40,6 +41,9 @@ type ProvisioningKey struct {
 	ZcomponentID          string   `json:"zcomponentId,omitempty"`
 	ZcomponentName        string   `json:"zcomponentName,omitempty"`
 	AssociationType       string   `json:"associationType"`
+	ReadOnly              bool     `json:"readOnly,omitempty"`
+	RestrictionType       string   `json:"restrictionType,omitempty"`
+	ZscalerManaged        bool     `json:"zscalerManaged,omitempty"`
 	MicroTenantID         string   `json:"microtenantId,omitempty"`
 	MicroTenantName       string   `json:"microtenantName,omitempty"`
 }

@@ -1,7 +1,5 @@
 package cbibannercontroller
 
-// TODO: Test is failing. Server is returning 500.
-
 import (
 	"context"
 	"testing"
@@ -17,6 +15,11 @@ func TestCBIBannerController(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
+
+	// service, err := tests.NewZPAClient()
+	// if err != nil {
+	// 	t.Fatalf("Error creating client: %v", err)
+	// }
 
 	banner := CBIBannerController{
 		Name:              name,

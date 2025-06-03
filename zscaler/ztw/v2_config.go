@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	VERSION      = "3.1.4"
+	VERSION      = "3.4.0"
 	ZTW_USERNAME = "ZTW_USERNAME"
 	ZTW_PASSWORD = "ZTW_PASSWORD"
 	ZTW_API_KEY  = "ZTW_API_KEY"
@@ -74,8 +74,10 @@ type Client struct {
 	cacheMaxSizeMB   int
 	rateLimiter      *rl.RateLimiter
 	sessionTicker    *time.Ticker
-	stopTicker       chan bool
-	refreshing       bool
+	// stopTicker       chan bool
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+	refreshing bool
 }
 
 type Session struct {
@@ -115,7 +117,7 @@ type Configuration struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZTW_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_SIZE"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZTW_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZTW_CLIENT_PROXY_PORT"`

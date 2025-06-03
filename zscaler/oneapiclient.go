@@ -41,7 +41,7 @@ var (
 )
 
 const (
-	VERSION               = "3.0.0"
+	VERSION               = "3.4.0"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
 	ZSCALER_CLIENT_SECRET = "ZSCALER_CLIENT_SECRET"
 	ZSCALER_VANITY_DOMAIN = "ZSCALER_VANITY_DOMAIN"
@@ -95,7 +95,7 @@ type Configuration struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZSCALER_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTL"`
 				DefaultTti            time.Duration `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_TTI"`
-				DefaultCacheMaxSizeMB int64         `yaml:"defaultTti" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
+				DefaultCacheMaxSizeMB int64         `yaml:"defaultSize" envconfig:"ZSCALER_CLIENT_CACHE_DEFAULT_SIZE"`
 			} `yaml:"cache"`
 			Proxy struct {
 				Port     int32  `yaml:"port" envconfig:"ZSCALER_CLIENT_PROXY_PORT"`
@@ -105,9 +105,10 @@ type Configuration struct {
 			} `yaml:"proxy"`
 			RequestTimeout time.Duration `yaml:"requestTimeout" envconfig:"ZSCALER_CLIENT_REQUEST_TIMEOUT"`
 			RateLimit      struct {
-				MaxRetries   int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
-				RetryWaitMin time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
-				RetryWaitMax time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				MaxRetries              int32         `yaml:"maxRetries" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_RETRIES"`
+				RetryWaitMin            time.Duration `yaml:"minWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MIN_WAIT"`
+				RetryWaitMax            time.Duration `yaml:"maxWait" envconfig:"ZSCALER_CLIENT_RATE_LIMIT_MAX_WAIT"`
+				RetryRemainingThreshold int32         `yaml:"remainingThreshold" envconfig:"ZSCALER_CLIENT_REMAINING_THRESHOLD"`
 			} `yaml:"rateLimit"`
 		} `yaml:"client"`
 		Testing struct {
@@ -126,7 +127,7 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 	cfg := &Configuration{
 		DefaultHeader: make(map[string]string),
 		Logger:        logger,
-		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", "3.1.12", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		UserAgent:     fmt.Sprintf("zscaler-sdk-go/%s golang/%s %s/%s", VERSION, runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		Debug:         false,
 		Context:       context.Background(), // Set default context
 	}
@@ -198,10 +199,10 @@ func setHttpClients(cfg *Configuration) {
 	zccRateLimiter := rl.NewRateLimiter(100, 3, 3600, 86400) // General: 100 per hour, downloadDevices: 3 per day
 
 	// Default case for unknown or unhandled services
-	// defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
+	defaultRateLimiter := rl.NewRateLimiter(2, 1, 1, 1) // Default limits
 
 	// Pass the config to getHTTPClient so it can access proxy settings
-	// cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
+	cfg.HTTPClient = getHTTPClient(cfg.Logger, defaultRateLimiter, cfg)
 	cfg.ZIAHTTPClient = getHTTPClient(cfg.Logger, ziaRateLimiter, cfg)
 	cfg.ZTWHTTPClient = getHTTPClient(cfg.Logger, ztwRateLimiter, cfg)
 	cfg.ZPAHTTPClient = getHTTPClient(cfg.Logger, zpaRateLimiter, cfg)
@@ -343,7 +344,10 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 
 // getServiceHTTPClient returns the appropriate http client for the current service
 func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
-	service := detectServiceType(endpoint)
+	service, err := detectServiceType(endpoint)
+	if err != nil {
+		return client.oauth2Credentials.HTTPClient
+	}
 	switch service {
 	case "zpa":
 		return client.oauth2Credentials.ZPAHTTPClient
@@ -358,20 +362,19 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 	}
 }
 
-func detectServiceType(endpoint string) string {
+func detectServiceType(endpoint string) (string, error) {
 	path := strings.TrimPrefix(endpoint, "/")
 	// Detect the service type based on the endpoint prefix
 	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
-		return "zia"
+		return "zia", nil
 	} else if strings.HasPrefix(path, "ztw") {
-		return "ztw"
+		return "ztw", nil
 	} else if strings.HasPrefix(path, "zpa") {
-		return "zpa"
+		return "zpa", nil
 	} else if strings.HasPrefix(endpoint, "/zcc") {
-		return "zcc"
+		return "zcc", nil
 	}
-
-	panic("unsupported service")
+	return "", fmt.Errorf("unsupported service")
 }
 
 // GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
@@ -582,6 +585,13 @@ func WithRateLimitMaxWait(maxWait time.Duration) ConfigSetter {
 func WithRateLimitMinWait(minWait time.Duration) ConfigSetter {
 	return func(c *Configuration) {
 		c.Zscaler.Client.RateLimit.RetryWaitMin = minWait
+		setHttpClients(c)
+	}
+}
+
+func WithRateLimitRemainingThreshold(threshold int32) ConfigSetter {
+	return func(c *Configuration) {
+		c.Zscaler.Client.RateLimit.RetryRemainingThreshold = threshold
 		setHttpClients(c)
 	}
 }

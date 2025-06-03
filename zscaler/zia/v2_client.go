@@ -71,7 +71,9 @@ func NewClient(config *Configuration) (*Client, error) {
 		httpClient = getHTTPClient(logger, rateLimiter, config)
 	}
 
-	// Initialize the Client instance
+	// Create cancellable context for session ticker
+	ctx, cancel := context.WithCancel(context.Background())
+
 	cli := &Client{
 		userName:         config.ZIA.Client.ZIAUsername,
 		password:         config.ZIA.Client.ZIAPassword,
@@ -86,9 +88,10 @@ func NewClient(config *Configuration) (*Client, error) {
 		cacheCleanwindow: config.ZIA.Client.Cache.DefaultTti,
 		cacheMaxSizeMB:   int(config.ZIA.Client.Cache.DefaultCacheMaxSizeMB),
 		rateLimiter:      rateLimiter,
-		stopTicker:       make(chan bool),
 		sessionTimeout:   JSessionIDTimeout * time.Minute,
 		sessionRefreshed: time.Time{},
+		ctx:              ctx,
+		cancelFunc:       cancel,
 	}
 
 	// Initialize the cache
@@ -100,9 +103,8 @@ func NewClient(config *Configuration) (*Client, error) {
 	cli.cache = cche
 
 	// Start the session refresh ticker
-	cli.startSessionTicker()
+	cli.startSessionTicker(ctx)
 
-	//logger.Printf("[DEBUG] ZIA client successfully initialized with base URL: %s", baseURL)
 	return cli, nil
 }
 
@@ -492,8 +494,7 @@ func (c *Client) Logout(ctx context.Context) error {
 	return nil
 }
 
-// startSessionTicker starts a ticker to refresh the session periodically
-func (c *Client) startSessionTicker() {
+func (c *Client) startSessionTicker(ctx context.Context) {
 	if c.sessionTimeout > 0 {
 		c.sessionTicker = time.NewTicker(c.sessionTimeout - jSessionTimeoutOffset)
 		go func() {
@@ -509,7 +510,7 @@ func (c *Client) startSessionTicker() {
 						c.refreshing = false
 					}
 					c.Unlock()
-				case <-c.stopTicker:
+				case <-ctx.Done():
 					c.sessionTicker.Stop()
 					return
 				}
@@ -517,6 +518,15 @@ func (c *Client) startSessionTicker() {
 		}()
 	} else {
 		c.Logger.Printf("[ERROR] Invalid session timeout value: %v\n", c.sessionTimeout)
+	}
+}
+
+func (c *Client) Close() {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.cancelFunc != nil {
+		c.cancelFunc()
 	}
 }
 
