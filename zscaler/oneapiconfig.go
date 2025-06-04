@@ -92,6 +92,7 @@ func (c *Client) startTokenRenewalTicker() {
 	}
 }
 
+// Close stops the token renewal ticker and cleans up resources.
 func (c *Client) Close() {
 	c.Lock()
 	defer c.Unlock()
@@ -125,7 +126,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// Configure backoff and retry policies
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
-			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
 				// retryAfter := getRetryAfter(resp, l)
 				retryAfter := getRetryAfter(resp, cfg)
 				if retryAfter > 0 {
@@ -185,7 +186,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// Disable HTTPS check if the configuration requests it
 	if cfg.Zscaler.Testing.DisableHttpsCheck {
 		transport.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: false, // This disables HTTPS certificate validation
+			InsecureSkipVerify: true, // This disables HTTPS certificate validation
 		}
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
@@ -402,7 +403,7 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		}
 
 		// Handle rate-limiting (429 or 503)
-		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
 				time.Sleep(retryAfter)
