@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 func NewClient(config *Configuration) (*Client, error) {
@@ -391,7 +391,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	// Disable HTTPS check if the configuration requests it
 	if cfg.ZIA.Testing.DisableHttpsCheck {
 		transport.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: false, // This disables HTTPS certificate validation
+			InsecureSkipVerify: true, // This disables HTTPS certificate validation
 		}
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}

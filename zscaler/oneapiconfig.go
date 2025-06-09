@@ -15,12 +15,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -46,15 +45,15 @@ func NewOneAPIClient(config *Configuration) (*Service, error) {
 		oauth2Credentials: config,
 		stopTicker:        make(chan bool),
 	}
-	if err := cli.authenticate(); err != nil {
-		return nil, fmt.Errorf("initial authentication failed: %w", err)
-	}
+
 	if !config.UseLegacyClient {
-		// Start token renewal ticker
+		// Authenticate and start token renewal
+		if err := cli.authenticate(); err != nil {
+			return nil, fmt.Errorf("initial authentication failed: %w", err)
+		}
 		cli.startTokenRenewalTicker()
 	}
 
-	// Return the service directly
 	return NewService(cli, nil), nil
 }
 
@@ -402,8 +401,25 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, err
 		}
 
+		// ✅ Check for SESSION_NOT_VALID in 401 body
+		if resp.StatusCode == http.StatusUnauthorized {
+			bodyCopy, readErr := io.ReadAll(resp.Body)
+			if readErr == nil && strings.Contains(string(bodyCopy), "SESSION_NOT_VALID") {
+				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
+				c.oauth2Credentials.Logger.Printf("[WARN] SESSION_NOT_VALID detected, refreshing token and retrying...")
+				if err := c.authenticate(); err != nil {
+					return nil, resp, req, fmt.Errorf("token refresh failed after SESSION_NOT_VALID: %w", err)
+				}
+				req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+				continue
+			}
+			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
+		}
 		// Handle rate-limiting (429 or 503)
-		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
 				time.Sleep(retryAfter)
@@ -461,11 +477,34 @@ func (c *Client) GetSandboxToken() string {
 }
 
 func (c *Client) authValid() bool {
-	return c.oauth2Credentials.Zscaler.Client.AuthToken != nil && c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken != "" && !utils.IsTokenExpired(c.oauth2Credentials.Zscaler.Client.AuthToken.AccessToken)
+	tok := c.oauth2Credentials.Zscaler.Client.AuthToken
+
+	if tok == nil || tok.AccessToken == "" || tok.Expiry.IsZero() {
+		if c.oauth2Credentials.Logger != nil {
+			c.oauth2Credentials.Logger.Printf("[DEBUG] authValid: token is nil or expiry not set")
+		}
+		return false
+	}
+
+	expiresIn := time.Until(tok.Expiry).Seconds()
+	valid := time.Now().Before(tok.Expiry.Add(-30 * time.Second))
+
+	if c.oauth2Credentials.Logger != nil {
+		c.oauth2Credentials.Logger.Printf("[DEBUG] authValid: token exists=%v, expires_in=%.2f, valid=%v",
+			true,
+			expiresIn,
+			valid,
+		)
+	}
+
+	return valid
 }
 
 // Unified authentication function to refresh OAuth2 tokens
 func (c *Client) authenticate() error {
+	if c.oauth2Credentials.UseLegacyClient {
+		return nil // skip authentication for legacy client
+	}
 	c.Lock()
 	defer c.Unlock()
 

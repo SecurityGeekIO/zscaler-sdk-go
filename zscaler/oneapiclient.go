@@ -11,10 +11,15 @@ import (
 	"os"
 	"os/user"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
@@ -22,10 +27,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	ztw "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
-	"github.com/go-jose/go-jose/v3"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -51,9 +52,9 @@ const (
 
 // AuthToken represents the OAuth2 authentication token and its expiration time.
 type AuthToken struct {
-	TokenType   string `json:"token_type"`
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string      `json:"token_type"`
+	AccessToken string      `json:"access_token"`
+	ExpiresIn   json.Number `json:"expires_in"` // <- FIXED
 	Expiry      time.Time
 }
 
@@ -264,14 +265,17 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 	}
 
 	var token AuthToken
-	err = json.Unmarshal(respBody, &token)
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Failed to sign in the user %s, err: %v", creds.ClientID, err)
+	if err := json.Unmarshal(respBody, &token); err != nil {
+		return nil, fmt.Errorf("[ERROR] Failed to sign in: %v", err)
 	}
 
-	// Calculate token expiration time
-	token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
-
+	secondsStr := token.ExpiresIn.String()
+	seconds, err := strconv.ParseInt(secondsStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] invalid expires_in value: %v", err)
+	}
+	token.Expiry = time.Now().Add(time.Duration(seconds) * time.Second)
+	cfg.Logger.Printf("[DEBUG] parsed expires_in=%d seconds, token expiry set to: %s", seconds, token.Expiry.Format(time.RFC3339))
 	return &token, nil
 }
 

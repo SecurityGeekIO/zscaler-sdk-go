@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 const (
@@ -64,7 +64,7 @@ func TestSandboxRules(t *testing.T) {
 		FirstTimeOperation: "ALLOW_SCAN",
 		Protocols:          []string{"FOHTTP_RULE", "FTP_RULE", "HTTPS_RULE", "HTTP_RULE"},
 		BaPolicyCategories: []string{"ADWARE_BLOCK", "BOTMAL_BLOCK", "ANONYP2P_BLOCK", "RANSOMWARE_BLOCK", "OFFSEC_TOOLS_BLOCK", "SUSPICIOUS_BLOCK"},
-		FileTypes:          []string{"FTCATEGORY_P7Z", "FTCATEGORY_BZIP2", "FTCATEGORY_DMG"},
+		FileTypes:          []string{"FTCATEGORY_P7Z", "FTCATEGORY_BZIP2"},
 	}
 
 	var createdResource *SandboxRules

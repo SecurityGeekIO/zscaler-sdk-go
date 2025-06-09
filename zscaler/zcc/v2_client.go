@@ -17,14 +17,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
+	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/utils"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 type Client struct {
@@ -140,7 +140,7 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 			// Disable HTTPS check if the configuration requests it
 			if cfg.ZCC.Testing.DisableHttpsCheck {
 				transport.TLSClientConfig = &tls.Config{
-					InsecureSkipVerify: false, // This disables HTTPS certificate validation
+					InsecureSkipVerify: true, // This disables HTTPS certificate validation
 				}
 				cfg.Logger.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 			}

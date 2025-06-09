@@ -1,8 +1,7 @@
-package filteringrules
+package vzen_clusters
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strings"
 	"testing"
@@ -11,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -43,63 +43,51 @@ func retryOnConflict(operation func() error) error {
 	return lastErr
 }
 
-func TestFirewallFilteringRule(t *testing.T) {
-	name := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	updateName := "tests-" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+func TestVZENClusters(t *testing.T) {
+	name := acctest.RandStringFromCharSet(30, acctest.CharSetAlpha)
 
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
 
-	// workloadGroup := workloadgroups.New(client)
-	// groupList, err := workloadGroup.GetAll()
-	// if err != nil {
-	// 	t.Errorf("Error getting workload group: %v", err)
-	// 	return
-	// }
-	// if len(groupList) == 0 {
-	// 	t.Error("Expected retrieved cbi profile to be non-empty, but got empty slice")
-	// }
-
-	rule := FirewallFilteringRules{
-		Name:              name,
-		Description:       name,
-		Order:             1,
-		Rank:              7,
-		Action:            "ALLOW",
-		DestCountries:     []string{"COUNTRY_CA", "COUNTRY_US", "COUNTRY_MX", "COUNTRY_AU", "COUNTRY_GB"},
-		NwApplications:    []string{"APNS", "GARP", "PERFORCE", "WINDOWS_MARKETPLACE", "DIAMETER"},
-		DeviceTrustLevels: []string{"UNKNOWN_DEVICETRUSTLEVEL", "LOW_TRUST", "MEDIUM_TRUST", "HIGH_TRUST"},
-		// WorkloadGroups: []common.IDName{
-		// 	{
-		// 		ID:   groupList[0].ID,
-		// 		Name: groupList[0].Name,
-		// 	},
-		// },
+	vzenCluster := VZENClusters{
+		Name:           name,
+		Status:         "ENABLED",
+		Type:           "VIP",
+		IpAddress:      "192.168.90.7",
+		SubnetMask:     "255.255.255.0",
+		DefaultGateway: "192.168.90.254",
+		IpSecEnabled:   false,
+		VirtualZenNodes: []common.IDNameExternalID{
+			{
+				ID: 6230,
+			},
+			{
+				ID: 6233,
+			},
+		},
 	}
 
-	var createdResource *FirewallFilteringRules
+	var createdResource *VZENClusters
 
 	// Test resource creation
 	err = retryOnConflict(func() error {
-		createdResource, err = Create(context.Background(), service, &rule)
+		createdResource, _, err = Create(context.Background(), service, &vzenCluster)
 		return err
 	})
 	if err != nil {
 		t.Fatalf("Error making POST request: %v", err)
 	}
 
-	// Other assertions based on the creation result
 	if createdResource.ID == 0 {
-		t.Fatal("Expected created resource ID to be non-empty, but got ''")
+		t.Fatal("Expected created resource ID to be non-zero, but got 0")
 	}
 	if createdResource.Name != name {
-		t.Errorf("Expected created resource name '%s', but got '%s'", name, createdResource.Name)
+		t.Errorf("Expected created vzen cluster '%s', but got '%s'", name, createdResource.Name)
 	}
-
 	// Test resource retrieval
-	retrievedResource, err := tryRetrieveResource(service, createdResource.ID)
+	retrievedResource, err := tryRetrieveResource(context.Background(), service, createdResource.ID)
 	if err != nil {
 		t.Fatalf("Error retrieving resource: %v", err)
 	}
@@ -107,13 +95,14 @@ func TestFirewallFilteringRule(t *testing.T) {
 		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
 	if retrievedResource.Name != name {
-		t.Errorf("Expected retrieved dlp engine '%s', but got '%s'", name, retrievedResource.Name)
+		t.Errorf("Expected retrieved vzen cluster '%s', but got '%s'", name, retrievedResource.Name)
 	}
 
 	// Test resource update
-	retrievedResource.Name = updateName
+	retrievedResource.Status = "DISABLED"
+	retrievedResource.Name = name // Ensure name is preserved in the update payload
 	err = retryOnConflict(func() error {
-		_, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
 		return err
 	})
 	if err != nil {
@@ -127,34 +116,26 @@ func TestFirewallFilteringRule(t *testing.T) {
 	if updatedResource.ID != createdResource.ID {
 		t.Errorf("Expected retrieved updated resource ID '%d', but got '%d'", createdResource.ID, updatedResource.ID)
 	}
-	if updatedResource.Name != updateName {
-		t.Errorf("Expected retrieved updated resource name '%s', but got '%s'", updateName, updatedResource.Name)
-	}
 
 	// Test resource retrieval by name
-	retrievedByNameResource, err := GetByName(context.Background(), service, updateName)
+	retrievedResource, err = GetClusterByName(context.Background(), service, name)
 	if err != nil {
 		t.Fatalf("Error retrieving resource by name: %v", err)
 	}
-	if retrievedByNameResource.ID != createdResource.ID {
-		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedByNameResource.ID)
+	if retrievedResource.ID != createdResource.ID {
+		t.Errorf("Expected retrieved resource ID '%d', but got '%d'", createdResource.ID, retrievedResource.ID)
 	}
-	if retrievedByNameResource.Name != updateName {
-		t.Errorf("Expected retrieved resource name '%s', but got '%s'", updateName, retrievedByNameResource.Name)
-	}
-
 	// Test resources retrieval
-	allResources, err := GetAll(context.Background(), service)
+	resources, err := GetAll(context.Background(), service)
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}
-	if len(allResources) == 0 {
+	if len(resources) == 0 {
 		t.Fatal("Expected retrieved resources to be non-empty, but got empty slice")
 	}
-
 	// check if the created resource is in the list
 	found := false
-	for _, resource := range allResources {
+	for _, resource := range resources {
 		if resource.ID == createdResource.ID {
 			found = true
 			break
@@ -163,16 +144,8 @@ func TestFirewallFilteringRule(t *testing.T) {
 	if !found {
 		t.Errorf("Expected retrieved resources to contain created resource '%d', but it didn't", createdResource.ID)
 	}
-
-	// Introduce a delay before deleting
-	time.Sleep(5 * time.Second) // sleep for 5 seconds
-
 	// Test resource removal
 	err = retryOnConflict(func() error {
-		_, getErr := Get(context.Background(), service, createdResource.ID)
-		if getErr != nil {
-			return fmt.Errorf("Resource %d may have already been deleted: %v", createdResource.ID, getErr)
-		}
 		_, delErr := Delete(context.Background(), service, createdResource.ID)
 		return delErr
 	})
@@ -183,12 +156,13 @@ func TestFirewallFilteringRule(t *testing.T) {
 }
 
 // tryRetrieveResource attempts to retrieve a resource with retry mechanism.
-func tryRetrieveResource(s *zscaler.Service, id int) (*FirewallFilteringRules, error) {
-	var resource *FirewallFilteringRules
+func tryRetrieveResource(ctx context.Context, service *zscaler.Service, id int) (*VZENClusters, error) {
+	var resource *VZENClusters
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		resource, err = Get(context.Background(), s, id)
+		// Use the passed context (ctx) instead of context.Background()
+		resource, err = Get(ctx, service, id)
 		if err == nil && resource != nil && resource.ID == id {
 			return resource, nil
 		}
@@ -202,7 +176,7 @@ func tryRetrieveResource(s *zscaler.Service, id int) (*FirewallFilteringRules, e
 func TestRetrieveNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
 
 	_, err = Get(context.Background(), service, 0)
@@ -214,9 +188,8 @@ func TestRetrieveNonExistentResource(t *testing.T) {
 func TestDeleteNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
-
 	_, err = Delete(context.Background(), service, 0)
 	if err == nil {
 		t.Error("Expected error deleting non-existent resource, but got nil")
@@ -226,10 +199,10 @@ func TestDeleteNonExistentResource(t *testing.T) {
 func TestUpdateNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = Update(context.Background(), service, 0, &FirewallFilteringRules{})
+	_, _, err = Update(context.Background(), service, 0, &VZENClusters{})
 	if err == nil {
 		t.Error("Expected error updating non-existent resource, but got nil")
 	}
@@ -238,10 +211,10 @@ func TestUpdateNonExistentResource(t *testing.T) {
 func TestGetByNameNonExistentResource(t *testing.T) {
 	service, err := tests.NewOneAPIClient()
 	if err != nil {
-		t.Errorf("Error creating client: %v", err)
+		t.Fatalf("Error creating client: %v", err)
 	}
 
-	_, err = GetByName(context.Background(), service, "non_existent_name")
+	_, err = GetClusterByName(context.Background(), service, "non_existent_name")
 	if err == nil {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
