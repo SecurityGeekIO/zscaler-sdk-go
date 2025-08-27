@@ -16,10 +16,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/kelseyhightower/envconfig"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
@@ -28,6 +24,10 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	ztw "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/go-jose/go-jose/v3"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,7 +43,7 @@ var (
 )
 
 const (
-	VERSION               = "3.5.0"
+	VERSION               = "3.6.0"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
 	ZSCALER_CLIENT_SECRET = "ZSCALER_CLIENT_SECRET"
 	ZSCALER_VANITY_DOMAIN = "ZSCALER_VANITY_DOMAIN"
@@ -372,6 +372,8 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 		return client.oauth2Credentials.ZCCHTTPClient
 	case "zdx":
 		return client.oauth2Credentials.ZDXHTTPClient
+	case "admin":
+		return client.oauth2Credentials.HTTPClient // Use default client for admin endpoints
 	default:
 		return client.oauth2Credentials.HTTPClient
 	}
@@ -390,6 +392,8 @@ func detectServiceType(endpoint string) (string, error) {
 		return "zcc", nil
 	} else if strings.HasPrefix(endpoint, "/zdx") {
 		return "zdx", nil
+	} else if strings.HasPrefix(endpoint, "/admin") {
+		return "admin", nil
 	}
 	return "", fmt.Errorf("unsupported service")
 }

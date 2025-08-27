@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestByIPAddress(t *testing.T) {

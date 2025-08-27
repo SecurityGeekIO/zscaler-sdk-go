@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestMicrotenants(t *testing.T) {
