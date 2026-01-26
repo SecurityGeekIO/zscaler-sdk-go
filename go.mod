@@ -2,6 +2,8 @@ module github.com/SecurityGeekIO/zscaler-sdk-go/v3
 
 go 1.24.0
 
+toolchain go1.24.7
+
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/go-jose/go-jose/v3 v3.0.4
