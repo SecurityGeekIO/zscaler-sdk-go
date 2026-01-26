@@ -22,16 +22,16 @@ import (
 
 const (
 	maxIdleConnections  int = 40
-	requestTimeout      int = 60
+	requestTimeout      int = 240
 	contentTypeJSON         = "application/json"
 	MaxNumOfRetries         = 100
-	RetryWaitMaxSeconds     = 20
-	RetryWaitMinSeconds     = 5
+	RetryWaitMaxSeconds     = 10
+	RetryWaitMinSeconds     = 2
 	loggerPrefix            = "zpa-logger: "
 )
 
 const (
-	VERSION           = "3.5.0"
+	VERSION           = "3.7.5"
 	ZPA_CLIENT_ID     = "ZPA_CLIENT_ID"
 	ZPA_CLIENT_SECRET = "ZPA_CLIENT_SECRET"
 	ZPA_CUSTOMER_ID   = "ZPA_CUSTOMER_ID"
@@ -71,6 +71,7 @@ type Configuration struct {
 	sync.Mutex
 	Logger         logger.Logger
 	HTTPClient     *http.Client
+	RateLimiter    *rl.RateLimiter
 	BaseURL        *url.URL
 	DefaultHeader  map[string]string `json:"defaultHeader,omitempty"`
 	UserAgent      string            `json:"userAgent,omitempty"`
@@ -84,6 +85,7 @@ type Configuration struct {
 			ZPACustomerID    string     `yaml:"customerId" envconfig:"ZPA_CUSTOMER_ID"`
 			ZPACloud         string     `yaml:"cloud" envconfig:"ZPA_CLOUD"`
 			ZPAMicrotenantID string     `yaml:"microtenantId" envconfig:"ZPA_MICROTENANT_ID"`
+			PartnerID        string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken        *AuthToken `yaml:"authToken"`
 			AccessToken      *AuthToken `yaml:"accessToken"`
 			Cache            struct {
@@ -253,6 +255,12 @@ func WithZPAMicrotenantID(microtenantID string) ConfigSetter {
 	}
 }
 
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZPA.Client.PartnerID = partnerID
+	}
+}
+
 func WithZPACloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZPA.Client.ZPACloud = cloud
@@ -394,11 +402,13 @@ func setHttpClients(cfg *Configuration) {
 		log = cfg.Logger
 	}
 
-	// ZPA-specific rate limits:
-	zpaRateLimiter := rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
+	// ZPA-specific rate limits: Create and store rate limiter if not already initialized
+	if cfg.RateLimiter == nil {
+		cfg.RateLimiter = rl.NewRateLimiter(20, 10, 10, 10) // GET: 20 per 10s, POST/PUT/DELETE: 10 per 10s
+	}
 
-	// Configure the ZPA HTTP client
-	cfg.HTTPClient = getHTTPClient(log, zpaRateLimiter, cfg)
+	// Configure the ZPA HTTP client using the stored rate limiter
+	cfg.HTTPClient = getHTTPClient(log, cfg.RateLimiter, cfg)
 	if cfg.HTTPClient == nil {
 		log.Printf("[ERROR] Failed to initialize ZPA HTTP client.")
 	} else {

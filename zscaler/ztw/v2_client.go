@@ -42,19 +42,19 @@ func NewClient(config *Configuration) (*Client, error) {
 
 	logger := logger.GetDefaultLogger(loggerPrefix)
 
-	// Validate ZTW Cloud
-	if config.ZTW.Client.ZTWCloud == "" {
-		logger.Printf("[ERROR] Missing ZTW cloud configuration.")
-		return nil, errors.New("ZTWCloud configuration is missing")
+	// Validate ZTC Cloud
+	if config.ZTW.Client.ZTCCloud == "" {
+		logger.Printf("[ERROR] Missing ZTC cloud configuration.")
+		return nil, errors.New("ZTCCloud configuration is missing")
 	}
 
 	// Construct the base URL
 	baseURL := config.BaseURL.String()
 
 	// Validate authentication credentials
-	if config.ZTW.Client.ZTWUsername == "" || config.ZTW.Client.ZTWPassword == "" || config.ZTW.Client.ZTWApiKey == "" {
-		logger.Printf("[ERROR] Missing required ZTW credentials (username, password, or API key).")
-		return nil, errors.New("missing required ZTW credentials")
+	if config.ZTW.Client.ZTCUsername == "" || config.ZTW.Client.ZTCPassword == "" || config.ZTW.Client.ZTCApiKey == "" {
+		logger.Printf("[ERROR] Missing required ZTC credentials (username, password, or API key).")
+		return nil, errors.New("missing required ZTC credentials")
 	}
 
 	// Initialize rate limiter
@@ -76,10 +76,11 @@ func NewClient(config *Configuration) (*Client, error) {
 
 	// Initialize the Client instance
 	cli := &Client{
-		userName:         config.ZTW.Client.ZTWUsername,
-		password:         config.ZTW.Client.ZTWPassword,
-		apiKey:           config.ZTW.Client.ZTWApiKey,
-		cloud:            config.ZTW.Client.ZTWCloud,
+		userName:         config.ZTW.Client.ZTCUsername,
+		password:         config.ZTW.Client.ZTCPassword,
+		apiKey:           config.ZTW.Client.ZTCApiKey,
+		cloud:            config.ZTW.Client.ZTCCloud,
+		partnerID:        config.ZTW.Client.PartnerID,
 		HTTPClient:       httpClient,
 		URL:              baseURL,
 		Logger:           logger,
@@ -107,7 +108,7 @@ func NewClient(config *Configuration) (*Client, error) {
 	// Start the session refresh ticker
 	cli.startSessionTicker(ctx)
 
-	//logger.Printf("[DEBUG] ZTW client successfully initialized with base URL: %s", baseURL)
+	//logger.Printf("[DEBUG] ZTC client successfully initialized with base URL: %s", baseURL)
 	return cli, nil
 }
 
@@ -136,7 +137,7 @@ func obfuscateAPIKey(apiKey, timeStamp string) (string, error) {
 	return key, nil
 }
 
-// MakeAuthRequestZTW authenticates using the provided credentials and returns the session or an error.
+// MakeAuthRequestZTC authenticates using the provided credentials and returns the session or an error.
 func MakeAuthRequestZTW(credentials *Credentials, baseURL string, client *http.Client, userAgent string) (*Session, error) {
 	if credentials == nil {
 		return nil, fmt.Errorf("empty credentials")
@@ -341,14 +342,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 					return retryAfter
 				}
 			}
-			if resp.Request != nil {
-				wait, d := rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					return d
-				}
-				return 0
-			}
 		}
+		// Use exponential backoff for all retries
+		// API's own rate limiting (429 + Retry-After) handles rate limits
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -650,6 +646,11 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 	req.Header.Set("Content-Type", contentType)
 	if c.UserAgent != "" {
 		req.Header.Add("User-Agent", c.UserAgent)
+	}
+
+	// Add x-partner-id header if partnerId is provided in config
+	if c.partnerID != "" {
+		req.Header.Set("x-partner-id", c.partnerID)
 	}
 
 	err = c.checkSession()

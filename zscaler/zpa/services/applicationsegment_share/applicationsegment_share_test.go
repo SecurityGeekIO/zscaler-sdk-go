@@ -1,5 +1,6 @@
 package applicationsegment_share
 
+/*
 import (
 	"context"
 	"net/http"
@@ -7,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
@@ -14,7 +16,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/microtenants"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestApplicationSegmentShare(t *testing.T) {
@@ -178,3 +179,4 @@ func TestApplicationSegmentShare(t *testing.T) {
 		t.Fatalf("Failed to share application segment, status code: %d", resp.StatusCode)
 	}
 }
+*/

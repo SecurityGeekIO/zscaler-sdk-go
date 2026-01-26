@@ -146,3 +146,66 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 	}
 	return false
 }
+
+// IsSessionInvalidError checks if the response indicates a session invalidation error
+// that requires token refresh. Only checks for known error messages returned by the API.
+func IsSessionInvalidError(res *http.Response) bool {
+	if res.StatusCode != http.StatusUnauthorized {
+		return false
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	// Rewind the response body for potential reuse
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	// Only check for error messages we know for certain are returned by the API
+	// The API may return different formats depending on the service/endpoint
+	knownSessionInvalidMessages := []string{
+		"SESSION_NOT_VALID",                         // Legacy/direct error code
+		"getAttribute: Session already invalidated", // Java exception message format
+		"Resource Access Blocked",                   // Occurs under high concurrency/load - API returns 401 instead of 429
+	}
+
+	for _, msg := range knownSessionInvalidMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsEditLockError checks if the response indicates an edit lock conflict error
+// that should be retried. This occurs when another operation is in progress.
+func IsEditLockError(res *http.Response) bool {
+	if res.StatusCode != http.StatusConflict {
+		return false
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	// Rewind the response body for potential reuse
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	// Check for known edit lock error messages
+	editLockErrorMessages := []string{
+		"EDIT_LOCK_NOT_AVAILABLE",
+		"Resource Access Blocked",
+		"Failed during enter Org barrier",
+	}
+
+	for _, msg := range editLockErrorMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	return false
+}

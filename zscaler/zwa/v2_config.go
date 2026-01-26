@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	VERSION        = "3.5.0"
+	VERSION        = "3.7.5"
 	ZWA_API_KEY_ID = "ZWA_API_KEY_ID"
 	ZWA_API_SECRET = "ZWA_API_SECRET"
 )
@@ -82,6 +82,7 @@ type Configuration struct {
 			ZWAAPIKeyID  string     `yaml:"key_id" envconfig:"ZWA_API_KEY_ID"`
 			ZWAAPISecret string     `yaml:"key_secret" envconfig:"ZWA_API_SECRET"`
 			ZWACloud     string     `yaml:"cloud" envconfig:"ZWA_CLOUD"`
+			PartnerID    string     `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			AuthToken    *AuthToken `yaml:"authToken"`
 			AccessToken  *AuthToken `yaml:"accessToken"`
 			Proxy        struct {
@@ -210,6 +211,12 @@ func WithZWACloud(cloud string) ConfigSetter {
 	}
 }
 
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZWA.Client.PartnerID = partnerID
+	}
+}
+
 // WithHttpClient sets the HttpClient in the Config.
 func WithHttpClientPtr(httpClient *http.Client) ConfigSetter {
 	return func(c *Configuration) {
@@ -309,7 +316,7 @@ func setHttpClients(cfg *Configuration) {
 	// Configure the HTTP client with rate limiting
 	httpClient := &http.Client{
 		Transport: &rl.RateLimitTransport{
-			Limiter:         globalLimiter,
+			GlobalLimiter:   globalLimiter,
 			WaitFunc:        globalLimiter.Wait, // Pass the method reference of the limiter
 			Logger:          log,
 			AdditionalDelay: 5 * time.Second,

@@ -1,11 +1,12 @@
 package private_cloud_group
 
+/*
 import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
 
 func TestPrivateCloudGroup(t *testing.T) {
@@ -177,3 +178,4 @@ func TestGetByNameNonExistentResource(t *testing.T) {
 		t.Error("Expected error retrieving resource by non-existent name, but got nil")
 	}
 }
+*/

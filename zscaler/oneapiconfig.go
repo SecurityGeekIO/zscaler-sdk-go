@@ -28,16 +28,27 @@ const (
 	requestTimeout      int = 60
 	contentTypeJSON         = "application/json"
 	MaxNumOfRetries         = 100
-	RetryWaitMaxSeconds     = 20
-	RetryWaitMinSeconds     = 10
+	RetryWaitMaxSeconds     = 10
+	RetryWaitMinSeconds     = 2
 	loggerPrefix            = "oneapi-logger: "
 )
+
+// inFlightRequest represents a request that's currently being processed
+type inFlightRequest struct {
+	wg     sync.WaitGroup
+	result []byte
+	resp   *http.Response
+	req    *http.Request
+	err    error
+	once   sync.Once
+}
 
 // Client defines the ZIA client structure.
 type Client struct {
 	sync.Mutex
 	oauth2Credentials *Configuration
 	stopTicker        chan bool
+	inFlightRequests  sync.Map // Map[string]*inFlightRequest - tracks in-flight GET requests for deduplication
 }
 
 // NewOneAPIClient creates a new client using OAuth2 authentication for any service.
@@ -72,7 +83,8 @@ func (c *Client) startTokenRenewalTicker() {
 			for {
 				select {
 				case <-ticker.C:
-					// Refresh the token
+					// Refresh the token with proper locking to prevent race conditions
+					c.Lock()
 					authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
 					if err != nil {
 						c.oauth2Credentials.Logger.Printf("[ERROR] Failed to renew OAuth2 token: %v", err)
@@ -83,6 +95,7 @@ func (c *Client) startTokenRenewalTicker() {
 						renewalInterval = time.Until(authToken.Expiry) - (time.Minute * 1)
 						ticker.Reset(renewalInterval)
 					}
+					c.Unlock()
 				case <-c.stopTicker:
 					ticker.Stop()
 					return
@@ -116,31 +129,26 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	retryableClient.RetryWaitMin = cfg.Zscaler.Client.RateLimit.RetryWaitMin
 	retryableClient.RetryWaitMax = cfg.Zscaler.Client.RateLimit.RetryWaitMax
 
-	if cfg.Zscaler.Client.RateLimit.MaxRetries == 0 {
-		// Set RetryMax to a very large number to simulate indefinite retries within the timeout duration.
-		retryableClient.RetryMax = math.MaxInt32
-	} else {
+	// Set RetryMax from configuration - this controls retries at the HTTP client level
+	// Both retryablehttp AND ExecuteRequest will handle retries for maximum reliability
+	if cfg.Zscaler.Client.RateLimit.MaxRetries > 0 {
 		retryableClient.RetryMax = int(cfg.Zscaler.Client.RateLimit.MaxRetries)
+	} else {
+		retryableClient.RetryMax = MaxNumOfRetries // Default to 100
 	}
 
-	// Configure backoff and retry policies
+	// Configure backoff and retry policies for retryablehttp
 	retryableClient.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		if resp != nil {
 			if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusUnauthorized {
-				// retryAfter := getRetryAfter(resp, l)
 				retryAfter := getRetryAfter(resp, cfg)
 				if retryAfter > 0 {
 					return retryAfter
 				}
 			}
-			if resp.Request != nil {
-				wait, d := rateLimiter.Wait(resp.Request.Method)
-				if wait {
-					return d
-				}
-				return 0
-			}
 		}
+		// Use exponential backoff for all retries
+		// Rate limiting is handled by API's 429 errors + ExecuteRequest logic
 		mult := math.Pow(2, float64(attemptNum)) * float64(min)
 		sleep := time.Duration(mult)
 		if float64(sleep) != mult || sleep > max {
@@ -191,7 +199,19 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
-	retryableClient.HTTPClient.Transport = transport
+	// Wrap the transport with rate limiting
+	if rateLimiter != nil {
+		rateLimitedTransport := &rl.RateLimitTransport{
+			Base:            transport,
+			Limiter:         rateLimiter,
+			Logger:          l,
+			AdditionalDelay: 0,
+		}
+		retryableClient.HTTPClient.Transport = rateLimitedTransport
+	} else {
+		retryableClient.HTTPClient.Transport = transport
+	}
+
 	return retryableClient.StandardClient()
 }
 
@@ -211,48 +231,68 @@ func getRetryAfter(resp *http.Response, cfg *Configuration) time.Duration {
 		threshold = 2
 	}
 
-	// Log everything if debugging
-	if cfg.Debug {
-		l.Printf("[DEBUG] Rate limit headers: Limit=%s, Remaining=%s, Reset=%s, Retry-After=%s",
-			ratelimitLimit, ratelimitRemaining, ratelimitReset, retryAfterHeader)
+	// Log everything if debugging or if we're approaching limits
+	if cfg.Debug || ratelimitRemaining != "" {
+		l.Printf("[DEBUG] Rate limit headers: Limit=%s, Remaining=%s, Reset=%s, Retry-After=%s, Status=%d",
+			ratelimitLimit, ratelimitRemaining, ratelimitReset, retryAfterHeader, resp.StatusCode)
 	}
 
+	// Check if we're hitting hourly limits (indicated by very long retry times)
+	if retryAfterHeader != "" {
+		if sleep, err := strconv.ParseInt(retryAfterHeader, 10, 64); err == nil {
+			duration := time.Second * time.Duration(sleep)
+			if duration > 5*time.Minute {
+				l.Printf("[WARN] Long Retry-After detected: %v (%ds). This likely indicates hourly rate limit reached.", duration, sleep)
+			} else {
+				l.Printf("[INFO] Retry-After: %v (%ds)", duration, sleep)
+			}
+			// Trust the API's Retry-After value - it's authoritative
+			// Only add buffer for very short delays to account for processing time
+			if duration < time.Second {
+				return duration + 500*time.Millisecond // Add 500ms buffer for sub-second delays
+			}
+			return duration
+		}
+		if dur, err := time.ParseDuration(retryAfterHeader); err == nil {
+			if dur > 5*time.Minute {
+				l.Printf("[WARN] Long Retry-After detected: %v. This likely indicates hourly rate limit reached.", dur)
+			} else {
+				l.Printf("[INFO] Retry-After (duration): %v", dur)
+			}
+			// Trust the API's Retry-After value
+			if dur < time.Second {
+				return dur + 500*time.Millisecond
+			}
+			return dur
+		}
+		l.Printf("[WARN] Could not parse Retry-After header: %s", retryAfterHeader)
+	}
+
+	// Check remaining requests before hitting limit
 	if ratelimitRemaining != "" {
 		if remaining, err := strconv.Atoi(ratelimitRemaining); err == nil && remaining < int(threshold) {
+			l.Printf("[WARN] Approaching rate limit: %d requests remaining (threshold: %d)", remaining, threshold)
 			if ratelimitReset != "" {
 				if resetSecs, err := strconv.Atoi(ratelimitReset); err == nil {
-					l.Printf("[INFO] Approaching rate limit (remaining=%d); waiting %ds", remaining, resetSecs+1)
-					return time.Duration(resetSecs+1) * time.Second
+					l.Printf("[INFO] Rate limit resets in %ds, waiting that duration", resetSecs)
+					return time.Duration(resetSecs) * time.Second
 				}
 			}
-			l.Printf("[INFO] Approaching rate limit and no reset header; fallback delay %ds", RetryWaitMinSeconds)
+			l.Printf("[INFO] Approaching rate limit with no reset header; using fallback delay: %ds", RetryWaitMinSeconds)
 			return time.Second * time.Duration(RetryWaitMinSeconds)
 		}
 	}
 
-	// Retry-After header handling
-	if retryAfterHeader != "" {
-		if sleep, err := strconv.ParseInt(retryAfterHeader, 10, 64); err == nil {
-			l.Printf("[INFO] Retry-After used: %ds", sleep)
-			return time.Second * time.Duration(sleep+1)
-		}
-		if dur, err := time.ParseDuration(retryAfterHeader); err == nil {
-			l.Printf("[INFO] Retry-After used (duration): %s", dur)
-			return dur + time.Second
-		}
-		l.Printf("[INFO] Could not parse Retry-After header: %s", retryAfterHeader)
-	}
-
-	// Reset-based retry
+	// Reset-based retry when no Retry-After header
 	if ratelimitReset != "" {
 		if resetSecs, err := strconv.Atoi(ratelimitReset); err == nil {
-			l.Printf("[INFO] X-Ratelimit-Reset used: %ds", resetSecs)
-			return time.Duration(resetSecs+1) * time.Second
+			l.Printf("[INFO] Using X-Ratelimit-Reset: %ds", resetSecs)
+			return time.Duration(resetSecs) * time.Second
 		}
 	}
 
-	// Final fallback
-	l.Printf("[INFO] No rate limit headers found; fallback wait: %ds", RetryWaitMinSeconds)
+	// Final fallback - use configured retry wait
+	l.Printf("[INFO] No rate limit headers found; using fallback wait: %ds", RetryWaitMinSeconds)
 	return time.Second * time.Duration(RetryWaitMinSeconds)
 }
 
@@ -348,6 +388,11 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 		req.Header.Add("User-Agent", c.oauth2Credentials.UserAgent)
 	}
 
+	// Add x-partner-id header if partnerId is provided in config
+	if c.oauth2Credentials.Zscaler.Client.PartnerID != "" {
+		req.Header.Set("x-partner-id", c.oauth2Credentials.Zscaler.Client.PartnerID)
+	}
+
 	// For non-sandbox requests, handle OAuth2 authentication
 	if !isSandboxRequest {
 		err = c.authenticate()
@@ -373,31 +418,83 @@ func (c *Client) buildRequest(ctx context.Context, method, endpoint string, body
 }
 
 func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, body io.Reader, urlParams url.Values, contentType string) ([]byte, *http.Response, *http.Request, error) {
-	req, err := c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
+	// Buffer the request body so we can retry with SESSION_NOT_VALID errors
+	var requestBodyBytes []byte
+	if body != nil {
+		var err error
+		requestBodyBytes, err = io.ReadAll(body)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to read request body: %w", err)
+		}
+	}
+
+	req, err := c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	isSandboxRequest := strings.Contains(endpoint, "/zscsb")
-	startTime := time.Now()
+	overallStartTime := time.Now()
+	totalWaitTime := time.Duration(0) // Track time spent waiting for rate limits
 
 	// Create cache key using the actual request
 	key := cache.CreateCacheKey(req)
-	if c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
-		if method != http.MethodGet {
-			c.oauth2Credentials.CacheManager.Delete(key)
-			c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
-		}
-		resp := c.oauth2Credentials.CacheManager.Get(key)
-		inCache := resp != nil
-		if inCache {
-			respData, err := io.ReadAll(resp.Body)
+
+	// For GET requests, check cache first and handle request deduplication
+	var ifr *inFlightRequest
+	if method == http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
+		// Check cache first
+		cachedResp := c.oauth2Credentials.CacheManager.Get(key)
+		if cachedResp != nil {
+			respData, err := io.ReadAll(cachedResp.Body)
 			if err == nil {
-				resp.Body = io.NopCloser(bytes.NewBuffer(respData))
+				cachedResp.Body = io.NopCloser(bytes.NewBuffer(respData))
 			}
 			c.oauth2Credentials.Logger.Printf("[INFO] served from cache, key:%s\n", key)
-			return respData, resp, req, nil
+			return respData, cachedResp, req, nil
 		}
+
+		// Check if there's an in-flight request for the same URL
+		if inFlight, exists := c.inFlightRequests.Load(key); exists {
+			if existingIfr, ok := inFlight.(*inFlightRequest); ok {
+				c.oauth2Credentials.Logger.Printf("[INFO] waiting for in-flight request to complete, key:%s\n", key)
+				existingIfr.wg.Wait() // Wait for the in-flight request to complete
+				// Once the request completes, check cache again
+				cachedResp := c.oauth2Credentials.CacheManager.Get(key)
+				if cachedResp != nil {
+					respData, err := io.ReadAll(cachedResp.Body)
+					if err == nil {
+						cachedResp.Body = io.NopCloser(bytes.NewBuffer(respData))
+					}
+					c.oauth2Credentials.Logger.Printf("[INFO] served from cache after waiting for in-flight request, key:%s\n", key)
+					return respData, cachedResp, req, nil
+				}
+				// If still not in cache, there was an error - check the in-flight request error
+				if existingIfr.err != nil {
+					return nil, existingIfr.resp, existingIfr.req, existingIfr.err
+				}
+				// If no error but not cached, something went wrong - proceed with normal request
+			}
+		}
+
+		// Create new in-flight request and mark it as in-flight
+		ifr = &inFlightRequest{}
+		ifr.wg.Add(1)
+		c.inFlightRequests.Store(key, ifr)
+
+		// Always clean up the in-flight request when done (success or error)
+		defer func() {
+			if ifr != nil {
+				ifr.once.Do(func() {
+					ifr.wg.Done()
+					c.inFlightRequests.Delete(key)
+				})
+			}
+		}()
+	} else if method != http.MethodGet && c.oauth2Credentials.Zscaler.Client.Cache.Enabled && !isSandboxRequest {
+		// For non-GET requests, invalidate cache
+		c.oauth2Credentials.CacheManager.Delete(key)
+		c.oauth2Credentials.CacheManager.ClearAllKeysWithPrefix(strings.Split(key, "?")[0])
 	}
 
 	var resp *http.Response
@@ -410,10 +507,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, fmt.Errorf("max retries exceeded")
 		}
 
-		// Check RequestTimeout
-		elapsedTime := time.Since(startTime)
+		// Check RequestTimeout - exclude rate limiting wait times from the calculation
+		// This ensures that rate limiting delays don't count against the request timeout
+		elapsedTime := time.Since(overallStartTime) - totalWaitTime
 		if c.oauth2Credentials.Zscaler.Client.RequestTimeout > 0 && elapsedTime >= c.oauth2Credentials.Zscaler.Client.RequestTimeout {
-			return nil, resp, nil, fmt.Errorf("request timeout exceeded")
+			c.oauth2Credentials.Logger.Printf("[ERROR] Request timeout exceeded: elapsed=%v, waited=%v, total=%v, timeout=%v",
+				elapsedTime, totalWaitTime, time.Since(overallStartTime), c.oauth2Credentials.Zscaler.Client.RequestTimeout)
+			return nil, resp, nil, fmt.Errorf("request timeout exceeded after %v (excluding %v of rate limit waits)",
+				elapsedTime, totalWaitTime)
 		}
 
 		start := time.Now()
@@ -426,56 +527,62 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 			return nil, resp, nil, err
 		}
 
-		// ✅ Check for SESSION_NOT_VALID in 401 body
+		// ✅ Check for session invalidation errors in 401 responses
 		if resp.StatusCode == http.StatusUnauthorized {
 			bodyCopy, readErr := io.ReadAll(resp.Body)
-			if readErr == nil && strings.Contains(string(bodyCopy), "SESSION_NOT_VALID") {
+			if readErr == nil {
 				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
 
-				sessionNotValidRetryCount++
-				if sessionNotValidRetryCount > maxSessionNotValidRetries {
-					return nil, resp, req, fmt.Errorf("max SESSION_NOT_VALID retries exceeded (%d), possible authentication issue", maxSessionNotValidRetries)
-				}
-
-				c.oauth2Credentials.Logger.Printf("[WARN] SESSION_NOT_VALID detected (attempt %d, session retry %d/%d), refreshing token and retrying...", retry, sessionNotValidRetryCount, maxSessionNotValidRetries)
-
-				// Enhanced debugging for SESSION_NOT_VALID analysis
-				if c.oauth2Credentials.Debug {
-					tok := c.oauth2Credentials.Zscaler.Client.AuthToken
-					c.oauth2Credentials.Logger.Printf("[DEBUG] SESSION_NOT_VALID analysis:")
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token exists: %v", tok != nil)
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token expiry: %s", tok.Expiry.Format(time.RFC3339))
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Current time: %s", time.Now().Format(time.RFC3339))
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Time until expiry: %.2f seconds", time.Until(tok.Expiry).Seconds())
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request URL: %s", req.URL.String())
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request method: %s", req.Method)
-					c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
-					if req.Header.Get("Authorization") != "" {
-						authHeader := req.Header.Get("Authorization")
-						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
+				// Use centralized error checking logic
+				if errorx.IsSessionInvalidError(resp) {
+					sessionNotValidRetryCount++
+					if sessionNotValidRetryCount > maxSessionNotValidRetries {
+						return nil, resp, req, fmt.Errorf("max SESSION_NOT_VALID retries exceeded (%d), possible authentication issue", maxSessionNotValidRetries)
 					}
-				}
 
-				// Force token refresh regardless of client-side validation
-				// SESSION_NOT_VALID means the server considers the token invalid
-				c.Lock() // Prevent concurrent token refresh
-				authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
-				if err != nil {
+					c.oauth2Credentials.Logger.Printf("[WARN] Session invalidation detected (attempt %d, session retry %d/%d), refreshing token and retrying...", retry, sessionNotValidRetryCount, maxSessionNotValidRetries)
+
+					// Enhanced debugging for session invalidation analysis
+					if c.oauth2Credentials.Debug {
+						tok := c.oauth2Credentials.Zscaler.Client.AuthToken
+						c.oauth2Credentials.Logger.Printf("[DEBUG] Session invalidation analysis:")
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token exists: %v", tok != nil)
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Token expiry: %s", tok.Expiry.Format(time.RFC3339))
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Current time: %s", time.Now().Format(time.RFC3339))
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Time until expiry: %.2f seconds", time.Until(tok.Expiry).Seconds())
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request URL: %s", req.URL.String())
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Request method: %s", req.Method)
+						c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", req.Header.Get("Authorization") != "")
+						if req.Header.Get("Authorization") != "" {
+							authHeader := req.Header.Get("Authorization")
+							c.oauth2Credentials.Logger.Printf("[DEBUG]   - Authorization header present: %v", authHeader != "")
+						}
+					}
+
+					// Force token refresh regardless of client-side validation
+					// Session invalidation means the server considers the token invalid
+					c.Lock() // Prevent concurrent token refresh
+					authToken, err := Authenticate(c.oauth2Credentials.Context, c.oauth2Credentials, c.oauth2Credentials.Logger)
+					if err != nil {
+						c.Unlock()
+						return nil, resp, req, fmt.Errorf("token refresh failed after session invalidation: %w", err)
+					}
+					c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
 					c.Unlock()
-					return nil, resp, req, fmt.Errorf("token refresh failed after SESSION_NOT_VALID: %w", err)
-				}
-				c.oauth2Credentials.Zscaler.Client.AuthToken = authToken
-				c.Unlock()
-				c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
+					c.oauth2Credentials.Logger.Printf("[INFO] Token refreshed successfully, retrying request...")
 
-				// Add a small delay before retrying to avoid overwhelming the server
-				time.Sleep(time.Second * 2)
+					// Add a small delay before retrying to avoid overwhelming the server
+					beforeWait := time.Now()
+					time.Sleep(time.Second * 2)
+					totalWaitTime += time.Since(beforeWait)
 
-				req, err = c.buildRequest(ctx, method, endpoint, body, urlParams, contentType)
-				if err != nil {
-					return nil, nil, nil, err
+					// Rebuild request with fresh body reader
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
+					continue
 				}
-				continue
 			}
 			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
 		}
@@ -489,14 +596,83 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			retryAfter := getRetryAfter(resp, c.oauth2Credentials)
 			if retryAfter > 0 {
-				time.Sleep(retryAfter)
-				continue
+				// If Retry-After is very long (> 5 minutes), fail fast with clear message
+				if retryAfter > 5*time.Minute {
+					c.oauth2Credentials.Logger.Printf("[ERROR] Rate limit exceeded with very long Retry-After: %v. This typically indicates hourly rate limits have been reached.", retryAfter)
+					return nil, resp, nil, fmt.Errorf("rate limit exceeded: API requires waiting %v before retrying. This typically means hourly rate limits (GET: 1000/hr, POST/PUT: 1000/hr, DELETE: 400/hr) have been reached. Please wait before retrying", retryAfter)
+				}
+
+				// Check if context is still valid before sleeping
+				select {
+				case <-ctx.Done():
+					return nil, resp, nil, fmt.Errorf("context cancelled while waiting for rate limit: %w", ctx.Err())
+				default:
+					c.oauth2Credentials.Logger.Printf("[INFO] Rate limit hit, waiting %v before retry (attempt %d)", retryAfter, retry)
+					// Track this wait time so it doesn't count against request timeout
+					beforeWait := time.Now()
+					time.Sleep(retryAfter)
+					totalWaitTime += time.Since(beforeWait)
+					continue
+				}
 			}
+			// If no Retry-After header, fall through to exponential backoff
 		}
 
 		// Handle success
 		if resp.StatusCode < 300 {
 			break
+		}
+
+		// Handle 409 Conflict errors (EDIT_LOCK_NOT_AVAILABLE) - these are retryable
+		if resp.StatusCode == http.StatusConflict {
+			bodyCopy, readErr := io.ReadAll(resp.Body)
+			if readErr == nil {
+				resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind
+
+				// Check if this is an EDIT_LOCK_NOT_AVAILABLE error
+				if errorx.IsEditLockError(resp) {
+					backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
+					maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
+					if backoffDelay > maxBackoff {
+						backoffDelay = maxBackoff
+					}
+					c.oauth2Credentials.Logger.Printf("[WARN] Edit lock conflict detected (attempt %d), waiting %v before retry", retry, backoffDelay)
+
+					// Track this wait time so it doesn't count against request timeout
+					beforeWait := time.Now()
+					time.Sleep(backoffDelay)
+					totalWaitTime += time.Since(beforeWait)
+
+					// Rebuild request with fresh body reader
+					req, err = c.buildRequest(ctx, method, endpoint, bytes.NewReader(requestBodyBytes), urlParams, contentType)
+					if err != nil {
+						return nil, nil, nil, err
+					}
+					continue
+				}
+			}
+			resp.Body = io.NopCloser(bytes.NewReader(bodyCopy)) // rewind even if not retrying
+		}
+
+		// Handle retryable errors with exponential backoff
+		if resp.StatusCode >= 500 {
+			// 5xx server errors are retryable
+			backoffDelay := time.Duration(math.Pow(2, float64(retry-1))) * c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMin
+			maxBackoff := c.oauth2Credentials.Zscaler.Client.RateLimit.RetryWaitMax
+			if backoffDelay > maxBackoff {
+				backoffDelay = maxBackoff
+			}
+			c.oauth2Credentials.Logger.Printf("[INFO] Server error (status %d), retry %d: waiting %v before retry", resp.StatusCode, retry, backoffDelay)
+			// Track this wait time so it doesn't count against request timeout
+			beforeWait := time.Now()
+			time.Sleep(backoffDelay)
+			totalWaitTime += time.Since(beforeWait)
+			continue
+		}
+
+		// Handle non-retryable client errors (4xx except 401, 409, 429 which are handled above)
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			return nil, resp, nil, errorx.CheckErrorInResponse(resp, fmt.Errorf("client error"))
 		}
 
 		// Handle other non-success status codes
@@ -508,6 +684,14 @@ func (c *Client) ExecuteRequest(ctx context.Context, method, endpoint string, bo
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, resp, nil, err
+	}
+
+	// Log timing information if there were significant waits
+	totalElapsed := time.Since(overallStartTime)
+	actualRequestTime := totalElapsed - totalWaitTime
+	if totalWaitTime > 0 && c.oauth2Credentials.Debug {
+		c.oauth2Credentials.Logger.Printf("[DEBUG] Request completed: total=%v, waited=%v, actual=%v",
+			totalElapsed, totalWaitTime, actualRequestTime)
 	}
 
 	// Cache logic for successful GET requests

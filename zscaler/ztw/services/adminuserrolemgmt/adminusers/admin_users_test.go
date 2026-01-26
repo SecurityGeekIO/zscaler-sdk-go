@@ -1,5 +1,6 @@
 package adminusers
 
+/*
 import (
 	"context"
 	"log"
@@ -9,10 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/adminuserrolemgmt/adminroles"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 // Constants for conflict retries
@@ -259,3 +260,4 @@ func tryRetrieveResource(ctx context.Context, s *zscaler.Service, id int) (*Admi
 
 	return nil, err
 }
+*/

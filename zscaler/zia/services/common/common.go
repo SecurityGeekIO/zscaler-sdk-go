@@ -11,7 +11,7 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
 )
 
-const pageSize = 1000
+const defaultPageSize = 1000 // Default page size for most ZIA APIs
 
 type IDNameExtensions struct {
 	ID         int                    `json:"id,omitempty"`
@@ -25,8 +25,9 @@ type IDExtensions struct {
 }
 
 type IDName struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	ID     int    `json:"id,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Parent string `json:"parent,omitempty"`
 }
 
 type IDNameExternalID struct {
@@ -132,15 +133,21 @@ type CommonApplication struct {
 	AppCatModified      bool   `json:"appCatModified"`
 }
 
-// GetPageSize returns the page size.
+// GetPageSize returns the default page size.
 func GetPageSize() int {
-	return pageSize
+	return defaultPageSize
 }
 
-func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, list *[]T) error {
+func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint string, list *[]T, customPageSize ...int) error {
 	if list == nil {
 		return nil
 	}
+
+	pageSize := defaultPageSize
+	if len(customPageSize) > 0 && customPageSize[0] > 0 {
+		pageSize = customPageSize[0]
+	}
+
 	page := 1
 	if !strings.Contains(endpoint, "?") {
 		endpoint += "?"
@@ -161,28 +168,51 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 	return nil
 }
 
-func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T, customPageSize ...int) error {
 	if list == nil {
 		return nil
 	}
 
-	// Parse the endpoint into a URL.
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return fmt.Errorf("could not parse endpoint URL: %w", err)
+	pageSize := defaultPageSize
+	if len(customPageSize) > 0 && customPageSize[0] > 0 {
+		pageSize = customPageSize[0]
 	}
 
-	// Get the existing query parameters and add new ones.
-	q := u.Query()
-	q.Set("pageSize", fmt.Sprintf("%d", pageSize))
-	q.Set("page", fmt.Sprintf("%d", page))
+	// Parse the endpoint to separate path and query string
+	var path string
+	var existingQuery url.Values
 
-	// Set the URL's RawQuery to the encoded query parameters.
-	u.RawQuery = q.Encode()
+	// Check if endpoint contains a query string
+	queryIdx := strings.Index(endpoint, "?")
+	if queryIdx == -1 {
+		// No query string, endpoint is just the path
+		path = endpoint
+		existingQuery = make(url.Values)
+	} else {
+		// Split path and query string
+		path = endpoint[:queryIdx]
+		queryStr := endpoint[queryIdx+1:]
+		var err error
+		existingQuery, err = url.ParseQuery(queryStr)
+		if err != nil {
+			return fmt.Errorf("could not parse query string: %w", err)
+		}
+	}
 
-	// Convert the URL back to a string and read the page.
+	// Add or update pagination parameters
+	existingQuery.Set("pageSize", fmt.Sprintf("%d", pageSize))
+	existingQuery.Set("page", fmt.Sprintf("%d", page))
+
+	// Construct the final endpoint with properly encoded query string
+	queryStr := existingQuery.Encode()
+	finalEndpoint := path
+	if queryStr != "" {
+		finalEndpoint = path + "?" + queryStr
+	}
+
+	// Read the page
 	pageItems := []T{}
-	err = client.Read(ctx, u.String(), &pageItems)
+	err := client.Read(ctx, finalEndpoint, &pageItems)
 	if err != nil {
 		return err
 	}

@@ -1,8 +1,8 @@
 [![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/SecurityGeekIO/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/.go-version)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/.go-version)
 [![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
-[![codecov](https://codecov.io/github/SecurityGeekIO/zscaler-sdk-go/graph/badge.svg?token=OVX3UWIWSK)](https://codecov.io/github/SecurityGeekIO/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/SecurityGeekIO/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/zscaler/zscaler-sdk-go/graph/badge.svg?token=0VX3UWIWSK)](https://codecov.io/gh/zscaler/zscaler-sdk-go)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/LICENSE)
 [![Zscaler Support](https://img.shields.io/badge/zscaler-support-blue)](https://zscaler.my.site.com/customers/s/)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
@@ -1085,14 +1085,14 @@ The ZTW Cloud is identified by several cloud name prefixes, which determines whi
 
 ### ZTW Environment variables
 
-You can provide credentials via the `ZTW_USERNAME`, `ZTW_PASSWORD`, `ZTW_API_KEY`, `ZTW_CLOUD` environment variables, representing your ZTW `username`, `password`, `api_key` and `cloud` respectively.
+You can provide credentials via the `ZTC_USERNAME`, `ZTC_PASSWORD`, `ZTC_API_KEY`, `ZTC_CLOUD` environment variables, representing your ZTW `username`, `password`, `api_key` and `cloud` respectively.
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZTW_USERNAME` |
-| `password`       | _(String)_ A string that contains the password for the API admin.| `ZTW_PASSWORD` |
-| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTW_API_KEY` |
-| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTW_CLOUD` |
+| `username`       | _(String)_ A string that contains the email ID of the API admin.| `ZTC_USERNAME` |
+| `password`       | _(String)_ A string that contains the password for the API admin.| `ZTC_PASSWORD` |
+| `api_key`       | _(String)_ A string that contains the obfuscated API key (i.e., the return value of the obfuscateApiKey() method).| `ZTC_API_KEY` |
+| `cloud`       | _(String)_ The host and basePath for the cloud services API is `$connector.<Zscaler Cloud Name>/api/v1`.| `ZTC_CLOUD` |
 
 **NOTE**: The Zscaler Cloud Connector (ZTW) API Client instantiation DOES NOT require the use of the `useLegacyClient` attribute.
 
@@ -1110,10 +1110,10 @@ import (
 )
 
 func main() {
-	username := os.Getenv("ZTW_USERNAME")
-	password := os.Getenv("ZTW_PASSWORD")
-	apiKey   := os.Getenv("ZTW_API_KEY")
-	ztwCloud := os.Getenv("ZTW_CLOUD")
+	username := os.Getenv("ZTC_USERNAME")
+	password := os.Getenv("ZTC_PASSWORD")
+	apiKey   := os.Getenv("ZTC_API_KEY")
+	ztwCloud := os.Getenv("ZTC_CLOUD")
 
   ztwCfg, err := ztw.NewConfiguration(
 		ztw.WithZtwUsername(username),
@@ -1224,7 +1224,7 @@ You can provide credentials via the `ZWA_API_KEY_ID`, `ZWA_API_SECRET` environme
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |    
+| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |
 | `key_secret`       | _(String)_ The ZWA string that contains the key secret.| `ZWA_API_SECRET` |
 | `cloud`       | _(String)_ The ZWA string containing cloud provisioned for your organization.| `ZWA_CLOUD` |
 

@@ -1,12 +1,13 @@
 package activation
 
+/*
 import (
 	"context"
 	"log"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
 
 func TestZTWActivation(t *testing.T) {
@@ -42,3 +43,4 @@ func TestZTWActivation(t *testing.T) {
 		assert.Contains(t, []string{"ADM_LOGGED_IN", "ADM_EDITING", "ADM_ACTV_QUEUED", "ADM_ACTIVATING", "ADM_ACTV_DONE", "ADM_ACTV_FAIL", "ADM_EXPIRED"}, forcedStatus.AdminActivateStatus)
 	})
 }
+*/

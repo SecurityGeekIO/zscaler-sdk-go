@@ -90,7 +90,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 	// Test resource update
 	retrievedResource.Description = updateDescription
 	err = retryOnConflict(func() error {
-		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource)
+		_, _, err = Update(context.Background(), service, createdResource.ID, retrievedResource, nil)
 		return err
 	})
 	if err != nil {
@@ -120,7 +120,7 @@ func TestFWFilteringIPDestGroups(t *testing.T) {
 		t.Errorf("Expected retrieved resource comment '%s', but got '%s'", updateDescription, createdResource.Description)
 	}
 	// Test resources retrieval
-	resources, err := GetAll(context.Background(), service)
+	resources, err := GetAll(context.Background(), service, "")
 	if err != nil {
 		t.Fatalf("Error retrieving resources: %v", err)
 	}

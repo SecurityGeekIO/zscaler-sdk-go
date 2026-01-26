@@ -7,10 +7,14 @@ import (
 	"strings"
 
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
 const pageSize = 1000
+
+type IDName struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
 
 type IDNameExtensions struct {
 	ID         int                    `json:"id,omitempty"`
@@ -25,15 +29,60 @@ type CommonIDNameExternalID struct {
 	IsNameL10nTag   bool                   `json:"isNameL10nTag,omitempty"`
 	Extensions      map[string]interface{} `json:"extensions,omitempty"`
 	Deleted         bool                   `json:"deleted,omitempty"`
-	ExternalId      string                 `json:"externalId,omitempty"`
+	ExternalID      string                 `json:"externalId,omitempty"`
 	AssociationTime int                    `json:"associationTime,omitempty"`
 }
 
 type CommonZPAIDNameID struct {
 	ID          int    `json:"id,omitempty"`
 	Name        string `json:"name,omitempty"`
-	ExternalId  string `json:"externalId,omitempty"`
+	ExternalID  string `json:"externalId,omitempty"`
 	ZPATenantId int    `json:"zpaTenantId,omitempty"`
+}
+
+type ZPAAppSegments struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Indicates the external ID. Applicable only when this reference is of an external entity.
+	ExternalID string `json:"externalId"`
+}
+
+type ZPAApplicationSegments struct {
+	// A unique identifier assigned to the Application Segment
+	ID int `json:"id,omitempty"`
+
+	// The name of the Application Segment
+	Name string `json:"name,omitempty"`
+
+	// Additional information about the Application Segment
+	Description string `json:"description,omitempty"`
+
+	// ID of the ZPA tenant where the Application Segment is configured
+	ZPAID int `json:"zpaId,omitempty"`
+
+	// Indicates whether the ZPA Application Segment has been deleted
+	Deleted bool `json:"deleted,omitempty"`
+}
+
+type ZPAApplicationSegmentGroups struct {
+	// A unique identifier assigned to the Application Segment Group
+	ID int `json:"id,omitempty"`
+
+	// The name of the Application Segment Group
+	Name string `json:"name,omitempty"`
+
+	// ID of the ZPA tenant where the Application Segment is configured
+	ZPAID int `json:"zpaId,omitempty"`
+
+	// Indicates whether the ZPA Application Segment has been deleted
+	Deleted bool `json:"deleted,omitempty"`
+
+	// The number of ZPA Application Segments in the group
+	ZPAAppSegmentsCount int `json:"zpaAppSegmentsCount,omitempty"`
 }
 
 type CommonIDName struct {
@@ -102,6 +151,32 @@ type CommonIPs struct {
 	IPEnd   string `json:"ipEnd,omitempty"`
 }
 
+type RegionStatus struct {
+	// The unique ID of the region.
+	ID int `json:"id,omitempty"`
+
+	// The name of the region.
+	Name string `json:"name,omitempty"`
+
+	// The cloud type. The default and mandatory value is AWS. Supported Values: "AWS", "AZURE", "GCP"
+	CloudType string `json:"cloudType,omitempty"`
+
+	// Indicates the operational status of the region.
+	Status bool `json:"status,omitempty"`
+}
+
+type SupportedRegions struct {
+
+	// The unique ID of the supported region.
+	ID int `json:"id,omitempty"`
+
+	// The name of the supported region.
+	Name string `json:"name,omitempty"`
+
+	// The cloud type. The default and mandatory value is AWS. Supported Values: "AWS", "AZURE", "GCP"
+	CloudType string `json:"cloudType,omitempty"`
+}
+
 // GetPageSize returns the page size.
 func GetPageSize() int {
 	return pageSize
@@ -131,7 +206,7 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 	return nil
 }
 
-func ReadPage[T any](ctx context.Context, client *ztw.Client, endpoint string, page int, list *[]T) error {
+func ReadPage[T any](ctx context.Context, client *zscaler.Client, endpoint string, page int, list *[]T) error {
 	if list == nil {
 		return nil
 	}
@@ -159,3 +234,31 @@ func ReadPage[T any](ctx context.Context, client *ztw.Client, endpoint string, p
 	*list = pageItems
 	return nil
 }
+
+func GetSortParams(sortBy SortField, sortOrder SortOrder) string {
+	params := ""
+	if sortBy != "" {
+		params = "sortBy=" + string(sortBy)
+	}
+	if sortOrder != "" {
+		if params != "" {
+			params += "&"
+		}
+		params += "sortOrder=" + string(sortOrder)
+	}
+	return params
+}
+
+type (
+	SortOrder string
+	SortField string
+)
+
+const (
+	ASCSortOrder          SortOrder = "asc"
+	DESCSortOrder                   = "desc"
+	IDSortField           SortField = "id"
+	NameSortField                   = "name"
+	CreationTimeSortField           = "creationTime"
+	ModifiedTimeSortField           = "modifiedTime"
+)

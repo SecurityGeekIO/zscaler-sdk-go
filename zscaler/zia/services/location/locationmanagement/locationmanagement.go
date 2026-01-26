@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	locationsEndpoint   = "/zia/api/v1/locations"
-	subLocationEndpoint = "/sublocations"
-	maxBulkDeleteIDs    = 100
+	locationsEndpoint          = "/zia/api/v1/locations"
+	subLocationEndpoint        = "/sublocations"
+	supportedCountriesEndpoint = "/supportedCountries"
+	maxBulkDeleteIDs           = 100
 )
 
 // Gets locations only, not sub-locations. When a location matches the given search parameter criteria only its parent location is included in the result set, not its sub-locations.
@@ -59,6 +60,18 @@ type Locations struct {
 	// IP ports that are associated with the location
 	Ports []int `json:"ports,omitempty"`
 
+	// Indicates whether defining scopes is allowed for this sublocation. Sublocation scopes are available only for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScopeEnabled bool `json:"subLocScopeEnabled,omitempty"`
+
+	// Defines a scope for the sublocation from the available types to segregate workload traffic from a single sublocation to apply different Cloud Connector and ZIA security policies. This field is only available for the Workload traffic type sublocations whose parent locations are associated with Amazon Web Services (AWS) Cloud Connector groups.
+	SubLocScope string `json:"subLocScope,omitempty"`
+
+	// Specifies values for the selected sublocation scope type
+	SubLocScopeValues []string `json:"subLocScopeValues,omitempty"`
+
+	// Specifies values for the selected sublocation scope type
+	SubLocAccIDs []string `json:"subLocAccIds,omitempty"`
+
 	// VPN User Credentials that are associated with the location.
 	VPNCredentials []VPNCredentials `json:"vpnCredentials,omitempty"`
 
@@ -79,6 +92,7 @@ type Locations struct {
 
 	IOTEnforcePolicySet bool `json:"iotEnforcePolicySet"`
 
+	// If set to true, the surrogateIPEnforcedForKnownBrowsers option is enabled for all authentication methods including cookie-based, Kerberos, Basic, and Digest authentication to leverage the existing IP address-to-user mapping (acquired from surrogate IP) to authenticate users and prevent further authentication challenges for traffic originating from that source IP address.
 	CookiesAndProxy bool `json:"cookiesAndProxy"`
 
 	// This parameter was deprecated and no longer has an effect on SSL policy. It remains supported in the API payload in order to maintain backwards compatibility with existing scripts, but it will be removed in future.
@@ -385,10 +399,30 @@ func BulkDelete(ctx context.Context, service *zscaler.Service, ids []int) (*http
 }
 
 func GetAll(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
+	const pageSize = 1000
+
 	var locations []Locations
-	// We are assuming this location name will be in the firsy 1000 obejcts
-	err := common.ReadAllPages(ctx, service.Client, locationsEndpoint, &locations)
-	return locations, err
+	endpoint := locationsEndpoint
+	if !strings.Contains(endpoint, "?") {
+		endpoint += "?"
+	}
+
+	page := 1
+	for {
+		var pageItems []Locations
+		err := service.Client.Read(ctx, fmt.Sprintf("%s&pageSize=%d&page=%d", endpoint, pageSize, page), &pageItems)
+		if err != nil {
+			return nil, err
+		}
+
+		locations = append(locations, pageItems...)
+		if len(pageItems) < pageSize {
+			break
+		}
+		page++
+	}
+
+	return locations, nil
 }
 
 func GetAllSublocations(ctx context.Context, service *zscaler.Service) ([]Locations, error) {
@@ -432,4 +466,18 @@ func GetLocationOrSublocationByName(ctx context.Context, service *zscaler.Servic
 		return location, nil
 	}
 	return GetSubLocationByName(context.Background(), service, name)
+}
+
+// GetLocationSupportedCountries retrieves the list of countries supported in location configuration.
+// The API returns a list of supported country values (enum).
+// Note: The response shows the current list of supported values. This list might vary if new entries
+// are added or existing values are modified, and the request always returns the latest information available.
+func GetLocationSupportedCountries(ctx context.Context, service *zscaler.Service) ([]string, error) {
+	var countries []string
+	endpoint := locationsEndpoint + supportedCountriesEndpoint
+	err := service.Client.Read(ctx, endpoint, &countries)
+	if err != nil {
+		return nil, err
+	}
+	return countries, nil
 }

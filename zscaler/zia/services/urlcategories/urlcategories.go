@@ -138,7 +138,7 @@ func Get(ctx context.Context, service *zscaler.Service, categoryID string) (*URL
 	return &urlCategory, nil
 }
 
-func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool) (*URLCategory, error) {
+func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, customName string, includeOnlyUrlKeywordCounts, customOnly bool, categoryType string) (*URLCategory, error) {
 	var urlCategory []URLCategory
 	queryParams := url.Values{}
 
@@ -147,6 +147,10 @@ func GetCustomURLCategories(ctx context.Context, service *zscaler.Service, custo
 	}
 	if customOnly {
 		queryParams.Set("customOnly", "true")
+	}
+	// Add type parameter to filter by category type (ALL, URL_CATEGORY, TLD_CATEGORY)
+	if categoryType != "" {
+		queryParams.Set("type", categoryType)
 	}
 
 	err := service.Client.Read(ctx, fmt.Sprintf("%s?%s", urlCategoriesEndpoint, queryParams.Encode()), &urlCategory)
@@ -189,8 +193,15 @@ func CreateURLCategories(ctx context.Context, service *zscaler.Service, category
 	return createdUrlCategory, nil
 }
 
-func UpdateURLCategories(ctx context.Context, service *zscaler.Service, categoryID string, category *URLCategory) (*URLCategory, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID), *category)
+func UpdateURLCategories(ctx context.Context, service *zscaler.Service, categoryID string, category *URLCategory, action string) (*URLCategory, *http.Response, error) {
+	endpoint := fmt.Sprintf("%s/%s", urlCategoriesEndpoint, categoryID)
+
+	// Append action query parameter if provided
+	if action != "" {
+		endpoint = fmt.Sprintf("%s?action=%s", endpoint, url.QueryEscape(action))
+	}
+
+	resp, err := service.Client.UpdateWithPut(ctx, endpoint, *category)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -234,29 +245,6 @@ func GetURLLookup(ctx context.Context, service *zscaler.Service, urls []string) 
 	return lookupResults, nil
 }
 
-func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool) ([]URLCategory, error) {
-	var urlCategories []URLCategory
-
-	// Build the endpoint with optional query parameters
-	endpoint := urlCategoriesEndpoint
-	queryParams := url.Values{}
-
-	if customOnly {
-		queryParams.Set("customOnly", "true")
-	}
-	if includeOnlyUrlKeywordCounts {
-		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
-	}
-
-	// Append query parameters to endpoint if any exist
-	if len(queryParams) > 0 {
-		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
-	}
-
-	err := common.ReadAllPages(ctx, service.Client, endpoint, &urlCategories)
-	return urlCategories, err
-}
-
 func GetAllLite(ctx context.Context, service *zscaler.Service) ([]URLCategory, error) {
 	var urlCategories []URLCategory
 	err := common.ReadAllPages(ctx, service.Client, urlCategoriesEndpoint+"/lite", &urlCategories)
@@ -295,4 +283,35 @@ func UpdateURLReview(ctx context.Context, service *zscaler.Service, reviews []UR
 
 	service.Client.GetLogger().Printf("[DEBUG] successfully updated URL review")
 	return nil
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service, customOnly, includeOnlyUrlKeywordCounts bool, categoryType string) ([]URLCategory, error) {
+	var urlCategories []URLCategory
+
+	// Build the endpoint with optional query parameters
+	endpoint := urlCategoriesEndpoint
+	queryParams := url.Values{}
+
+	if customOnly {
+		queryParams.Set("customOnly", "true")
+	}
+	if includeOnlyUrlKeywordCounts {
+		queryParams.Set("includeOnlyUrlKeywordCounts", "true")
+	}
+	// Add type parameter to filter by category type (ALL, URL_CATEGORY, TLD_CATEGORY)
+	// If categoryType is empty, no type filter is applied (returns predefined + custom URL_CATEGORY)
+	// If categoryType is "ALL", returns predefined + custom categories of all types
+	if categoryType != "" {
+		queryParams.Set("type", categoryType)
+	}
+
+	// Append query parameters to endpoint if any exist
+	if len(queryParams) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+	}
+
+	// Use service.Client.Read directly since the API doesn't support pagination
+	// The API returns all results in a single response
+	err := service.Client.Read(ctx, endpoint, &urlCategories)
+	return urlCategories, err
 }

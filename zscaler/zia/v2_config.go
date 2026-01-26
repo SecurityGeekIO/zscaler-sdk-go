@@ -21,8 +21,8 @@ import (
 const (
 	maxIdleConnections    int = 40
 	requestTimeout        int = 60
-	JSessionIDTimeout         = 30 // minutes.
-	jSessionTimeoutOffset     = 5 * time.Minute
+	JSessionIDTimeout         = 5               // minutes - updated per API provider requirements
+	jSessionTimeoutOffset     = 1 * time.Minute // reduced to 1 minute for 5-minute timeout
 	contentTypeJSON           = "application/json"
 	cookieName                = "JSESSIONID"
 	MaxNumOfRetries           = 100
@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	VERSION      = "3.5.0"
+	VERSION      = "3.7.5"
 	ZIA_USERNAME = "ZIA_USERNAME"
 	ZIA_PASSWORD = "ZIA_PASSWORD"
 	ZIA_API_KEY  = "ZIA_API_KEY"
@@ -61,6 +61,7 @@ type Client struct {
 	password         string
 	cloud            string
 	apiKey           string
+	partnerID        string
 	session          *Session
 	sessionRefreshed time.Time     // Also indicates last usage
 	sessionTimeout   time.Duration // in minutes
@@ -116,6 +117,7 @@ type Configuration struct {
 			ZIAPassword string `yaml:"password" envconfig:"ZIA_PASSWORD"`
 			ZIAApiKey   string `yaml:"apiKey" envconfig:"ZIA_API_KEY"`
 			ZIACloud    string `yaml:"cloud" envconfig:"ZIA_CLOUD"`
+			PartnerID   string `yaml:"partnerId" envconfig:"ZSCALER_PARTNER_ID"`
 			Cache       struct {
 				Enabled               bool          `yaml:"enabled" envconfig:"ZIA_CLIENT_CACHE_ENABLED"`
 				DefaultTtl            time.Duration `yaml:"defaultTtl" envconfig:"ZIA_CLIENT_CACHE_DEFAULT_TTL"`
@@ -259,6 +261,13 @@ func WithZiaAPIKey(apiKey string) ConfigSetter {
 func WithZiaCloud(cloud string) ConfigSetter {
 	return func(c *Configuration) {
 		c.ZIA.Client.ZIACloud = cloud
+	}
+}
+
+// WithPartnerID sets the PartnerID in the Config.
+func WithPartnerID(partnerID string) ConfigSetter {
+	return func(c *Configuration) {
+		c.ZIA.Client.PartnerID = partnerID
 	}
 }
 
