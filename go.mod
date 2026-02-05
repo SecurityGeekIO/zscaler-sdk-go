@@ -16,6 +16,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/olekukonko/tablewriter v1.1.3
 	github.com/stretchr/testify v1.11.1
+	github.com/zscaler/zscaler-sdk-go/v3 v3.8.16
 	golang.org/x/text v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
