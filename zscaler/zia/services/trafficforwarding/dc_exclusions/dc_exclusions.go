@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -25,6 +25,30 @@ type DCExclusions struct {
 }
 
 type Datacenter struct {
+	ID                int     `json:"id,omitempty"`
+	Name              string  `json:"name,omitempty"`
+	Provider          string  `json:"provider,omitempty"`
+	City              string  `json:"city,omitempty"`
+	Timezone          string  `json:"timezone,omitempty"`
+	Lat               int     `json:"lat,omitempty"`
+	Longi             int     `json:"longi,omitempty"`
+	Latitude          float64 `json:"latitude,omitempty"`
+	Longitude         float64 `json:"longitude,omitempty"`
+	GovOnly           bool    `json:"govOnly,omitempty"`
+	ThirdPartyCloud   bool    `json:"thirdPartyCloud,omitempty"`
+	UploadBandwidth   int     `json:"uploadBandwidth,omitempty"`
+	DownloadBandwidth int     `json:"downloadBandwidth,omitempty"`
+	OwnedByCustomer   bool    `json:"ownedByCustomer,omitempty"`
+	ManagedBcp        bool    `json:"managedBcp,omitempty"`
+	DontPublish       bool    `json:"dontPublish,omitempty"`
+	DontProvision     bool    `json:"dontProvision,omitempty"`
+	NotReadyForUse    bool    `json:"notReadyForUse,omitempty"`
+	ForFutureUse      bool    `json:"forFutureUse,omitempty"`
+	RegionalSurcharge bool    `json:"regionalSurcharge,omitempty"`
+	CreateTime        int     `json:"createTime,omitempty"`
+	LastModifiedTime  int     `json:"lastModifiedTime,omitempty"`
+	Virtual           bool    `json:"virtual,omitempty"`
+	// Legacy field for backward compatibility
 	Datacenter string `json:"datacenter,omitempty"`
 }
 
