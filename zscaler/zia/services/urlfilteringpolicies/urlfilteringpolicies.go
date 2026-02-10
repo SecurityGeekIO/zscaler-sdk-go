@@ -297,15 +297,24 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 	return nil, nil
 }
 
-// GetAll returns the all rules.
 func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
-	var urlFilteringPolicies []URLFilteringRule
-	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
-	if err != nil {
-		return nil, err
-	}
-	return urlFilteringPolicies, nil
+	var rules []URLFilteringRule
+
+	// Use service.Client.Read directly since the API doesn't support pagination
+	// The API returns all results in a single response
+	err := service.Client.Read(ctx, urlFilteringPoliciesEndpoint, &rules)
+	return rules, err
 }
+
+// GetAll returns the all rules.
+// func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
+// 	var urlFilteringPolicies []URLFilteringRule
+// 	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &urlFilteringPolicies)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return urlFilteringPolicies, nil
+// }
 
 func GetUrlAndAppSettings(ctx context.Context, service *zscaler.Service) (*URLAdvancedPolicySettings, error) {
 	var appSettings URLAdvancedPolicySettings

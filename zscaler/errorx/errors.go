@@ -181,8 +181,10 @@ func IsSessionInvalidError(res *http.Response) bool {
 
 // IsEditLockError checks if the response indicates an edit lock conflict error
 // that should be retried. This occurs when another operation is in progress.
+// The API may return 409 (Conflict) or 412 (Precondition Failed) with messages
+// like "Failed during enter Org barrier" when the org is temporarily locked.
 func IsEditLockError(res *http.Response) bool {
-	if res.StatusCode != http.StatusConflict {
+	if res.StatusCode != http.StatusConflict && res.StatusCode != http.StatusPreconditionFailed {
 		return false
 	}
 
