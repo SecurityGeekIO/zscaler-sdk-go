@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/forwarding_gateways/dns_forwarding_gateway"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/forwarding_gateways/zia_forwarding_gateway"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -453,3 +453,4 @@ func TestForwardingGateways_ResponseParsing(t *testing.T) {
 		assert.Len(t, gateways, 2)
 	})
 }
+

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 // =====================================================
@@ -281,3 +281,4 @@ func TestConfiguration_AddDefaultHeader(t *testing.T) {
 		assert.Equal(t, "new-value", cfg.DefaultHeader["X-Header"])
 	})
 }
+

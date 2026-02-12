@@ -5,10 +5,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_link"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_link"
 )
 
 func TestUserPortalLink_Get_SDK(t *testing.T) {

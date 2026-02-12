@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/common"
 )
 
 func TestZTWCommon_Structure(t *testing.T) {
@@ -195,3 +195,4 @@ func TestZTWCommon_SortParams(t *testing.T) {
 		assert.Equal(t, 1000, common.GetPageSize())
 	})
 }
+

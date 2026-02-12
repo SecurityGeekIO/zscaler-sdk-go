@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	testcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/groups"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGroups_Structure(t *testing.T) {
@@ -453,3 +453,4 @@ func TestGroups_GetByName_SDK(t *testing.T) {
 	require.NotNil(t, results)
 	assert.Len(t, results, 2) // Should match "Engineering" and "Engineering Team"
 }
+

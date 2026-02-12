@@ -5,9 +5,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment_share"
-	"github.com/stretchr/testify/require"
 )
 
 func TestApplicationSegmentShare_Share_SDK(t *testing.T) {

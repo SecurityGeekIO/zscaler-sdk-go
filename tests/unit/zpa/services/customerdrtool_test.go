@@ -5,10 +5,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/customer_dr_tool"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/customer_dr_tool"
 )
 
 func TestCustomerDRTool_GetCustomerDRTool_SDK(t *testing.T) {

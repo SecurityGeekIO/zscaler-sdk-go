@@ -15,12 +15,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (

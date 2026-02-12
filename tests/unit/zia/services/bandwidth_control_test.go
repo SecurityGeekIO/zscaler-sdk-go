@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/bandwidth_control/bandwidth_classes"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/bandwidth_control/bandwidth_control_rules"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -505,3 +505,4 @@ func TestBandwidthControl_ResponseParsing(t *testing.T) {
 		assert.True(t, rules[2].DefaultRule)
 	})
 }
+

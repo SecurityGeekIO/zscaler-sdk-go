@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/bacertificate"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestBaApplicationSegment(t *testing.T) {

@@ -106,15 +106,34 @@ func Create(ctx context.Context, service *zscaler.Service, dc *DCExclusions) (*D
 	return nil, nil, errors.New("api response could not be parsed as dc exclusion")
 }
 
-func Update(ctx context.Context, service *zscaler.Service, dcID int, dcExclusions *DCExclusions) (*DCExclusions, *http.Response, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", dcExclusionsEndpoint, dcID), *dcExclusions)
+// Update sends a PUT to the base dcExclusions endpoint with an array payload. The API expects
+// a JSON array with one object containing: description, dcid, startTime, endTime.
+func Update(ctx context.Context, service *zscaler.Service, dcExclusions *DCExclusions) (*DCExclusions, *http.Response, error) {
+	payload := []DCExclusions{{
+		DcID:        dcExclusions.DcID,
+		StartTime:   dcExclusions.StartTime,
+		EndTime:     dcExclusions.EndTime,
+		Description: dcExclusions.Description,
+	}}
+	respBody, err := service.Client.UpdateWithSlicePayload(ctx, dcExclusionsEndpoint, payload)
 	if err != nil {
 		return nil, nil, err
 	}
-	updatedExclusions, _ := resp.(*DCExclusions)
-
-	service.Client.GetLogger().Printf("[DEBUG]returning updates dc exclusion from update: %d", updatedExclusions.DcID)
-	return updatedExclusions, nil, nil
+	if len(respBody) == 0 {
+		return dcExclusions, nil, nil
+	}
+	// Response may be array or single object
+	var updated DCExclusions
+	if err := json.Unmarshal(respBody, &updated); err == nil && updated.DcID != 0 {
+		service.Client.GetLogger().Printf("[DEBUG]returning updated dc exclusion from update: %d", updated.DcID)
+		return &updated, nil, nil
+	}
+	var list []DCExclusions
+	if err := json.Unmarshal(respBody, &list); err == nil && len(list) > 0 {
+		service.Client.GetLogger().Printf("[DEBUG]returning updated dc exclusion from update: %d", list[0].DcID)
+		return &list[0], nil, nil
+	}
+	return nil, nil, errors.New("api response could not be parsed as dc exclusion")
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, dcID int) (*http.Response, error) {

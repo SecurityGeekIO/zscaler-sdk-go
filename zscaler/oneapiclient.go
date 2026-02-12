@@ -16,6 +16,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
@@ -24,10 +28,6 @@ import (
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	ztw "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
-	"github.com/go-jose/go-jose/v3"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -537,9 +537,12 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
+	if !c.Zscaler.Client.Cache.Enabled {
+		return cache.NewNopCache()
+	}
 	cche, err := cache.NewCache(time.Duration(c.Zscaler.Client.Cache.DefaultTtl), time.Duration(c.Zscaler.Client.Cache.DefaultTti), int(c.Zscaler.Client.Cache.DefaultCacheMaxSizeMB))
 	if err != nil {
-		cche = cache.NewNopCache()
+		return cache.NewNopCache()
 	}
 	return cche
 }

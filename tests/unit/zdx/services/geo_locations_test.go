@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 // =====================================================
@@ -195,3 +195,4 @@ func TestGeoLocations_ResponseParsing(t *testing.T) {
 		assert.Len(t, geoLocs[0].Children, 4)
 	})
 }
+

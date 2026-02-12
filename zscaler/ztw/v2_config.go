@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -239,9 +239,12 @@ func WithCacheManager(cacheManager cache.Cache) ConfigSetter {
 }
 
 func newCache(c *Configuration) cache.Cache {
+	if !c.ZTW.Client.Cache.Enabled {
+		return cache.NewNopCache()
+	}
 	cche, err := cache.NewCache(time.Duration(c.ZTW.Client.Cache.DefaultTtl), time.Duration(c.ZTW.Client.Cache.DefaultTti), int(c.ZTW.Client.Cache.DefaultCacheMaxSizeMB))
 	if err != nil {
-		cche = cache.NewNopCache()
+		return cache.NewNopCache()
 	}
 	return cche
 }

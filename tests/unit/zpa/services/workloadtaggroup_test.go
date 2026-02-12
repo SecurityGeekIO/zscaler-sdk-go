@@ -5,11 +5,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	zpacommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/workload_tag_group"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWorkloadTagGroup_GetAll_SDK(t *testing.T) {

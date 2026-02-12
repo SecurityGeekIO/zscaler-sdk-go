@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/forwarding_profile"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/forwarding_profile"
 )
 
 // =====================================================
@@ -89,15 +89,15 @@ func TestForwardingProfile_Structure(t *testing.T) {
 
 	t.Run("ForwardingProfile JSON marshaling", func(t *testing.T) {
 		profile := forwarding_profile.ForwardingProfile{
-			ID:                     123,
-			Name:                   "Enterprise Profile",
-			Active:                 "true",
-			ConditionType:          1,
-			DnsServers:             "8.8.8.8",
-			DnsSearchDomains:       "corp.example.com",
-			EnableLWFDriver:        "true",
+			ID:                   123,
+			Name:                 "Enterprise Profile",
+			Active:               "true",
+			ConditionType:        1,
+			DnsServers:           "8.8.8.8",
+			DnsSearchDomains:     "corp.example.com",
+			EnableLWFDriver:      "true",
 			EvaluateTrustedNetwork: 1,
-			TrustedGateways:        "192.168.1.1",
+			TrustedGateways:      "192.168.1.1",
 		}
 
 		data, err := json.Marshal(profile)

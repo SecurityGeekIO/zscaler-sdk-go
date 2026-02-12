@@ -15,11 +15,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/google/uuid"
-	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 

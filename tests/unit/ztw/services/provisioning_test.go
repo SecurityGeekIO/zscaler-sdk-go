@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/provisioning/api_keys"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/provisioning/api_keys"
 )
 
 // =====================================================
@@ -241,3 +241,4 @@ func TestProvisioning_ResponseParsing(t *testing.T) {
 		assert.Contains(t, key.PartnerUrl, "partner-api")
 	})
 }
+

@@ -8,11 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 )
+
 
 // =============================================================================
 // SegmentGroup Structure Tests
@@ -412,3 +413,4 @@ func TestSegmentGroup_MicroTenant(t *testing.T) {
 		assert.Equal(t, "Test Microtenant", sg.MicroTenantName)
 	})
 }
+

@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
+	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
 // =====================================================
@@ -285,3 +285,4 @@ func TestApplications_ResponseParsing(t *testing.T) {
 		assert.Equal(t, 80, app.Stats.NumPoor)
 	})
 }
+

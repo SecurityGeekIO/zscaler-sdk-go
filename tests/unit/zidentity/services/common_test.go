@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 )
 
 func TestCommon_Structure(t *testing.T) {
@@ -241,3 +241,4 @@ func TestCommon_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "/admin/api/v1/users", endpoint)
 	})
 }
+

@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/samlattribute"
 )
 
 func TestSamlAttribute_Get_SDK(t *testing.T) {
@@ -20,11 +20,11 @@ func TestSamlAttribute_Get_SDK(t *testing.T) {
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/samlAttribute/" + attrID
 
 	server.On("GET", path, common.SuccessResponse(samlattribute.SamlAttribute{
-		ID:            attrID,
-		Name:          "Test SAML Attribute",
-		IdpName:       "Test IDP",
-		SamlName:      "email",
-		UserAttribute: true,
+		ID:               attrID,
+		Name:             "Test SAML Attribute",
+		IdpName:          "Test IDP",
+		SamlName:         "email",
+		UserAttribute:    true,
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)

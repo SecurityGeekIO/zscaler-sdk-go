@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
 )
 
 // =============================================================================
@@ -404,3 +404,4 @@ func TestZPAEnvironmentVariableConstants(t *testing.T) {
 		assert.Equal(t, "ZPA_CLOUD", zpa.ZPA_CLOUD)
 	})
 }
+

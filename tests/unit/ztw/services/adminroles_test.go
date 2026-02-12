@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/adminuserrolemgmt/adminroles"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/adminuserrolemgmt/adminroles"
 )
 
 // =====================================================
@@ -350,3 +350,4 @@ func TestAdminRoles_ResponseParsing(t *testing.T) {
 		assert.True(t, roles[2].IsAuditor)
 	})
 }
+

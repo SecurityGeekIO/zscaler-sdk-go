@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	ziacommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/vzen_clusters"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/vzen_nodes"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -495,3 +495,4 @@ func TestVZEN_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "STANDALONE", nodes[1].DeploymentMode)
 	})
 }
+

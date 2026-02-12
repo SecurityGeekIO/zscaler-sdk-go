@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =============================================================================
@@ -473,3 +473,4 @@ func TestZPAClient_RateLimiter(t *testing.T) {
 		assert.Equal(t, 10*time.Second, cfg.ZPA.Client.RateLimit.RetryWaitMax)
 	})
 }
+

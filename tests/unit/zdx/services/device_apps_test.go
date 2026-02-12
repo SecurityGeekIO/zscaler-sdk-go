@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -139,3 +139,4 @@ func TestDeviceApps_ResponseParsing(t *testing.T) {
 		assert.Equal(t, float32(72.5), app.Score)
 	})
 }
+

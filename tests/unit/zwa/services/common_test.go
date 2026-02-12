@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/common"
 )
 
 func TestZWACommon_Structure(t *testing.T) {
@@ -15,20 +15,20 @@ func TestZWACommon_Structure(t *testing.T) {
 
 	t.Run("IncidentDetails JSON marshaling", func(t *testing.T) {
 		incident := common.IncidentDetails{
-			InternalID:       "inc-12345",
-			IntegrationType:  "ZIA",
-			TransactionID:    "txn-67890",
-			SourceType:       "EMAIL",
-			SourceSubType:    "OUTBOUND",
-			SourceActions:    []string{"BLOCK", "QUARANTINE"},
-			Severity:         "HIGH",
-			Priority:         "P1",
-			MatchCount:       5,
-			CreatedAt:        "2024-01-15T10:30:00Z",
-			LastUpdatedAt:    "2024-01-15T11:00:00Z",
-			Status:           "OPEN",
-			Resolution:       "",
-			IncidentGroupIDs: []int{1, 2, 3},
+			InternalID:            "inc-12345",
+			IntegrationType:       "ZIA",
+			TransactionID:         "txn-67890",
+			SourceType:            "EMAIL",
+			SourceSubType:         "OUTBOUND",
+			SourceActions:         []string{"BLOCK", "QUARANTINE"},
+			Severity:              "HIGH",
+			Priority:              "P1",
+			MatchCount:            5,
+			CreatedAt:             "2024-01-15T10:30:00Z",
+			LastUpdatedAt:         "2024-01-15T11:00:00Z",
+			Status:                "OPEN",
+			Resolution:            "",
+			IncidentGroupIDs:      []int{1, 2, 3},
 		}
 
 		data, err := json.Marshal(incident)
@@ -519,3 +519,4 @@ func TestZWACommon_ComplexParsing(t *testing.T) {
 		assert.Len(t, incident.IncidentGroupIDs, 3)
 	})
 }
+

@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/intermediatecacertificates"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/intermediatecacertificates"
 )
 
 // =====================================================
@@ -579,3 +579,4 @@ func TestIntermediateCACertificates_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "CLOUD_HSM", certs[2].Type)
 	})
 }
+

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 func TestZIACommon_Structure(t *testing.T) {
@@ -202,3 +202,4 @@ func TestZIACommon_SortParams(t *testing.T) {
 		assert.Equal(t, 1000, pageSize)
 	})
 }
+

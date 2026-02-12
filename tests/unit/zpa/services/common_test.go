@@ -4,8 +4,8 @@ package unit
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 func TestCommon_RemoveCloudSuffix(t *testing.T) {
@@ -178,3 +178,4 @@ func TestCommon_Pagination_Structure(t *testing.T) {
 		assert.Equal(t, "DESC", pagination.SortOrder)
 	})
 }
+

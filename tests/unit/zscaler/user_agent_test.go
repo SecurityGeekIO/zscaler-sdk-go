@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestUserAgent_NewUserAgent(t *testing.T) {
@@ -106,3 +106,4 @@ func TestUserAgent_Format(t *testing.T) {
 		assert.Contains(t, parts[2], "/")
 	})
 }
+

@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/timewindow"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/time_intervals"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -331,3 +331,4 @@ func TestTimeIntervals_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "Afternoon", intervals[1].Name)
 	})
 }
+

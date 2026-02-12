@@ -18,57 +18,57 @@ const (
 
 type Extranet struct {
 	// The unique identifier for the extranet
-	ID int `json:"id"`
+	ID int `json:"id,omitempty"`
 
 	// The name of the extranet
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The description of the extranet
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 
 	// Information about the DNS servers specified for the extranet
-	ExtranetDNSList []ExtranetDNSList `json:"extranetDNSList"`
+	ExtranetDNSList []ExtranetDNSList `json:"extranetDNSList,omitempty"`
 
 	// Information about the traffic selectors specified for the extranet (API returns an array).
-	ExtranetIpPoolList []ExtranetPoolList `json:"extranetIpPoolList"`
+	ExtranetIpPoolList []ExtranetPoolList `json:"extranetIpPoolList,omitempty"`
 
 	// The Unix timestamp when the extranet was created
-	CreatedAt int `json:"createdAt"`
+	CreatedAt int `json:"createdAt,omitempty"`
 
 	// The Unix timestamp when the extranet was last modified
-	ModifiedAt int `json:"modifiedAt"`
+	ModifiedAt int `json:"modifiedAt,omitempty"`
 }
 
 type ExtranetDNSList struct {
 	// The ID generated for the DNS server configuration
-	ID int `json:"id"`
+	ID int `json:"id,omitempty"`
 
 	// The name of the DNS server
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The IP address of the primary DNS server
-	PrimaryDNSServer string `json:"primaryDNSServer"`
+	PrimaryDNSServer string `json:"primaryDNSServer,omitempty"`
 
 	// The IP address of the secondary DNS server
-	SecondaryDNSServer string `json:"secondaryDNSServer"`
+	SecondaryDNSServer string `json:"secondaryDNSServer,omitempty"`
 
 	// A Boolean value indicating that the DNS servers specified in the extranet are the designated default servers
-	UseAsDefault bool `json:"useAsDefault"`
+	UseAsDefault bool `json:"useAsDefault,omitempty"`
 }
 
 type ExtranetPoolList struct {
 	// The ID generated for the DNS server configuration
-	ID int `json:"id"`
+	ID int `json:"id,omitempty"`
 
 	// The name of the DNS server
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	IPStart string `json:"ipStart"`
+	IPStart string `json:"ipStart,omitempty"`
 
-	IPEnd string `json:"ipEnd"`
+	IPEnd string `json:"ipEnd,omitempty"`
 
 	// A Boolean value indicating that the DNS servers specified in the extranet are the designated default servers
-	UseAsDefault bool `json:"useAsDefault"`
+	UseAsDefault bool `json:"useAsDefault,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, extranetID int) (*Extranet, error) {
@@ -121,7 +121,8 @@ func Create(ctx context.Context, service *zscaler.Service, extranet *Extranet) (
 }
 
 func Update(ctx context.Context, service *zscaler.Service, extranetID int, extranet *Extranet) (*Extranet, error) {
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", extranetEndpoint, extranetID), *extranet)
+	extranet.ID = extranetID
+	resp, err := service.Client.UpdateWithPut(ctx, extranetEndpoint, *extranet)
 	if err != nil {
 		return nil, err
 	}

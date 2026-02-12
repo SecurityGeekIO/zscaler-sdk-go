@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/nat_control_policies"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/nat_control_policies"
 )
 
 // =====================================================
@@ -271,3 +271,4 @@ func TestNatControlPolicies_ResponseParsing(t *testing.T) {
 		assert.True(t, policies[2].DefaultRule)
 	})
 }
+

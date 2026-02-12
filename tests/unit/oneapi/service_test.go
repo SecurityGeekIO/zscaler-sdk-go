@@ -4,8 +4,8 @@ package oneapi
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestService_Structure(t *testing.T) {
@@ -37,3 +37,4 @@ func TestLegacyClient_Structure(t *testing.T) {
 		assert.Nil(t, legacy.ZtwClient)
 	})
 }
+

@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 )
 
 // =====================================================
@@ -358,3 +358,4 @@ func TestDeepTrace_ResponseParsing(t *testing.T) {
 		}
 	})
 }
+

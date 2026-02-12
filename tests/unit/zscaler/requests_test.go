@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 )
 
 // =====================================================
@@ -745,3 +745,4 @@ func TestOneAPIConfiguration(t *testing.T) {
 		assert.Nil(t, mtService.MicroTenantID())
 	})
 }
+

@@ -4,8 +4,8 @@ package zscaler
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestUtils_Difference(t *testing.T) {
@@ -99,3 +99,4 @@ func TestUtils_Difference(t *testing.T) {
 		assert.Empty(t, result)
 	})
 }
+

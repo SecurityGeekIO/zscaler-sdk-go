@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -244,3 +244,4 @@ func TestCommon_SafeCastToInt(t *testing.T) {
 		assert.Equal(t, 0, result)
 	})
 }
+

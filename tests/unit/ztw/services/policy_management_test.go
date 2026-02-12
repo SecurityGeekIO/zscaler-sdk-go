@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/forwarding_rules"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/traffic_dns_rules"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/policy_management/traffic_log_rules"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -470,3 +470,4 @@ func TestPolicyManagement_ResponseParsing(t *testing.T) {
 		assert.Equal(t, 42, response.Count)
 	})
 }
+

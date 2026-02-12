@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 )
 
 func TestGroups(t *testing.T) {

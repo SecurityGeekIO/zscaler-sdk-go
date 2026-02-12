@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	testcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/user_entitlement"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestUserEntitlement_Structure(t *testing.T) {
@@ -308,3 +308,4 @@ func TestUserEntitlement_GetServiceEntitlement_SDK(t *testing.T) {
 	assert.Equal(t, "ZIA", results[1].ServiceName)
 	assert.Equal(t, "ZDX", results[2].ServiceName)
 }
+

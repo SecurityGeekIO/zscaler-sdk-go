@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
-	"github.com/olekukonko/tablewriter"
 )
 
 func main() {

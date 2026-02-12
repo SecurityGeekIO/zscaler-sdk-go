@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 func TestDevicesFilters_Structure(t *testing.T) {
@@ -106,3 +106,4 @@ func TestDevicesFilters_Structure(t *testing.T) {
 		assert.NotEmpty(t, data)
 	})
 }
+

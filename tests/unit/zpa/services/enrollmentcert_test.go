@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/enrollmentcert"
 )
 
 func TestEnrollmentCert_Get_SDK(t *testing.T) {
@@ -20,9 +20,9 @@ func TestEnrollmentCert_Get_SDK(t *testing.T) {
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/enrollmentCert/" + certID
 
 	server.On("GET", path, common.SuccessResponse(enrollmentcert.EnrollmentCert{
-		ID:           certID,
-		Name:         "Test Certificate",
-		Description:  "Test description",
+		ID:          certID,
+		Name:        "Test Certificate",
+		Description: "Test description",
 		AllowSigning: true,
 	}))
 

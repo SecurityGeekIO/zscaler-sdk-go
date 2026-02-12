@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/workload_groups"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/workload_groups"
 )
 
 // =====================================================
@@ -275,3 +275,4 @@ func TestWorkloadGroups_ResponseParsing(t *testing.T) {
 		assert.Len(t, group.WorkloadTagExpression.ExpressionContainers[1].TagContainer.Tags, 2)
 	})
 }
+

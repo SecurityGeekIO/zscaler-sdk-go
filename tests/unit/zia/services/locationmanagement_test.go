@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
 )
 
 // =====================================================
@@ -651,3 +651,4 @@ func TestLocations_Sublocation(t *testing.T) {
 		assert.False(t, subloc.Other6SubLocation)
 	})
 }
+

@@ -1,5 +1,54 @@
 # Changelog
 
+# 3.8.19 (February 11, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #409](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/409) - Fixed `bigcache` initialization to use `NopCache` when caching is disabled, preventing `unaligned 64-bit atomic operation` panic on 32-bit platforms (windows/386). Applied to ZTW, ZIA, ZPA, and OneAPI clients.
+
+# 3.8.18 (February 10, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #408](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/408) - Fixed `GET` function in ZIA `urlfilteringpolicies`.
+
+# 3.8.17 (February 9, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #406](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/406) - Added new attributes to ZIA:
+  * `ipscontrolpolicies`: `eunEnabled`, and `eunTemplateId`
+  * `firewalldnscontrolpolicies`: `isWebEunEnabled` and `defaultDnsRuleNameUsed`
+  * `dlp_web_rules`: `eunTemplateId`
+
+- [PR #406](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/406) - Added new function `GetByName` to ZIA `sub_clouds` resource
+
+- [PR #406](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/406) - Added new attributes to all ZPA Application Segments:
+  * `policyStyle` to enable `FQDN-to-IP Policy Evaluation`
+
+### Bug Fixes
+
+- [PR #406](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/406) - Fixed `Update` function in ZIA `dc_exclusion`.
+- [PR #406](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/406) - Added `omitempty` to all attributes in ZIA `extranet`
+
+# 3.8.15 (January 29, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #403](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/403) - Added new attributes `url_type`, `regex_patterns`,  and `regex_patterns_retaining_parent_category` to `zia_url_categories` resource to specify whether the category uses exact URLs or regex patterns. Supported values are `EXACT` and `REGEX`. See [Zscaler Release Notes](https://help.zscaler.com/zia/release-upgrade-summary-2026) for details. To enable this feature, contact Zscaler Support.
+
 # 3.8.14 (January 21, 2026)
 
 ## Notes

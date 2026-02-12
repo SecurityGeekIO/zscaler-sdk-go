@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	testcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/ecgroup"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -154,15 +154,15 @@ func TestEcGroup_Structure(t *testing.T) {
 
 	t.Run("EcGroup JSON marshaling", func(t *testing.T) {
 		group := ecgroup.EcGroup{
-			ID:                  12345,
-			Name:                "AWS-US-East-EC-Group",
-			Description:         "Cloud Connector group for US East region",
-			DeployType:          "AWS",
-			Status:              []string{"ACTIVE", "PROVISIONED"},
-			Platform:            "AWS",
-			AWSAvailabilityZone: "us-east-1a",
-			MaxEcCount:          4,
-			TunnelMode:          "GRE",
+			ID:                    12345,
+			Name:                  "AWS-US-East-EC-Group",
+			Description:           "Cloud Connector group for US East region",
+			DeployType:            "AWS",
+			Status:                []string{"ACTIVE", "PROVISIONED"},
+			Platform:              "AWS",
+			AWSAvailabilityZone:   "us-east-1a",
+			MaxEcCount:            4,
+			TunnelMode:            "GRE",
 			Location: &common.CommonIDNameExternalID{
 				ID:   100,
 				Name: "US-East",
@@ -264,3 +264,4 @@ func TestEcGroup_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "GCP", groups[2].Platform)
 	})
 }
+

@@ -5,10 +5,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/oauth2_user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/oauth2_user"
 )
 
 func TestOAuth2User_VerifyUserCodes_SDK(t *testing.T) {
@@ -18,16 +18,19 @@ func TestOAuth2User_VerifyUserCodes_SDK(t *testing.T) {
 	associationType := "CONNECTOR_GRP"
 	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/" + associationType + "/usercodes"
 
-	server.On("POST", path, common.SuccessResponse(oauth2_user.OauthUser{
+	server.On("POST", path, common.SuccessResponse(oauth2_user.UserCodeResponse{
 		TenantID:     "tenant-123",
 		ZcomponentID: "zcomp-456",
-		UserCodes:    []string{"code1", "code2"},
+		UserCodes: []oauth2_user.UserCodeInfo{
+			{UserCode: "code1", Status: "VALID"},
+			{UserCode: "code2", Status: "VALID"},
+		},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
 	require.NoError(t, err)
 
-	oauthUser := &oauth2_user.OauthUser{
+	oauthUser := &oauth2_user.UserCodeRequest{
 		UserCodes: []string{"code1", "code2"},
 	}
 

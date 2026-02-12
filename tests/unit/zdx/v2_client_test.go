@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
 )
 
 // =====================================================
@@ -365,3 +365,4 @@ func TestAuthToken_Structure(t *testing.T) {
 		assert.Equal(t, token.ExpiresIn, parsed.ExpiresIn)
 	})
 }
+

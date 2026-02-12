@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/locationtemplate"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/locationtemplate"
 )
 
 func TestLocationTemplate_Structure(t *testing.T) {
@@ -176,3 +176,4 @@ func TestLocationTemplate_ResponseParsing(t *testing.T) {
 		assert.True(t, details.SurrogateIP)
 	})
 }
+

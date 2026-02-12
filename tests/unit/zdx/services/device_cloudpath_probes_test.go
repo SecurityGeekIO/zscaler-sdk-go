@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -306,3 +306,4 @@ func TestDeviceCloudPathProbes_ResponseParsing(t *testing.T) {
 		assert.Len(t, cloudPaths[0].CloudPath[0].Hops, 3)
 	})
 }
+

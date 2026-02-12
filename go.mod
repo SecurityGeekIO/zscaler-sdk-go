@@ -1,8 +1,6 @@
 module github.com/SecurityGeekIO/zscaler-sdk-go/v3
 
-go 1.24.0
-
-toolchain go1.24.7
+go 1.24.7
 
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
@@ -16,8 +14,10 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/olekukonko/tablewriter v1.1.3
 	github.com/stretchr/testify v1.11.1
-	github.com/zscaler/zscaler-sdk-go/v3 v3.8.16
-	golang.org/x/text v0.33.0
+	github.com/zscaler/zscaler-sdk-go/v2 v2.732.0
+	github.com/zscaler/zscaler-sdk-go/v3 v3.8.19
+	golang.org/x/text v0.34.0
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.6
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -41,6 +41,7 @@ require (
 	github.com/olekukonko/errors v1.1.0 // indirect
 	github.com/olekukonko/ll v0.1.4-0.20260115111900-9e59c2286df0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 )

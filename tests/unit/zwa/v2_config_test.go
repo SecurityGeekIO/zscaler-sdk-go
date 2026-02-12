@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa"
 	"github.com/stretchr/testify/assert"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa"
 )
 
 func TestZWA_ConfigSetter_Functions(t *testing.T) {
@@ -405,3 +405,4 @@ func TestZWA_Client_NilConfiguration(t *testing.T) {
 		assert.Contains(t, err.Error(), "configuration cannot be nil")
 	})
 }
+

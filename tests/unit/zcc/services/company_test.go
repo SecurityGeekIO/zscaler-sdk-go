@@ -5,9 +5,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/company"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -32,3 +32,4 @@ func TestCompany_GetInfo_SDK(t *testing.T) {
 	// The key point is that we're exercising the SDK code path
 	_ = err
 }
+

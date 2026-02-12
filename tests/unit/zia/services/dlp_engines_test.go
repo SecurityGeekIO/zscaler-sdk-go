@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 )
 
 // =====================================================
@@ -24,11 +24,11 @@ func TestDLPEngines_Get_SDK(t *testing.T) {
 	path := "/zia/api/v1/dlpEngines/12345"
 
 	server.On("GET", path, common.SuccessResponse(dlp_engines.DLPEngines{
-		ID:               engineID,
-		Name:             "Custom DLP Engine",
-		Description:      "Custom engine for PII detection",
+		ID:              engineID,
+		Name:            "Custom DLP Engine",
+		Description:     "Custom engine for PII detection",
 		EngineExpression: "((D63.S > 1))",
-		CustomDlpEngine:  true,
+		CustomDlpEngine: true,
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
@@ -263,3 +263,4 @@ func TestDLPEngines_Structure(t *testing.T) {
 		assert.False(t, engine.CustomDlpEngine)
 	})
 }
+

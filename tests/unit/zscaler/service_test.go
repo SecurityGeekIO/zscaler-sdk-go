@@ -4,9 +4,9 @@ package zscaler
 import (
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 )
 
 func TestService_Constants(t *testing.T) {
@@ -174,3 +174,4 @@ func TestService_NewZIAScimService(t *testing.T) {
 		assert.Nil(t, svc)
 	})
 }
+

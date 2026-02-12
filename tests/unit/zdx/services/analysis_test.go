@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/analysis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/analysis"
 )
 
 // =====================================================
@@ -269,3 +269,4 @@ func TestAnalysis_ResponseParsing(t *testing.T) {
 		assert.Equal(t, 1699950000, result.Result.Times[5])
 	})
 }
+

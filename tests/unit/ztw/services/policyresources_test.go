@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/policyresources/ipdestinationgroups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/policyresources/networkservices"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -466,3 +466,4 @@ func TestPolicyResources_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "CUSTOM", services[2].Type)
 	})
 }
+

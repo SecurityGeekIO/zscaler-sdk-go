@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/cloudappcontrol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/cloudappcontrol"
 )
 
 // =====================================================
@@ -198,19 +198,19 @@ func TestCloudAppControl_Structure(t *testing.T) {
 
 	t.Run("WebApplicationRules JSON marshaling", func(t *testing.T) {
 		rule := cloudappcontrol.WebApplicationRules{
-			ID:                12345,
-			Name:              "Block Cloud Storage",
-			Description:       "Block cloud storage applications",
-			Actions:           []string{"BLOCK"},
-			State:             "ENABLED",
-			Rank:              7,
-			Type:              "CLOUD_STORAGE",
-			Order:             1,
-			TimeQuota:         60,
-			SizeQuota:         1024,
-			CascadingEnabled:  true,
-			Predefined:        false,
-			Applications:      []string{"GOOGLE_DRIVE", "DROPBOX", "BOX"},
+			ID:               12345,
+			Name:             "Block Cloud Storage",
+			Description:      "Block cloud storage applications",
+			Actions:          []string{"BLOCK"},
+			State:            "ENABLED",
+			Rank:             7,
+			Type:             "CLOUD_STORAGE",
+			Order:            1,
+			TimeQuota:        60,
+			SizeQuota:        1024,
+			CascadingEnabled: true,
+			Predefined:       false,
+			Applications:     []string{"GOOGLE_DRIVE", "DROPBOX", "BOX"},
 			DeviceTrustLevels: []string{"HIGH_TRUST", "MEDIUM_TRUST"},
 		}
 
@@ -358,3 +358,4 @@ func TestCloudAppControl_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "Cloud Storage", mapping["CLOUD_STORAGE"])
 	})
 }
+

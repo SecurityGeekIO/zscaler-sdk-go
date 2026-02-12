@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
 )
 
 // =====================================================
@@ -332,3 +332,4 @@ func TestFirewallFilteringRules_ResponseParsing(t *testing.T) {
 		assert.Len(t, rule.ZPAAppSegments, 1)
 	})
 }
+

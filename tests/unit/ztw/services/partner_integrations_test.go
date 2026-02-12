@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/account_groups"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/public_cloud_info"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestPartnerIntegrations_Structure(t *testing.T) {
@@ -189,3 +189,4 @@ func TestPartnerIntegrations_ResponseParsing(t *testing.T) {
 		assert.Len(t, infos[0].RegionStatus, 1)
 	})
 }
+

@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/secrets/getotp"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/secrets/getpasswords"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // =====================================================
@@ -271,3 +271,4 @@ func TestSecrets_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "secret-logout", passwords.LogoutPass)
 	})
 }
+

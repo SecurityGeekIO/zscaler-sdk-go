@@ -5,9 +5,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment_move"
-	"github.com/stretchr/testify/require"
 )
 
 func TestApplicationSegmentMove_Move_SDK(t *testing.T) {
