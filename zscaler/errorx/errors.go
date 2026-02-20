@@ -147,6 +147,23 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 	return false
 }
 
+// IsLimitExceeded checks if the response indicates a tenant resource limit has been
+// reached (e.g., "Maximum 100 static IPs are allowed. Limit has exceeded.").
+// The API returns HTTP 403 with code "LIMIT_EXCEEDED" when the tenant's maximum
+// capacity for a given resource type is exhausted. This error is non-retryable.
+func (r *ErrorResponse) IsLimitExceeded() bool {
+	if r == nil || r.Response == nil {
+		return false
+	}
+	if r.Response.StatusCode == http.StatusForbidden && r.Parsed != nil {
+		code, ok := r.Parsed.Code.(string)
+		if ok && code == "LIMIT_EXCEEDED" {
+			return true
+		}
+	}
+	return false
+}
+
 // IsSessionInvalidError checks if the response indicates a session invalidation error
 // that requires token refresh. Only checks for known error messages returned by the API.
 func IsSessionInvalidError(res *http.Response) bool {
@@ -181,8 +198,10 @@ func IsSessionInvalidError(res *http.Response) bool {
 
 // IsEditLockError checks if the response indicates an edit lock conflict error
 // that should be retried. This occurs when another operation is in progress.
+// The API may return either 409 Conflict or 412 Precondition Failed for these
+// transient "org barrier" / edit lock conditions.
 func IsEditLockError(res *http.Response) bool {
-	if res.StatusCode != http.StatusConflict {
+	if res.StatusCode != http.StatusConflict && res.StatusCode != http.StatusPreconditionFailed {
 		return false
 	}
 
