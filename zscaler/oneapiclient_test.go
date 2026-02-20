@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUserAgent(t *testing.T) {

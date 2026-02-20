@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 func NewClient(config *Configuration) (*Client, error) {
@@ -57,13 +57,10 @@ func NewClient(config *Configuration) (*Client, error) {
 		return nil, errors.New("missing required ZIA credentials")
 	}
 
-	// Initialize rate limiter
-	rateLimiter := rl.NewRateLimiter(
-		int(config.ZIA.Client.RateLimit.MaxRetries),
-		int(config.ZIA.Client.RateLimit.RetryWaitMin.Seconds()),
-		int(config.ZIA.Client.RateLimit.RetryWaitMax.Seconds()),
-		int(config.ZIA.Client.RequestTimeout.Seconds()),
-	)
+	// Initialize rate limiter with ZIA-specific limits.
+	// Server enforces per-endpoint limits via 429 + Retry-After.
+	// GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
+	rateLimiter := rl.NewRateLimiter(20, 10, 10, 10)
 
 	// Initialize HTTP client
 	httpClient := config.HTTPClient

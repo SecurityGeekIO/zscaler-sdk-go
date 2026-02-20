@@ -15,7 +15,7 @@ require (
 	github.com/olekukonko/tablewriter v1.1.3
 	github.com/stretchr/testify v1.11.1
 	github.com/zscaler/zscaler-sdk-go/v2 v2.732.0
-	github.com/zscaler/zscaler-sdk-go/v3 v3.8.19
+	github.com/zscaler/zscaler-sdk-go/v3 v3.8.21
 	golang.org/x/text v0.34.0
 	gopkg.in/dnaeon/go-vcr.v4 v4.0.6
 	gopkg.in/yaml.v3 v3.0.1
