@@ -1,5 +1,42 @@
 # Changelog
 
+# 3.8.23 (February 24, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #413](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/413) - Fixed ZIA legacy client (`v2_client`) to reuse the cached `JSESSIONID` via `GetOrCreateClient` and to invalidate parent collection cache keys on child resource mutations.
+
+# 3.8.22 (February 20, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Enhancements
+
+- [PR #412](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/412) - Added new `behavioralAnalysisAdvancedSettings` payload format support.
+- [PR #412](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/412) - Added new attribute list `virtualZenClusters` to ZIA `locationmanagement`
+
+# 3.8.21 (February 18, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #411](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/411) - Relaxed ZIA and ZTW client-side rate limiter from 10 POST/PUT/DELETE per 61 seconds to 10 per 10 seconds, aligning with ZPA's pattern and deferring per-endpoint enforcement to server-side 429 + Retry-After. Fixed legacy ZIA and ZTW v2 clients that were incorrectly passing retry config values (MaxRetries, RetryWaitMin, RetryWaitMax, RequestTimeout) as rate limiter parameters. Added `IsLimitExceeded()` helper to `errorx.ErrorResponse` for detecting tenant resource capacity errors (HTTP 403 LIMIT_EXCEEDED). Added explicit handling for LIMIT_EXCEEDED in OneAPI `ExecuteRequest` to fail fast on non-retryable tenant capacity errors.
+
+# 3.8.20 (February 16, 2026)
+
+## Notes
+- Golang: **v1.24**
+
+### Bug Fixes
+
+- [PR #410](https://github.com/SecurityGeekIO/zscaler-sdk-go/pull/410) - Added automatic retry for 412 Precondition Failed responses with "Failed during enter Org barrier" (edit lock/org barrier errors) in OneAPI client.
+
 # 3.8.19 (February 11, 2026)
 
 ## Notes

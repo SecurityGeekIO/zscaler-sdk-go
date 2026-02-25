@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/gretunnels"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
 	virtualipaddress "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/virtualipaddress"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestMain(m *testing.M) {

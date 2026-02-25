@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFTPControlPolicy(t *testing.T) {
