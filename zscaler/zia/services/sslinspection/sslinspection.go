@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -114,6 +114,10 @@ type SSLInspectionRules struct {
 
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined,omitempty"`
+
+	EndPointApplications []common.EndPointApplications `json:"endPointApplications,omitempty"`
+
+	EndPointApplicationGroups []common.EndPointApplicationGroups `json:"endPointApplicationGroups,omitempty"`
 }
 
 type Action struct {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
 )
 
 // =====================================================

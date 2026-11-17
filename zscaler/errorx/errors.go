@@ -2,6 +2,7 @@ package errorx
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,6 +42,16 @@ func (r *ErrorResponse) Error() string {
 		)
 	}
 	return fmt.Sprintf("FAILED: %v", r.Err)
+}
+
+// Unwrap exposes the underlying error so that *ErrorResponse participates in
+// Go's error chain. This allows callers to use errors.Is / errors.As even when
+// an *ErrorResponse has been wrapped (e.g. via fmt.Errorf("...: %w", err)).
+func (r *ErrorResponse) Unwrap() error {
+	if r == nil {
+		return nil
+	}
+	return r.Err
 }
 
 func CheckErrorInResponse(res *http.Response, respErr error) error {
@@ -83,6 +94,12 @@ func CheckErrorInResponse(res *http.Response, respErr error) error {
 			}
 			if ex, ok := jsonBody["exception"].(string); ok {
 				parsed.Exception = ex
+			}
+			// None of the recognised fields were present: report the body as
+			// returned instead of an empty code/message, so the API's actual
+			// response is not lost.
+			if parsed.Code == nil && parsed.Message == "" && parsed.ID == "" && parsed.Reason == "" && parsed.Exception == "" {
+				parsed.Message = msg
 			}
 		} else {
 			parsed.Message = fmt.Sprintf("Failed to parse JSON error body: %s", err.Error())
@@ -147,6 +164,40 @@ func (r *ErrorResponse) IsObjectNotFound() bool {
 	return false
 }
 
+// AsErrorResponse safely extracts an *ErrorResponse from an arbitrary error.
+// It returns (nil, false) when the error is not (and does not wrap) an
+// *ErrorResponse — for example a plain *errors.errorString produced by a
+// cancelled or timed-out request. Callers should use this instead of an
+// unguarded type assertion (err.(*ErrorResponse)), which panics when the
+// dynamic type does not match.
+func AsErrorResponse(err error) (*ErrorResponse, bool) {
+	if err == nil {
+		return nil, false
+	}
+	var respErr *ErrorResponse
+	if errors.As(err, &respErr) {
+		return respErr, true
+	}
+	return nil, false
+}
+
+// IsObjectNotFound safely reports whether err represents an object-not-found
+// condition. It never panics regardless of the concrete error type, and it is
+// aware of wrapped errors. This is the preferred way for callers to check for
+// not-found errors.
+func IsObjectNotFound(err error) bool {
+	respErr, ok := AsErrorResponse(err)
+	return ok && respErr.IsObjectNotFound()
+}
+
+// IsLimitExceeded safely reports whether err represents a tenant resource limit
+// exceeded condition. It never panics regardless of the concrete error type,
+// and it is aware of wrapped errors.
+func IsLimitExceeded(err error) bool {
+	respErr, ok := AsErrorResponse(err)
+	return ok && respErr.IsLimitExceeded()
+}
+
 // IsLimitExceeded checks if the response indicates a tenant resource limit has been
 // reached (e.g., "Maximum 100 static IPs are allowed. Limit has exceeded.").
 // The API returns HTTP 403 with code "LIMIT_EXCEEDED" when the tenant's maximum
@@ -166,8 +217,14 @@ func (r *ErrorResponse) IsLimitExceeded() bool {
 
 // IsSessionInvalidError checks if the response indicates a session invalidation error
 // that requires token refresh. Only checks for known error messages returned by the API.
+//
+// Both 401 and 403 are considered: once the platform's API session ends (e.g. at
+// the ZIA API session timeout) requests made with the still-unexpired OAuth token
+// are rejected with 403 "Resource Access Blocked", and a fresh token restores
+// access. Other 403s (permissions, LIMIT_EXCEEDED) carry different bodies and are
+// not matched.
 func IsSessionInvalidError(res *http.Response) bool {
-	if res.StatusCode != http.StatusUnauthorized {
+	if res.StatusCode != http.StatusUnauthorized && res.StatusCode != http.StatusForbidden {
 		return false
 	}
 
@@ -182,9 +239,11 @@ func IsSessionInvalidError(res *http.Response) bool {
 	// Only check for error messages we know for certain are returned by the API
 	// The API may return different formats depending on the service/endpoint
 	knownSessionInvalidMessages := []string{
-		"SESSION_NOT_VALID",                         // Legacy/direct error code
-		"getAttribute: Session already invalidated", // Java exception message format
-		"Resource Access Blocked",                   // Occurs under high concurrency/load - API returns 401 instead of 429
+		"SESSION_NOT_VALID",                              // Legacy/direct error code
+		"getAttribute: Session already invalidated",      // Java exception message format (legacy)
+		"getAttributeNames: Session already invalidated", // Java exception message format (newer API variant)
+		"Session already invalidated",                    // Broad match for any future method name variants
+		"Resource Access Blocked",                        // 401 under high concurrency/load; 403 once the API session has ended
 	}
 
 	for _, msg := range knownSessionInvalidMessages {
@@ -227,4 +286,92 @@ func IsEditLockError(res *http.Response) bool {
 	}
 
 	return false
+}
+
+// transientServerErrorMessages are API codes/messages that accompany a 5xx and
+// indicate a genuinely transient server-side condition, which a retry can
+// plausibly resolve. These are distinct from deterministic failures that reuse
+// the same 5xx status.
+var transientServerErrorMessages = []string{
+	"EDIT_LOCK_NOT_AVAILABLE",
+	"Resource Access Blocked",
+	"Failed during enter Org barrier",
+	"Request processing failed, possibly because an expected precondition was not met",
+}
+
+// alwaysRetryableServerStatuses are 5xx codes that never carry an application
+// verdict. They are produced by gateways, load balancers and overload
+// protection rather than by the API's business logic, so a body that happens to
+// parse as a JSON error must not be mistaken for a deterministic failure.
+//
+// 503 matters most: every client's Backoff closure treats it exactly like a 429
+// and honours Retry-After, so it has to stay retryable for that path to be
+// reachable at all.
+var alwaysRetryableServerStatuses = map[int]bool{
+	http.StatusBadGateway:         true, // 502
+	http.StatusServiceUnavailable: true, // 503
+	http.StatusGatewayTimeout:     true, // 504
+}
+
+// IsRetryableServerError reports whether a 5xx response is worth retrying.
+//
+// The ZIA API reuses HTTP 500 with code UNEXPECTED_ERROR for permanent request
+// validation failures — for example submitting a URL filtering rule that names a
+// category which does not exist. Retrying those is futile, and because the
+// legacy retry budget is large it turns a single bad request into a long stall
+// that ends with the API's own explanation discarded (see issue #449).
+//
+// The decision is deliberately conservative: a retry is refused only when the
+// body is a well-formed API error carrying a code, which is a deterministic
+// verdict from the application itself. An empty body, an HTML error page from a
+// load balancer, or any payload that does not parse is still treated as a
+// transient infrastructure fault and retried, preserving the previous behaviour
+// for real outages. A recognised transient marker always wins over both rules,
+// and the body is not inspected at all for the infrastructure statuses in
+// alwaysRetryableServerStatuses.
+func IsRetryableServerError(res *http.Response) bool {
+	if res == nil {
+		return false
+	}
+	// 501 Not Implemented is a permanent condition, matching the upstream
+	// retryablehttp policy.
+	if res.StatusCode < 500 || res.StatusCode == http.StatusNotImplemented {
+		return false
+	}
+	// 502 / 503 / 504 are infrastructure signals, never API verdicts: retry them
+	// unconditionally, exactly as the upstream policy did before this function
+	// existed.
+	if alwaysRetryableServerStatuses[res.StatusCode] {
+		return true
+	}
+	// A 5xx with no body at all carries no verdict, so it stays retryable. This
+	// only happens for hand-built responses; the transport always sets a body.
+	if res.Body == nil {
+		return true
+	}
+
+	bodyBytes, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+
+	// Rewind the response body so downstream error parsing still sees it.
+	res.Body = io.NopCloser(strings.NewReader(string(bodyBytes)))
+
+	bodyStr := string(bodyBytes)
+
+	for _, msg := range transientServerErrorMessages {
+		if strings.Contains(bodyStr, msg) {
+			return true
+		}
+	}
+
+	var parsed struct {
+		Code interface{} `json:"code"`
+	}
+	if err := json.Unmarshal(bodyBytes, &parsed); err == nil {
+		if code, ok := parsed.Code.(string); ok && code != "" {
+			return false
+		}
+	}
+
+	return true
 }

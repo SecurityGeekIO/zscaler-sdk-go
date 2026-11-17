@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	zpacommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/location_controller"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zpacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/location_controller"
 )
 
 func TestLocationController_GetLocationExtranetResource_SDK(t *testing.T) {

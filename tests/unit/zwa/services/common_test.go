@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/common"
 )
 
 func TestZWACommon_Structure(t *testing.T) {

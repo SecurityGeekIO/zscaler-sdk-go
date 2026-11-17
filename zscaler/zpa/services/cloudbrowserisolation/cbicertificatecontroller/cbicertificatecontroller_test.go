@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
 )
 
 func TestCBICertificates(t *testing.T) {

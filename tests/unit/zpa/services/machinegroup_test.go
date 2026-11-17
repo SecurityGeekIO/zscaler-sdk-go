@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/machinegroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/machinegroup"
 )
 
 func TestMachineGroup_Get_SDK(t *testing.T) {
@@ -132,4 +132,21 @@ func TestMachineGroup_Get_NotFound_SDK(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
+}
+
+func TestMachineGroup_GetMachineGroupSummary_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := common.ZPAPath(testCustomerID, "machineGroup", "summary")
+	server.On("GET", path, common.SuccessResponse(common.ZPAList([]machinegroup.MachineGroup{
+		{ID: "mg-001", Name: "Group 1", Enabled: true},
+	})))
+
+	service, err := common.CreateTestService(context.Background(), server, testCustomerID)
+	require.NoError(t, err)
+
+	result, _, err := machinegroup.GetMachineGroupSummary(context.Background(), service)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
 }

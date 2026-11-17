@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment_move"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment_move"
 )
 
 func TestApplicationSegmentMove_Move_SDK(t *testing.T) {
@@ -30,4 +30,14 @@ func TestApplicationSegmentMove_Move_SDK(t *testing.T) {
 
 	_, err = applicationsegment_move.AppSegmentMicrotenantMove(context.Background(), service, appID, req)
 	require.NoError(t, err)
+}
+
+func TestApplicationSegmentMove_Move_Error_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	appID := "app-123"
+	path := common.ZPAPath(api.CustomerID, "application", appID, "move")
+	api.On("POST", path, common.NotFoundResponse())
+
+	_, err := applicationsegment_move.AppSegmentMicrotenantMove(context.Background(), api.Service, appID, applicationsegment_move.AppSegmentMicrotenantMoveRequest{})
+	require.Error(t, err)
 }

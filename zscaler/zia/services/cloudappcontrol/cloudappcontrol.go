@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -39,6 +39,10 @@ type WebApplicationRules struct {
 
 	// If set to true, a predefined rule is applied
 	Predefined bool `json:"predefined,omitempty"`
+
+	// A Boolean value that indicates whether the capture of end user prompts for generative AI (Gen AI) applications is allowed or blocked.
+	// Note: This field is applicable only when the Gen AI Applications Access field is set to Allow when configuring the rule.
+	PromptCaptureEnabled bool `json:"promptCaptureEnabled,omitempty"`
 
 	// If enforceTimeValidity is set to true, the URL Filtering rule is valid starting on this date and time.
 	ValidityStartTime int `json:"validityStartTime,omitempty"`
@@ -216,8 +220,8 @@ func CreateDuplicate(ctx context.Context, service *zscaler.Service, ruleType str
 	return createdRule, nil
 }
 
-func AllAvailableActions(ctx context.Context, service *zscaler.Service, ruleType string, payload AvailableActionsRequest) ([]string, error) {
-	service.Client.GetLogger().Printf("[DEBUG] AllAvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
+func AvailableActions(ctx context.Context, service *zscaler.Service, ruleType string, payload AvailableActionsRequest) ([]string, error) {
+	service.Client.GetLogger().Printf("[DEBUG] AvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
 
 	// Marshal the payload into a JSON string
 	payloadData, err := json.Marshal(payload)
@@ -227,6 +231,36 @@ func AllAvailableActions(ctx context.Context, service *zscaler.Service, ruleType
 	}
 
 	url := fmt.Sprintf("%s/%s/availableActions", webApplicationRulesEndpoint, ruleType)
+
+	// Use CreateWithRawPayload to send the request
+	resp, err := service.Client.CreateWithRawPayload(ctx, url, string(payloadData))
+	if err != nil {
+		service.Client.GetLogger().Printf("[DEBUG] error creating request: %v", err)
+		return nil, err
+	}
+
+	// Unmarshal the response into a slice of strings
+	var availableActions []string
+	if err := json.Unmarshal(resp, &availableActions); err != nil {
+		service.Client.GetLogger().Printf("[DEBUG] error unmarshalling response: %v", err)
+		return nil, err
+	}
+
+	service.Client.GetLogger().Printf("[DEBUG] returning available actions: %+v", availableActions)
+	return availableActions, nil
+}
+
+func AllAvailableActions(ctx context.Context, service *zscaler.Service, ruleType string, payload AvailableActionsRequest) ([]string, error) {
+	service.Client.GetLogger().Printf("[DEBUG] allAvailableActions called with ruleType: %s and payload: %+v", ruleType, payload)
+
+	// Marshal the payload into a JSON string
+	payloadData, err := json.Marshal(payload)
+	if err != nil {
+		service.Client.GetLogger().Printf("[DEBUG] error marshalling payload: %v", err)
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/%s/allAvailableActions", webApplicationRulesEndpoint, ruleType)
 
 	// Use CreateWithRawPayload to send the request
 	resp, err := service.Client.CreateWithRawPayload(ctx, url, string(payloadData))

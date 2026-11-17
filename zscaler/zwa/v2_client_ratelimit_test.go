@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 )
 
 // TestZWAExponentialBackoff tests exponential backoff calculation for ZWA

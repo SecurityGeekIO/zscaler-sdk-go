@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa"
 )
 
 const pageSize = 1000
@@ -250,7 +251,12 @@ func ReadAllPages[T any](ctx context.Context, client *zwa.Client, method, endpoi
 		page++
 	}
 
-	return allResults, &cursor, nil
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, allResults)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return filtered, &cursor, nil
 }
 
 func ReadPage[T any](ctx context.Context, client *zwa.Client, endpoint string, params PaginationParams) ([]T, *Cursor, error) {

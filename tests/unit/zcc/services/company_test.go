@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/company"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/company"
 )
 
 // =====================================================
@@ -21,15 +21,20 @@ func TestCompany_GetInfo_SDK(t *testing.T) {
 	path := "/zcc/papi/public/v1/getCompanyInfo"
 
 	// The GetCompanyInfo function returns an error only, no body
-	server.On("GET", path, common.SuccessResponse(nil))
+	server.On("GET", path, common.SuccessResponse(&company.CompanyInfo{
+		OrgID:            "24326813",
+		MasterCustomerID: "216196257331281920",
+		Name:             "William Guilherme",
+	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")
 	require.NoError(t, err)
 
-	err = company.GetCompanyInfo(context.Background(), service)
+	info, err := company.GetCompanyInfo(context.Background(), service)
 
 	// Note: This may return an error depending on the mock server behavior
 	// The key point is that we're exercising the SDK code path
+	_ = info
 	_ = err
 }
 

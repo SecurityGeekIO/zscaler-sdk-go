@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
@@ -43,6 +43,7 @@ type PrivateCloudGroup struct {
 	CreationTime           string `json:"creationTime,omitempty"`
 	ModifiedBy             string `json:"modifiedBy,omitempty"`
 	ModifiedTime           string `json:"modifiedTime,omitempty"`
+	EnrollmentCertID       string `json:"enrollmentCertId,omitempty"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, groupID string) (*PrivateCloudGroup, *http.Response, error) {

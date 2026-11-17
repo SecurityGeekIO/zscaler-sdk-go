@@ -8,8 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	ziacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
 )
 
 // =====================================================
@@ -115,9 +116,11 @@ func TestURLFilteringRules_Update_SDK(t *testing.T) {
 	ruleID := 12345
 	path := "/zia/api/v1/urlFilteringRules/12345"
 
-	// Mock Get call that Update performs to fetch CBIProfile (direct by ID)
+	// Mock Get call that Update performs to fetch CBIProfile (direct by
+	// ID). CBIProfile is a ZIA SDK shared type; the test-helpers package
+	// has nothing to do with it, hence the ziacommon alias.
 	server.On("GET", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
-		ID: ruleID, Name: "Updated URL Rule", CBIProfile: &urlfilteringpolicies.CBIProfile{ID: "cbi-id"},
+		ID: ruleID, Name: "Updated URL Rule", CBIProfile: &ziacommon.CBIProfile{ID: "cbi-id"},
 	}))
 
 	server.On("PUT", path, common.SuccessResponse(urlfilteringpolicies.URLFilteringRule{
@@ -133,7 +136,7 @@ func TestURLFilteringRules_Update_SDK(t *testing.T) {
 		Name: "Updated URL Rule",
 	}
 
-	result, _, err := urlfilteringpolicies.Update(context.Background(), service, ruleID, updateRule)
+	result, err := urlfilteringpolicies.Update(context.Background(), service, ruleID, updateRule)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -220,13 +223,28 @@ func TestURLFilteringRules_UpdateUrlAndAppSettings_ValidationError(t *testing.T)
 
 	// Test validation error when EnableCIPACompliance is set with incompatible options
 	settings := urlfilteringpolicies.URLAdvancedPolicySettings{
-		EnableCIPACompliance:      true,
+		EnableCIPACompliance:         true,
 		EnableNewlyRegisteredDomains: true, // This should fail validation
 	}
 
 	_, _, err = urlfilteringpolicies.UpdateUrlAndAppSettings(context.Background(), service, settings)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "EnableCIPACompliance cannot be enabled")
+}
+
+func TestURLFilteringRules_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/urlFilteringRules/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := urlfilteringpolicies.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =====================================================
@@ -311,7 +329,7 @@ func TestURLFilteringPolicies_Structure(t *testing.T) {
 	})
 
 	t.Run("CBIProfile JSON marshaling", func(t *testing.T) {
-		profile := urlfilteringpolicies.CBIProfile{
+		profile := ziacommon.CBIProfile{
 			ID:         "cbi-uuid-12345",
 			Name:       "Isolation Profile",
 			URL:        "https://isolation.zscaler.com",
@@ -366,4 +384,3 @@ func TestURLFilteringPolicies_ResponseParsing(t *testing.T) {
 		assert.Equal(t, "CAUTION", rules[2].Action)
 	})
 }
-

@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	customercontroller "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/customer_controller"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	customercontroller "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/customer_controller"
 )
 
 func TestCustomerController_GetAllAuthDomains_SDK(t *testing.T) {

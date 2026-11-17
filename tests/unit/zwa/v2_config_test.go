@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa"
 )
 
 func TestZWA_ConfigSetter_Functions(t *testing.T) {

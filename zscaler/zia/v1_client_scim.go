@@ -17,11 +17,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 	"gopkg.in/yaml.v3"
 )
 
@@ -284,8 +284,12 @@ func unescapeHTML(entity interface{}) {
 	if err != nil {
 		return
 	}
+	// UseNumber keeps numbers exact: as float64, integers above 2^53 (such as
+	// 18-digit IDs) would be rounded when the entity is decoded again below.
 	var mapData map[string]interface{}
-	err = json.Unmarshal(data, &mapData)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	err = dec.Decode(&mapData)
 	if err != nil {
 		return
 	}

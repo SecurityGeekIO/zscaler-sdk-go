@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/inventory"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/inventory"
 )
 
 func main() {

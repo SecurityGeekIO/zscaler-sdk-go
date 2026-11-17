@@ -12,9 +12,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 )
 
 // =============================================================================
@@ -210,6 +210,12 @@ func TestZPAClient_ErrorDetection(t *testing.T) {
 				statusCode: 401,
 				body:       `{"code": "EDIT_LOCK_NOT_AVAILABLE"}`,
 				expected:   false,
+			},
+			{
+				name:       "412 with Failed during enter Org barrier",
+				statusCode: 412,
+				body:       `{"message": "Failed during enter Org barrier"}`,
+				expected:   true,
 			},
 		}
 

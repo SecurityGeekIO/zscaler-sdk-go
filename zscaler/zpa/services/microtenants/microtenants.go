@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
@@ -116,6 +116,37 @@ func GetByName(ctx context.Context, service *zscaler.Service, microTenantName st
 		}
 	}
 	return nil, resp, fmt.Errorf("no microtenant named '%s' was found", microTenantName)
+}
+
+func GetMicrotenantByName(ctx context.Context, service *zscaler.Service, microtenantName string) (*MicroTenant, *http.Response, error) {
+	relativeURL := mgmtConfig + service.Client.GetCustomerID() + microtenantsEndpoint + "/search"
+	searchRequest := common.SearchRequest{
+		FilterBy: &common.SearchFilterBy{
+			FilterGroups: []common.SearchFilterGroup{
+				{
+					Filters: []common.SearchFilterItem{
+						{
+							FilterName: "name",
+							Operator:   "EQ",
+							Value:      microtenantName,
+						},
+					},
+					Operator: "AND",
+				},
+			},
+			Operator: "AND",
+		},
+	}
+	list, resp, err := common.GetAllPagesGenericWithPostSearch[MicroTenant](ctx, service.Client, relativeURL, searchRequest, common.Filter{MicroTenantID: service.MicroTenantID()})
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, ns := range list {
+		if strings.EqualFold(ns.Name, microtenantName) {
+			return &ns, resp, nil
+		}
+	}
+	return nil, resp, fmt.Errorf("no microtenant named '%s' was found", microtenantName)
 }
 
 func Create(ctx context.Context, service *zscaler.Service, microTenant MicroTenant) (*MicroTenant, *http.Response, error) {

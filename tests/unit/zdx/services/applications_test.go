@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
-	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
 )
 
 // =====================================================
@@ -233,18 +233,18 @@ func TestApplications_ResponseParsing(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Len(t, apps, 3)
-
+		
 		// Check first app
 		assert.Equal(t, "Microsoft 365", apps[0].Name)
 		assert.Equal(t, float32(88.5), apps[0].Score)
 		assert.NotNil(t, apps[0].Stats)
 		assert.Equal(t, 1800, apps[0].Stats.ActiveUsers)
-
+		
 		// Check second app
 		assert.Equal(t, "Slack", apps[1].Name)
 		assert.Equal(t, float32(95.0), apps[1].Score)
 		assert.Nil(t, apps[1].MostImpactedRegion)
-
+		
 		// Check third app
 		assert.Equal(t, "Zoom", apps[2].Name)
 		assert.NotNil(t, apps[2].MostImpactedRegion)

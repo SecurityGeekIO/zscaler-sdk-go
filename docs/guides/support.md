@@ -7,7 +7,7 @@ page_title: "Support Guide"
 The Zscaler SDK GO is supported and maintained by the Zscaler Technology Alliances, in partnership with Zscaler Engineering teams, and we welcome questions on how to use the SDK.
 Please, refer to our [troubleshooting guide](troubleshooting.md) for guidance on typical problems.
 
-All bug reports and feature requests must be submitted via [GitHub issues](https://github.com/SecurityGeekIO/zscaler-sdk-go/issues). When reporting bugs, please include a detailed description that demonstrates the bug and the command output. Stack traces will also be helpful.
+All bug reports and feature requests must be submitted via [GitHub issues](https://github.com/zscaler/zscaler-sdk-go/issues). When reporting bugs, please include a detailed description that demonstrates the bug and the command output. Stack traces will also be helpful.
 
 ⚠️ **IMPORTANT:**:: Please ensure any sensitive information is redacted as Issues and Pull Requests are publicly viewable.
 

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -187,6 +187,7 @@ type Locations struct {
 	DynamiclocationGroups []common.IDNameExtensions `json:"dynamiclocationGroups"`
 	StaticLocationGroups  []common.IDNameExtensions `json:"staticLocationGroups"`
 	VirtualZenClusters    []common.IDNameExtensions `json:"virtualZenClusters"`
+	VirtualZens           []common.IDNameExtensions `json:"virtualZens"`
 }
 
 type Location struct {

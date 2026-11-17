@@ -1,13 +1,16 @@
 package scimgroup
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
@@ -25,6 +28,70 @@ type ScimGroup struct {
 	ModifiedTime int64  `json:"modifiedTime,omitempty"`
 	Name         string `json:"name,omitempty"`
 	InternalID   string `json:"internalId,omitempty"`
+	IamIdpID     string `json:"iamIdpId,omitempty"`
+	IamIdpName   string `json:"iamIdpName,omitempty"`
+}
+
+// UnmarshalJSON accepts id, idpId, creationTime and modifiedTime as a JSON
+// number or as a number in a string: some ZPA clouds return the SCIM group id
+// as a string (for example "id":"799580").
+func (s *ScimGroup) UnmarshalJSON(data []byte) error {
+	type plain ScimGroup
+	aux := struct {
+		*plain
+		CreationTime json.RawMessage `json:"creationTime,omitempty"`
+		ID           json.RawMessage `json:"id,omitempty"`
+		IdpID        json.RawMessage `json:"idpId,omitempty"`
+		ModifiedTime json.RawMessage `json:"modifiedTime,omitempty"`
+	}{plain: (*plain)(s)}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	for _, f := range []struct {
+		name string
+		raw  json.RawMessage
+		dst  *int64
+	}{
+		{"creationTime", aux.CreationTime, &s.CreationTime},
+		{"id", aux.ID, &s.ID},
+		{"idpId", aux.IdpID, &s.IdpID},
+		{"modifiedTime", aux.ModifiedTime, &s.ModifiedTime},
+	} {
+		v, err := parseFlexibleInt64(f.raw)
+		if err != nil {
+			return fmt.Errorf("scim group %s: %w", f.name, err)
+		}
+		*f.dst = v
+	}
+	return nil
+}
+
+// parseFlexibleInt64 parses a JSON number, a number in a JSON string, or
+// null/"" (0).
+func parseFlexibleInt64(raw json.RawMessage) (int64, error) {
+	raw = bytes.TrimSpace(raw)
+	if len(raw) == 0 || bytes.Equal(raw, []byte("null")) {
+		return 0, nil
+	}
+	if raw[0] == '"' {
+		var str string
+		if err := json.Unmarshal(raw, &str); err != nil {
+			return 0, err
+		}
+		if str = strings.TrimSpace(str); str == "" {
+			return 0, nil
+		}
+		return strconv.ParseInt(str, 10, 64)
+	}
+	return strconv.ParseInt(string(raw), 10, 64)
+}
+
+// IamIdpCriteria narrows a SCIM group name lookup to the groups that belong to a
+// specific ZIdentity (IAM) IdP. Several IAM IdPs can map to the same ZPA IdP, so
+// a group name is only unique within an IAM IdP. Set at most one field.
+type IamIdpCriteria struct {
+	IamIdpID   string
+	IamIdpName string
 }
 
 func Get(ctx context.Context, service *zscaler.Service, scimGroupID string) (*ScimGroup, *http.Response, error) {
@@ -59,6 +126,108 @@ func GetByName(ctx context.Context, service *zscaler.Service, scimName, idpId st
 	}
 
 	return nil, resp, fmt.Errorf("no SCIM group named '%s' was found", scimName)
+}
+
+// GetByNameAndIamIdp returns the SCIM group named scimName under the ZPA IdP
+// idpId that belongs to the IAM IdP described by criteria. Unlike GetByName,
+// which returns the first name match, it fails when more than one group
+// matches, listing the candidates, so a name shared across IAM IdPs can never
+// resolve to the wrong group. With an empty criteria it behaves like GetByName.
+func GetByNameAndIamIdp(ctx context.Context, service *zscaler.Service, scimName, idpId string, criteria IamIdpCriteria) (*ScimGroup, *http.Response, error) {
+	if criteria.IamIdpID == "" && criteria.IamIdpName == "" {
+		return GetByName(ctx, service, scimName, idpId)
+	}
+	if criteria.IamIdpID != "" && criteria.IamIdpName != "" {
+		return nil, nil, fmt.Errorf("only one of IamIdpID or IamIdpName can be set")
+	}
+
+	relativeURL := fmt.Sprintf("%s/%s", userConfig+service.Client.GetCustomerID()+scimGroupEndpoint+idpIdPath, idpId)
+	list, resp, err := common.GetAllPagesGenericWithCustomFilters[ScimGroup](ctx, service.Client, relativeURL, common.Filter{
+		Search:    scimName,
+		SortBy:    string(service.SortBy),
+		SortOrder: string(service.SortOrder),
+	})
+	if err != nil {
+		return nil, resp, err
+	}
+
+	var nameMatches, matches []ScimGroup
+	for _, scim := range list {
+		if !scimGroupNameMatches(scim, scimName, criteria) {
+			continue
+		}
+		nameMatches = append(nameMatches, scim)
+		if scimGroupInIamIdp(scim, criteria) {
+			matches = append(matches, scim)
+		}
+	}
+
+	switch len(matches) {
+	case 1:
+		return &matches[0], resp, nil
+	case 0:
+		if len(nameMatches) == 0 {
+			return nil, resp, fmt.Errorf("no SCIM group named '%s' was found", scimName)
+		}
+		return nil, resp, fmt.Errorf("no SCIM group named '%s' was found for %s; groups with that name: %s",
+			scimName, describeIamIdpCriteria(criteria), describeScimGroups(nameMatches))
+	default:
+		return nil, resp, fmt.Errorf("multiple SCIM groups named '%s' were found for %s: %s",
+			scimName, describeIamIdpCriteria(criteria), describeScimGroups(matches))
+	}
+}
+
+// scimGroupNameMatches compares the group name case-insensitively. Before the
+// API returned iamIdpId/iamIdpName it decorated names as "<name>(<iamIdpName>)",
+// so that suffix is stripped before comparing.
+func scimGroupNameMatches(scim ScimGroup, scimName string, criteria IamIdpCriteria) bool {
+	if strings.EqualFold(scim.Name, scimName) {
+		return true
+	}
+	suffixName := scim.IamIdpName
+	if suffixName == "" {
+		suffixName = criteria.IamIdpName
+	}
+	if suffixName == "" {
+		return false
+	}
+	return strings.EqualFold(stripIamIdpSuffix(scim.Name, suffixName), scimName)
+}
+
+// scimGroupInIamIdp reports whether the group belongs to the IAM IdP in
+// criteria. A decorated name is accepted as evidence of the IAM IdP when the API
+// does not return iamIdpName.
+func scimGroupInIamIdp(scim ScimGroup, criteria IamIdpCriteria) bool {
+	if criteria.IamIdpID != "" {
+		return scim.IamIdpID == criteria.IamIdpID
+	}
+	if scim.IamIdpName != "" {
+		return strings.EqualFold(scim.IamIdpName, criteria.IamIdpName)
+	}
+	return stripIamIdpSuffix(scim.Name, criteria.IamIdpName) != scim.Name
+}
+
+func stripIamIdpSuffix(name, iamIdpName string) string {
+	suffix := "(" + iamIdpName + ")"
+	if len(name) > len(suffix) && strings.EqualFold(name[len(name)-len(suffix):], suffix) {
+		return strings.TrimSpace(name[:len(name)-len(suffix)])
+	}
+	return name
+}
+
+func describeIamIdpCriteria(criteria IamIdpCriteria) string {
+	if criteria.IamIdpID != "" {
+		return fmt.Sprintf("IAM IdP ID '%s'", criteria.IamIdpID)
+	}
+	return fmt.Sprintf("IAM IdP name '%s'", criteria.IamIdpName)
+}
+
+func describeScimGroups(groups []ScimGroup) string {
+	parts := make([]string, 0, len(groups))
+	for _, g := range groups {
+		parts = append(parts, fmt.Sprintf("(id=%d, name=%q, iamIdpId=%q, iamIdpName=%q)", g.ID, g.Name, g.IamIdpID, g.IamIdpName))
+	}
+	return strings.Join(parts, ", ")
 }
 
 func GetAllByIdpId(ctx context.Context, service *zscaler.Service, idpId string) ([]ScimGroup, *http.Response, error) {

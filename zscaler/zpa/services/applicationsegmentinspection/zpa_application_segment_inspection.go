@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 )
 
 const (
@@ -54,7 +54,11 @@ type AppSegmentInspection struct {
 	ReadOnly                  bool                      `json:"readOnly,omitempty"`
 	RestrictionType           string                    `json:"restrictionType,omitempty"`
 	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
+	HBREnabled                bool                      `json:"hbrEnabled,omitempty"`
+	StickyEntity              string                    `json:"stickyEntity,omitempty"`
+	StickyGroup               string                    `json:"stickyGroup,omitempty"`
 	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
+	GuestDetails              []common.GuestDetails     `json:"guestDetails,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
@@ -175,22 +179,38 @@ func Update(ctx context.Context, service *zscaler.Service, id string, appSegment
 	// Set the primary app ID
 	appSegmentInspection.ID = existingResource.ID
 
-	// Step 2: Map existing `inspectionApp` entries by `Name` to get `InspectAppID` for each sub-application
+	// Step 2: Map existing inspection apps by name
 	existingInspectionApps := make(map[string]InspectionAppDto)
 	for _, inspectionApp := range existingResource.InspectionAppDto {
 		existingInspectionApps[inspectionApp.Name] = inspectionApp
 	}
 
-	// Step 3: Inject `appId` and `InspectAppID` into each entry in `appsConfig`
+	// Step 3: Re-inject inspectAppId and appId into each AppsConfig entry
 	for i, appConfig := range appSegmentInspection.CommonAppsDto.AppsConfig {
 		if existingApp, ok := existingInspectionApps[appConfig.Name]; ok {
-			appSegmentInspection.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID   // main app ID
-			appSegmentInspection.CommonAppsDto.AppsConfig[i].InspectAppID = existingApp.ID // InspectAppID for sub-app
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].AppID = existingResource.ID
+			appSegmentInspection.CommonAppsDto.AppsConfig[i].InspectAppID = existingApp.ID
 		}
 	}
 
-	// Check if `commonAppsDto` actually has entries, set to nil if empty
-	if len(appSegmentInspection.CommonAppsDto.AppsConfig) == 0 {
+	// ✅ Step 4: Detect and append deleted inspection apps
+	remainingInspectAppIDs := make(map[string]struct{})
+	for _, app := range appSegmentInspection.CommonAppsDto.AppsConfig {
+		remainingInspectAppIDs[app.InspectAppID] = struct{}{}
+	}
+	var deleted []string
+	for _, existing := range existingResource.InspectionAppDto {
+		if _, found := remainingInspectAppIDs[existing.ID]; !found {
+			deleted = append(deleted, existing.ID)
+			service.Client.GetLogger().Printf("[DEBUG]Marking inspectAppId for deletion: %s", existing.ID)
+		}
+	}
+	if len(deleted) > 0 {
+		appSegmentInspection.CommonAppsDto.DeletedInspectApps = deleted
+	}
+
+	// Step 5: Cleanup if necessary
+	if len(appSegmentInspection.CommonAppsDto.AppsConfig) == 0 && len(appSegmentInspection.CommonAppsDto.DeletedInspectApps) == 0 {
 		appSegmentInspection.CommonAppsDto = CommonAppsDto{}
 	}
 

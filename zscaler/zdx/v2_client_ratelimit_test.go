@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 )
 
 // TestZDXBackoffLogic tests the ZDX backoff function behavior

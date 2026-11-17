@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/roles"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/roles"
 )
 
 // =====================================================
@@ -384,7 +384,9 @@ func TestAdminUsers_GetPasswordExpirySettings_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zia/api/v1/passwordExpiry"
+	// The SDK hits /zia/api/v1/passwordExpiry/settings (see
+	// passwordExpiryEndpoint in zscaler/zia/services/adminuserrolemgmt/admins/adminusers.go).
+	path := "/zia/api/v1/passwordExpiry/settings"
 
 	server.On("GET", path, common.SuccessResponse([]admins.PasswordExpiry{
 		{PasswordExpirationEnabled: true, PasswordExpiryDays: 90},
@@ -406,7 +408,7 @@ func TestAdminUsers_UpdatePasswordExpirySettings_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zia/api/v1/passwordExpiry"
+	path := "/zia/api/v1/passwordExpiry/settings"
 
 	server.On("PUT", path, common.SuccessResponse(admins.PasswordExpiry{
 		PasswordExpirationEnabled: true,

@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredentialpool"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredentialpool"
 )
 
 func TestPRACredentialPool_Get_SDK(t *testing.T) {
@@ -154,4 +154,40 @@ func TestPRACredentialPool_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestPRACredentialPool_Get_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAWaapPRAPath(api.CustomerID, "credential-pool", "missing")
+
+	api.On("GET", path, common.NotFoundResponse())
+
+	result, _, err := pracredentialpool.Get(context.Background(), api.Service, "missing")
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestPRACredentialPool_Update_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAWaapPRAPath(api.CustomerID, "credential-pool", "missing")
+
+	api.On("PUT", path, common.NotFoundResponse())
+
+	resp, err := pracredentialpool.Update(context.Background(), api.Service, "missing", &pracredentialpool.CredentialPool{
+		ID:   "missing",
+		Name: "x",
+	})
+	require.Error(t, err)
+	assert.Nil(t, resp)
+}
+
+func TestPRACredentialPool_Delete_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAWaapPRAPath(api.CustomerID, "credential-pool", "missing")
+
+	api.On("DELETE", path, common.NotFoundResponse())
+
+	resp, err := pracredentialpool.Delete(context.Background(), api.Service, "missing")
+	require.Error(t, err)
+	assert.Nil(t, resp)
 }

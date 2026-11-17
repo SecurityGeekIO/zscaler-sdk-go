@@ -12,34 +12,35 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/alerts"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/filetypecontrol"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallipscontrolpolicies"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipdestinationgroups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipsourcegroups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkapplicationgroups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservicegroups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_rules"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_settings"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/security_policy_settings"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/gretunnels"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/vpncredentials"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/urlcategories"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/user_authentication_settings"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/adminuserrolemgmt/admins"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/alerts"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_notification_templates"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_web_rules"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlpdictionaries"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/email_profiles"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/filetypecontrol"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewalldnscontrolpolicies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/filteringrules"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipdestinationgroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/ipsourcegroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkapplicationgroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservicegroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/networkservices"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/ips_control_policies/ips_policies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/location/locationmanagement"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_rules"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/sandbox/sandbox_settings"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/security_policy_settings"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/gretunnels"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/staticips"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/trafficforwarding/vpncredentials"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlcategories"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/urlfilteringpolicies"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/user_authentication_settings"
 )
 
 func init() {
@@ -114,6 +115,7 @@ func sweep() error {
 		sweepSecurityPolicySettings,
 		sweepUserAuthenticationSettings,
 		sweepAlertsSubscription,
+		sweepEmailProfiles,
 	}
 
 	// Execute each sweep function
@@ -283,7 +285,7 @@ func sweepFirewallDNSRules(client *zscaler.Client) error {
 
 func sweepFirewallIPSRules(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
-	resources, err := firewallipscontrolpolicies.GetAll(context.Background(), service)
+	resources, err := ips_policies.GetAll(context.Background(), service)
 	if err != nil {
 		log.Printf("[ERROR] Failed to get Firewall ips rule: %v", err)
 		return err
@@ -294,7 +296,7 @@ func sweepFirewallIPSRules(client *zscaler.Client) error {
 			continue
 		}
 		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
-		_, err := firewallipscontrolpolicies.Delete(context.Background(), service, r.ID)
+		_, err := ips_policies.Delete(context.Background(), service, r.ID)
 		if err != nil {
 			log.Printf("[ERROR] Failed to delete Firewall ips rule with ID: %d, Name: %s: %v", r.ID, r.Name, err)
 		}
@@ -494,6 +496,27 @@ func sweepRuleLabels(client *zscaler.Client) error {
 	return nil
 }
 
+func sweepEmailProfiles(client *zscaler.Client) error {
+	service := zscaler.NewService(client, nil)
+	resources, err := email_profiles.GetAll(context.Background(), service, nil)
+	if err != nil {
+		log.Printf("[ERROR] Failed to email profiles: %v", err)
+		return err
+	}
+
+	for _, r := range resources {
+		if !strings.HasPrefix(r.Name, "tests-") {
+			continue
+		}
+		log.Printf("Deleting resource with ID: %d, Name: %s", r.ID, r.Name)
+		_, err := email_profiles.Delete(context.Background(), service, r.ID)
+		if err != nil {
+			log.Printf("[ERROR] Failed to delete email profiles with ID: %d, Name: %s: %v", r.ID, r.Name, err)
+		}
+	}
+	return nil
+}
+
 // TODO: Need to review method calls.
 func sweepSandboxSettings(client *zscaler.Client) error {
 	service := zscaler.NewService(client, nil)
@@ -639,14 +662,31 @@ func sweepVPNCredentials(client *zscaler.Client) error {
 		return err
 	}
 
+	var idsToDelete []int
 	for _, r := range resources {
 		if !strings.HasPrefix(r.FQDN, "tests-") {
 			continue
 		}
-		log.Printf("Deleting resource with ID: %d, FQDN: %s", r.ID, r.FQDN)
-		err := vpncredentials.Delete(context.Background(), service, r.ID)
+		idsToDelete = append(idsToDelete, r.ID)
+		log.Printf("Marking VPN credential for deletion: ID: %d, FQDN: %s", r.ID, r.FQDN)
+	}
+
+	if len(idsToDelete) == 0 {
+		return nil
+	}
+
+	const batchSize = 100
+	for i := 0; i < len(idsToDelete); i += batchSize {
+		end := i + batchSize
+		if end > len(idsToDelete) {
+			end = len(idsToDelete)
+		}
+		batch := idsToDelete[i:end]
+		log.Printf("Bulk deleting %d VPN credentials (IDs: %v)", len(batch), batch)
+		_, err := vpncredentials.BulkDelete(context.Background(), service, batch)
 		if err != nil {
-			log.Printf("[ERROR] Failed to delete vpn credentials with ID: %d, Name: %s: %v", r.ID, r.Comments, err)
+			log.Printf("[ERROR] Failed to bulk delete VPN credentials: %v", err)
+			return err
 		}
 	}
 	return nil

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
 )
 
 const (
@@ -39,7 +39,7 @@ type IdpController struct {
 	ScimEnabled                 bool           `json:"scimEnabled"`
 	ScimServiceProviderEndpoint string         `json:"scimServiceProviderEndpoint,omitempty"`
 	ScimSharedSecretExists      bool           `json:"scimSharedSecretExists,omitempty"`
-	SignSamlRequest             string         `json:"signSamlRequest,,omitempty"`
+	SignSamlRequest             string         `json:"signSamlRequest,omitempty"`
 	SsoType                     []string       `json:"ssoType,omitempty"`
 	UseCustomSpMetadata         bool           `json:"useCustomSPMetadata"`
 	UserSpSigningCertID         string         `json:"userSpSigningCertId,omitempty"`

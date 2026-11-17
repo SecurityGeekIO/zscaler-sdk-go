@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/timewindow"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/time_intervals"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/firewallpolicies/timewindow"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/time_intervals"
 )
 
 // =====================================================
@@ -201,6 +201,21 @@ func TestTimeIntervals_Delete_SDK(t *testing.T) {
 	_, err = time_intervals.Delete(context.Background(), service, intervalID)
 
 	require.NoError(t, err)
+}
+
+func TestTimeIntervals_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/timeIntervals/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := time_intervals.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =====================================================

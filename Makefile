@@ -31,7 +31,7 @@ help:
 	@echo "$(COLOR_OK)  test:integration:zdx        	Run only zdx integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zia        	Run only zia integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:integration:zpa        	Run only zpa integration tests$(COLOR_NONE)"
-	@echo "$(COLOR_OK)  test:integration:zidentity      Run only zidentity integration tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:integration:zid        	Run only zid integration tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit             			Run all unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zpa         			Run ZPA unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zia         			Run ZIA unit tests$(COLOR_NONE)"
@@ -39,6 +39,10 @@ help:
 	@echo "$(COLOR_OK)  test:unit:zdx         			Run ZDX unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zcc         			Run ZCC unit tests$(COLOR_NONE)"
 	@echo "$(COLOR_OK)  test:unit:zwa         			Run ZWA unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:zid         			Run Zidentity unit tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:oneapi      			Run centralized OneAPI mock harness tests$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:coverage    			Run all unit tests measuring real SDK coverage$(COLOR_NONE)"
+	@echo "$(COLOR_OK)  test:unit:all         			Run all unit tests with combined HTML coverage report$(COLOR_NONE)"
 
 
 default: build
@@ -83,9 +87,9 @@ sweep\:zia:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
 	ZIA_SDK_TEST_SWEEP=true go test ./zscaler/zia/sweep -v -sweep=true
 
-sweep\:zidentity:
+sweep\:zid:
 	@echo "$(COLOR_WARNING)WARNING: This will destroy infrastructure. Use only in development accounts.$(COLOR_NONE)"
-	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zidentity/sweep -v -sweep=true
+	ZIDENTITY_SDK_TEST_SWEEP=true go test ./zscaler/zid/sweep -v -sweep=true
 
 test\:all:
 	@echo "$(COLOR_ZSCALER)Running all tests...$(COLOR_NONE)"
@@ -124,11 +128,11 @@ test\:integration\:zia:
 	go tool cover -html=ziacoverage.out -o ziacoverage.html
 	@go tool cover -func ziacoverage.out | grep total:
 
-test\:integration\:zidentity:
-	@echo "$(COLOR_ZSCALER)Running zidentity integration tests...$(COLOR_NONE)"
-	go test -v -failfast -race -cover -coverprofile=zidentitycoverage.out -covermode=atomic ./zscaler/zidentity/... -parallel 10 -timeout 60m
-	go tool cover -html=zidentitycoverage.out -o zidentitycoverage.html
-	@go tool cover -func zidentitycoverage.out | grep total:
+test\:integration\:zid:
+	@echo "$(COLOR_ZSCALER)Running zid integration tests...$(COLOR_NONE)"
+	go test -v -failfast -race -cover -coverprofile=zidcoverage.out -covermode=atomic ./zscaler/zid/... -parallel 10 -timeout 60m
+	go tool cover -html=zidcoverage.out -o zidcoverage.html
+	@go tool cover -func zidcoverage.out | grep total:
 
 test\:unit:
 	@echo "$(COLOR_OK)Running all unit tests...$(COLOR_NONE)"
@@ -137,41 +141,123 @@ test\:unit:
 test\:unit\:coverage:
 	@echo "$(COLOR_OK)Running all unit tests with source coverage...$(COLOR_NONE)"
 	@go test -v -race -cover -coverprofile=unit-coverage.out -covermode=atomic \
-		-coverpkg=github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/... \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/... \
 		./tests/unit/... -timeout 180s
 	@echo ""
 	@echo "=== Coverage Summary ==="
 	@go tool cover -func unit-coverage.out 2>/dev/null | grep -E "total:" || echo "Coverage report generated"
+	@# Per-product breakdown. The Python script parses unit-coverage.out
+	@# directly so it can split percentages by product without re-running
+	@# `go test`. Falls back to a notice when python3 isn't installed.
+	@command -v python3 >/dev/null 2>&1 && python3 scripts/coverage_summary.py unit-coverage.out || \
+		echo "(install python3 to see the per-product coverage table)"
 
+# NOTE on -coverpkg: each per-product target measures coverage of the
+# corresponding SDK source tree (zscaler/<product>/...), NOT the test
+# package itself. Without -coverpkg, `go test -cover ./tests/unit/zpa/...`
+# only instruments tests/unit/zpa, which contains zero production
+# statements ("coverage: [no statements]"). The shared `tests/unit/common`
+# helpers (CreateTestService, mock server) are instrumented too so the
+# harness wiring shows up in the report.
+#
+# Each per-product target finishes by calling scripts/coverage_summary.py
+# with `--product <name>`, which renders the same coloured table as
+# `make test:unit:coverage` but broken down per SERVICE within the
+# product (appconnectorgroup, policysetcontroller, …). That mirrors the
+# user-facing format we already have for the aggregate run, just scoped
+# to a single product so you can see which services are well covered
+# and which still need tests.
+#
+# Why we don't also print `go tool cover -func | grep total:` here:
+# the total Go computes includes the instrumented `tests/unit/common`
+# harness, which dilutes the number and is misleading next to the
+# script's product-only total. The script TOTAL row matches the
+# corresponding row in `make test:unit:coverage`, so they line up. We
+# only fall back to `go tool cover` when python3 is unavailable, where
+# the diluted number is better than no number.
 test\:unit\:zpa:
 	@echo "$(COLOR_OK)Running ZPA unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-zpa-coverage.out -covermode=atomic ./tests/unit/zpa/... -timeout 60s
-	@go tool cover -func unit-zpa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-zpa-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zpa/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zpa unit-zpa-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zpa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:zia:
 	@echo "$(COLOR_OK)Running ZIA unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-zia-coverage.out -covermode=atomic ./tests/unit/zia/... -timeout 60s
-	@go tool cover -func unit-zia-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-zia-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zia/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zia unit-zia-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zia-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:ztw:
 	@echo "$(COLOR_OK)Running ZTW unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-ztw-coverage.out -covermode=atomic ./tests/unit/ztw/... -timeout 60s
-	@go tool cover -func unit-ztw-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-ztw-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/ztw/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product ztw unit-ztw-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-ztw-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:zdx:
 	@echo "$(COLOR_OK)Running ZDX unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-zdx-coverage.out -covermode=atomic ./tests/unit/zdx/... -timeout 60s
-	@go tool cover -func unit-zdx-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-zdx-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zdx/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zdx unit-zdx-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zdx-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:zcc:
 	@echo "$(COLOR_OK)Running ZCC unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-zcc-coverage.out -covermode=atomic ./tests/unit/zcc/... -timeout 60s
-	@go tool cover -func unit-zcc-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-zcc-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zcc/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zcc unit-zcc-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zcc-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:zwa:
 	@echo "$(COLOR_OK)Running ZWA unit tests with coverage...$(COLOR_NONE)"
-	@go test -v -race -cover -coverprofile=unit-zwa-coverage.out -covermode=atomic ./tests/unit/zwa/... -timeout 60s
-	@go tool cover -func unit-zwa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"
+	@go test -v -race -cover -coverprofile=unit-zwa-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zwa/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zwa unit-zwa-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zwa-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
+
+test\:unit\:zid:
+	@echo "$(COLOR_OK)Running Zidentity unit tests with coverage...$(COLOR_NONE)"
+	@go test -v -race -cover -coverprofile=unit-zid-coverage.out -covermode=atomic \
+		-coverpkg=github.com/zscaler/zscaler-sdk-go/v3/zscaler/zid/...,github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common \
+		./tests/unit/zid/... -timeout 60s
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 scripts/coverage_summary.py --product zid unit-zid-coverage.out; \
+	else \
+		echo "(install python3 to see the per-service coverage table)"; \
+		go tool cover -func unit-zid-coverage.out 2>/dev/null | grep total: || echo "No coverage data"; \
+	fi
 
 test\:unit\:oneapi:
 	@echo "$(COLOR_OK)Running OneAPI unit tests with coverage...$(COLOR_NONE)"

@@ -3,12 +3,13 @@ package unit
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/client_settings"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/client_settings"
 )
 
 // Note: GetClientSettings function has incorrect parameter ordering in SDK
@@ -115,4 +116,20 @@ func TestClientSettings_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestClientSettings_GetClientSettings_ZAPPClient_Query_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "clientSetting")
+	api.OnFunc("GET", path, func(r *http.Request, _ []byte) common.MockResponse {
+		assert.Equal(t, "ZAPP_CLIENT", r.URL.Query().Get("type"))
+		return common.SuccessResponse([]client_settings.ClientSettings{
+			{ID: "zapp-cfg-1", Name: "ZAPP Client Settings"},
+		})
+	})
+
+	ct := "ZAPP_CLIENT"
+	_, _, err := client_settings.GetClientSettings(context.Background(), api.Service, &ct)
+	require.NoError(t, err)
+	assert.Equal(t, 1, api.Server.GetCallCount("GET", path))
 }

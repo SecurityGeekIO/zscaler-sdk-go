@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/workloadgroups"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/workloadgroups"
 )
 
 // =====================================================
@@ -156,6 +156,21 @@ func TestWorkloadGroups_Delete_SDK(t *testing.T) {
 	_, err = workloadgroups.Delete(context.Background(), service, workloadID)
 
 	require.NoError(t, err)
+}
+
+func TestWorkloadGroups_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/workloadGroups/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := workloadgroups.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =====================================================

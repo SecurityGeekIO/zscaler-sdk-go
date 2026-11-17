@@ -12,10 +12,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/services/users"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/users"
 )
 
 func main() {
@@ -26,9 +25,6 @@ func main() {
 			// Add your authentication configuration here
 		},
 	}
-
-	// Create zidentity service
-	zidentityService := zidentity.New(service)
 
 	// User ID to get groups for
 	userID := "your-user-id"
@@ -45,7 +41,7 @@ func main() {
 
 	fmt.Printf("Found %d groups for user %s:\n", len(groups), userID)
 	for _, group := range groups {
-		fmt.Printf("- Group: %s (ID: %s, Description: %s)\n",
+		fmt.Printf("- Group: %s (ID: %s, Description: %s)\n", 
 			group.Name, group.ID, group.Description)
 	}
 
@@ -60,7 +56,7 @@ func main() {
 	fmt.Printf("- Page Offset: %d\n", pageResponse.PageOffset)
 	fmt.Printf("- Page Size: %d\n", pageResponse.PageSize)
 	fmt.Printf("- Records in this page: %d\n", len(pageResponse.Records))
-
+	
 	if pageResponse.NextLink != "" {
 		fmt.Printf("- Has next page: Yes\n")
 	}
@@ -70,7 +66,10 @@ func main() {
 ## API Endpoint
 
 This example uses the following API endpoint:
-- **GET** `/admin/api/v1/users/{id}/groups`
+- **GET** `/ziam/admin/api/v1/users/{id}/groups`
+
+The `/ziam` prefix routes the call through the OneAPI gateway, the same way
+`/zia` and `/zpa` do for their services.
 
 ## Parameters
 
@@ -113,4 +112,4 @@ The API returns a paginated response with the following structure:
 - The function now supports pagination parameters (`offset` and `limit`)
 - Use `GetGroupsByUser()` to retrieve all groups across all pages
 - Use `GetGroupsByUserPage()` to retrieve a single page of results
-- The response includes pagination metadata for handling large result sets
+- The response includes pagination metadata for handling large result sets 

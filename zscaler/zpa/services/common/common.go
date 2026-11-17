@@ -8,15 +8,22 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
 )
 
 const (
 	DefaultPageSize = 500
 )
+
+// PolicyRuleMutex serializes policy rule writes across the policysetcontroller
+// and policysetcontrollerv2 packages. The API rejects concurrent changes to the
+// same policy set with api.concurrent.access.error, so v1 and v2 writes must
+// share one lock.
+var PolicyRuleMutex sync.Mutex
 
 type Pagination struct {
 	PageSize        int     `json:"pagesize,omitempty" url:"pagesize,omitempty"`
@@ -158,6 +165,19 @@ type CommonSummary struct {
 	Enabled bool   `json:"enabled,omitempty"`
 }
 
+type GuestDetails struct {
+	FederationID string      `json:"federationId,omitempty"`
+	PartnerInfo  PartnerInfo `json:"partnerInfo,omitempty"`
+}
+
+type PartnerInfo struct {
+	ApprovalStatus   string `json:"approvalStatus,omitempty"`
+	FederationStatus string `json:"federationStatus,omitempty"`
+	PartnerGid       string `json:"partnerGid,omitempty"`
+	PartnerName      string `json:"partnerName,omitempty"`
+	PartnerScopeName string `json:"partnerScopeName,omitempty"`
+}
+
 // RemoveCloudSuffix removes appended cloud name (zscalerthree.net) i.e "CrowdStrike_ZPA_Pre-ZTA (zscalerthree.net)"
 func RemoveCloudSuffix(str string) string {
 	reg := regexp.MustCompile(`(.*)[\s]+\([a-zA-Z0-9\-_\.]*\)[\s]*$`)
@@ -282,6 +302,11 @@ func GetAllPagesGeneric[T any](ctx context.Context, client *zscaler.Client, rela
 		result = append(result, l...)
 	}
 
+	result, err = zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, resp, err
+	}
+
 	return result, resp, nil
 }
 
@@ -383,6 +408,11 @@ func GetAllPagesGenericWithCustomFilters[T any](ctx context.Context, client *zsc
 			return nil, resp, err
 		}
 		result = append(result, l...)
+	}
+
+	result, err = zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, resp, err
 	}
 
 	return result, resp, nil
@@ -514,4 +544,92 @@ func convertZPASearchToFilter(search string) string {
 func sanitizeSearchQuery(query string) string {
 	// Just trim and return - let URL encoding handle special characters
 	return strings.TrimSpace(query)
+}
+
+// POST-based search request types used by ZPA endpoints that do not support
+// standard GET-based pagination (e.g., /tagGroup/search, /tagKey/search).
+
+type SearchRequest struct {
+	FilterBy *SearchFilterBy `json:"filterBy,omitempty"`
+	PageBy   *SearchPageBy   `json:"pageBy,omitempty"`
+	SortBy   *SearchSortBy   `json:"sortBy,omitempty"`
+}
+
+type SearchFilterBy struct {
+	FilterGroups []SearchFilterGroup `json:"filterGroups,omitempty"`
+	Operator     string              `json:"operator,omitempty"`
+}
+
+type SearchFilterGroup struct {
+	Filters  []SearchFilterItem `json:"filters,omitempty"`
+	Operator string             `json:"operator,omitempty"`
+}
+
+type SearchFilterItem struct {
+	CommaSepValues string   `json:"commaSepValues,omitempty"`
+	FilterName     string   `json:"filterName,omitempty"`
+	Operator       string   `json:"operator,omitempty"`
+	Value          string   `json:"value,omitempty"`
+	Values         []string `json:"values,omitempty"`
+}
+
+type SearchPageBy struct {
+	Page          int `json:"page,omitempty"`
+	PageSize      int `json:"pageSize,omitempty"`
+	ValidPage     int `json:"validPage,omitempty"`
+	ValidPageSize int `json:"validPageSize,omitempty"`
+}
+
+type SearchSortBy struct {
+	SortName  string `json:"sortName,omitempty"`
+	SortOrder string `json:"sortOrder,omitempty"`
+}
+
+// GetAllPagesGenericWithPostSearch fetches all resources using the POST-based
+// search pattern. Some ZPA endpoints (e.g., /tagGroup/search) require a POST
+// body with filterBy/pageBy/sortBy instead of GET query parameters.
+// The filter parameter is passed as query params (for microTenantID).
+func GetAllPagesGenericWithPostSearch[T any](ctx context.Context, client *zscaler.Client, relativeURL string, searchRequest SearchRequest, filter Filter) ([]T, *http.Response, error) {
+	var result []T
+	var lastResp *http.Response
+
+	page := 1
+	pageSize := DefaultPageSize
+
+	for {
+		searchRequest.PageBy = &SearchPageBy{
+			Page:          page,
+			PageSize:      pageSize,
+			ValidPage:     0,
+			ValidPageSize: 0,
+		}
+
+		var paged struct {
+			TotalPages interface{} `json:"totalPages"`
+			List       []T         `json:"list"`
+		}
+
+		resp, err := client.NewRequestDo(ctx, "POST", relativeURL, filter, searchRequest, &paged)
+		if err != nil {
+			return nil, resp, err
+		}
+		lastResp = resp
+
+		result = append(result, paged.List...)
+
+		pages := fmt.Sprintf("%v", paged.TotalPages)
+		totalPages, _ := strconv.Atoi(pages)
+
+		if page >= totalPages {
+			break
+		}
+		page++
+	}
+
+	result, err := zscaler.ApplyJMESPathFromContext(ctx, result)
+	if err != nil {
+		return nil, lastResp, err
+	}
+
+	return result, lastResp, nil
 }

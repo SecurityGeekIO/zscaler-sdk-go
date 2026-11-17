@@ -16,18 +16,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
-	ztw "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	ztw "github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,7 +43,7 @@ var (
 )
 
 const (
-	VERSION               = "3.8.20"
+	VERSION               = "3.8.55"
 	ZSCALER_CLIENT_ID     = "ZSCALER_CLIENT_ID"
 	ZSCALER_CLIENT_SECRET = "ZSCALER_CLIENT_SECRET"
 	ZSCALER_VANITY_DOMAIN = "ZSCALER_VANITY_DOMAIN"
@@ -193,15 +193,16 @@ func NewConfiguration(conf ...ConfigSetter) (*Configuration, error) {
 }
 
 func setHttpClients(cfg *Configuration) {
-	// ZIA-specific rate limits with hourly tracking:
-	// ZIA rate limits: server enforces per-endpoint limits via 429 + Retry-After.
-	// Client-side limiter provides a first-pass throttle; server handles endpoint-specific enforcement.
+	// ZIA-specific rate limits. The ZIA API enforces them per endpoint (see the
+	// API Rate Limit Summary): GET 2/sec and 1000/hr, POST/PUT 1/sec and 400/hr,
+	// DELETE up to 1/sec and 400/hr. The hourly limits are therefore tracked per
+	// endpoint (method + path, IDs normalized), with safety buffers.
 	// Per-second: GET: 20 per 10s (2/sec), POST/PUT/DELETE: 10 per 10s (1/sec)
-	// Hourly: GET: 950/hr, POST/PUT: 950/hr, DELETE: 380/hr (with safety buffers)
-	ziaRateLimiter := rl.NewRateLimiterWithHourly(
+	// Hourly, per endpoint: GET: 950/hr, POST/PUT: 380/hr, DELETE: 380/hr
+	ziaRateLimiter := rl.NewRateLimiterWithEndpointHourly(
 		20, 10, // GET: 20 per 10 seconds, POST/PUT/DELETE: 10 per 10 seconds
 		10, 10, // GET frequency: 10 seconds, POST/PUT/DELETE frequency: 10 seconds
-		950, 950, 380, // Hourly: GET: 950, POST/PUT: 950, DELETE: 380 (with safety buffers)
+		950, 380, 380, // Hourly per endpoint: GET: 950, POST/PUT: 380, DELETE: 380 (with safety buffers)
 	)
 
 	// ZTW uses same limits as ZIA
@@ -246,12 +247,7 @@ func Authenticate(ctx context.Context, cfg *Configuration, l logger.Logger) (*Au
 	}
 
 	// Determine the OAuth2 provider URL based on the cloud parameter.
-	var authUrl string
-	if creds.Cloud == "" || strings.EqualFold(creds.Cloud, "PRODUCTION") {
-		authUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", creds.VanityDomain)
-	} else {
-		authUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", creds.VanityDomain, strings.ToLower(creds.Cloud))
-	}
+	authUrl := getAuthURL(creds.VanityDomain, creds.Cloud)
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
@@ -336,12 +332,7 @@ func authenticateWithCert(cfg *Configuration) (*AuthToken, error) {
 	}
 
 	// Determine the OAuth2 provider URL based on the cloud parameter.
-	var authUrl string
-	if creds.Cloud == "" || strings.EqualFold(creds.Cloud, "PRODUCTION") {
-		authUrl = fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", creds.VanityDomain)
-	} else {
-		authUrl = fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", creds.VanityDomain, strings.ToLower(creds.Cloud))
-	}
+	authUrl := getAuthURL(creds.VanityDomain, creds.Cloud)
 
 	// Make the POST request.
 	resp, err := cfg.HTTPClient.PostForm(authUrl, formData)
@@ -385,8 +376,8 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 		return client.oauth2Credentials.ZCCHTTPClient
 	case "zdx":
 		return client.oauth2Credentials.ZDXHTTPClient
-	case "admin":
-		return client.oauth2Credentials.HTTPClient // Use default client for admin endpoints
+	case "ziam", "admin":
+		return client.oauth2Credentials.HTTPClient // Use default client for ZIdentity admin endpoints
 	default:
 		return client.oauth2Credentials.HTTPClient
 	}
@@ -394,8 +385,16 @@ func (client *Client) getServiceHTTPClient(endpoint string) *http.Client {
 
 func detectServiceType(endpoint string) (string, error) {
 	path := strings.TrimPrefix(endpoint, "/")
-	// Detect the service type based on the endpoint prefix
-	if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
+	// Detect the service type based on the endpoint prefix.
+	//
+	// ZIAM must be checked before ZIA: "ziam/admin/api/v1/..." has "zia" as a
+	// prefix, so the ZIA branch would otherwise claim every identity call and
+	// meter it against ZIA's rate limiter — including ZIA's hourly quotas,
+	// which a paged ZIdentity listing can exhaust on behalf of a service it has
+	// nothing to do with.
+	if strings.HasPrefix(path, "ziam") {
+		return "ziam", nil
+	} else if strings.HasPrefix(path, "zia") || strings.HasPrefix(path, "zscsb") {
 		return "zia", nil
 	} else if strings.HasPrefix(path, "ztw") {
 		return "ztw", nil
@@ -411,8 +410,43 @@ func detectServiceType(endpoint string) (string, error) {
 	return "", fmt.Errorf("unsupported service")
 }
 
+// OneAPI (Zidentity) government (FedRAMP) cloud endpoints.
+//
+// These environments are FedRAMP-isolated and use a completely different
+// identity provider and API gateway than the commercial clouds. The OneAPI
+// client selects them via the (case-insensitive) "cloud" parameter
+// ("gov"/"govus"). Keyed on the lowercased cloud value.
+var oneAPIGovAuthDomains = map[string]string{
+	"gov":   "zidentitygov.net",
+	"govus": "zidentitygov.us",
+}
+
+var oneAPIGovAPIBaseURLs = map[string]string{
+	"gov":   "https://api.zscalergov.net",
+	"govus": "https://api.zscalergov.us",
+}
+
+// getAuthURL determines the OAuth2 token endpoint based on the vanity domain
+// and cloud. Government (FedRAMP) clouds use a dedicated Zidentity identity
+// provider rather than the commercial zslogin{cloud}.net family.
+func getAuthURL(vanityDomain, cloud string) string {
+	if cloud == "" || strings.EqualFold(cloud, "PRODUCTION") {
+		return fmt.Sprintf("https://%s.zslogin.net/oauth2/v1/token", vanityDomain)
+	}
+	if govAuthDomain, ok := oneAPIGovAuthDomains[strings.ToLower(cloud)]; ok {
+		return fmt.Sprintf("https://%s.%s/oauth2/v1/token", vanityDomain, govAuthDomain)
+	}
+	return fmt.Sprintf("https://%s.zslogin%s.net/oauth2/v1/token", vanityDomain, strings.ToLower(cloud))
+}
+
 // GetAPIBaseURL gets the appropriate base url based on the cloud and sandbox mode.
 func GetAPIBaseURL(cloud string) string {
+	// Government (FedRAMP) clouds are isolated environments served by dedicated
+	// gateways and do not follow the commercial api.{cloud}.zsapi.net pattern.
+	if govBaseURL, ok := oneAPIGovAPIBaseURLs[strings.ToLower(cloud)]; ok {
+		return govBaseURL
+	}
+
 	baseURL := "https://api.zsapi.net"
 	if cloud != "" && !strings.EqualFold(cloud, "PRODUCTION") {
 		baseURL = fmt.Sprintf("https://api.%s.zsapi.net", strings.ToLower(cloud))

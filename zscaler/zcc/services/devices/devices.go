@@ -1,0 +1,158 @@
+package devices
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/common"
+)
+
+const (
+	getDevicesEndpoint       = "/zcc/papi/public/v1/getDevices"
+	getDeviceDetailsEndpoint = "/zcc/papi/public/v1/getDeviceDetails"
+	getDeviceCleanupEndpoint = "/zcc/papi/public/v1/getDeviceCleanupInfo"
+	setDeviceCleanupEndpoint = "/zcc/papi/public/v1/setDeviceCleanupInfo"
+)
+
+type GetDevices struct {
+	AgentVersion            string  `json:"agentVersion"`
+	CompanyName             string  `json:"companyName"`
+	ConfigDownloadTime      string  `json:"config_download_time"`
+	DeregistrationTimestamp string  `json:"deregistrationTimestamp"`
+	Detail                  string  `json:"detail"`
+	DownloadCount           int     `json:"download_count"`
+	HardwareFingerprint     string  `json:"hardwareFingerprint"`
+	KeepAliveTime           string  `json:"keepAliveTime"`
+	LastSeenTime            string  `json:"last_seen_time"`
+	MacAddress              string  `json:"macAddress"`
+	MachineHostname         string  `json:"machineHostname"`
+	Manufacturer            string  `json:"manufacturer"`
+	OsVersion               string  `json:"osVersion"`
+	Owner                   string  `json:"owner"`
+	PolicyName              string  `json:"policyName"`
+	RegistrationState       string  `json:"registrationState"`
+	RegistrationTime        string  `json:"registration_time"`
+	State                   int     `json:"state"`
+	TunnelVersion           *string `json:"tunnelVersion,omitempty"`
+	Type                    int     `json:"type"`
+	Udid                    string  `json:"udid"`
+	UpmVersion              string  `json:"upmVersion"`
+	User                    string  `json:"user"`
+	VpnState                int     `json:"vpnState"`
+	ZappArch                *string `json:"zappArch,omitempty"`
+}
+
+type GetDevicesQueryParams = common.QueryParams
+
+type DeviceCleanupInfo struct {
+	ID                string `json:"id"`
+	Active            string `json:"active"`
+	ForceRemoveType   string `json:"forceRemoveType"`
+	DeviceExceedLimit string `json:"deviceExceedLimit"`
+	AutoRemovalDays   string `json:"autoRemovalDays"`
+	AutoPurgeDays     string `json:"autoPurgeDays"`
+}
+
+type DeviceDetails struct {
+	AgentVersion        string `json:"agent_version"`
+	Carrier             string `json:"carrier"`
+	ConfigDownloadTime  string `json:"config_download_time"`
+	DeregistrationTime  string `json:"deregistration_time"`
+	DevicePolicyName    string `json:"devicePolicyName"`
+	DeviceLocale        string `json:"device_locale"`
+	DownloadCount       int    `json:"download_count"`
+	ExternalModel       string `json:"external_model"`
+	HardwareFingerprint string `json:"hardwareFingerprint"`
+	KeepAliveTime       string `json:"keep_alive_time"`
+	LastSeenTime        string `json:"last_seen_time"`
+	MacAddress          string `json:"mac_address"`
+	MachineHostname     string `json:"machineHostname"`
+	Manufacturer        string `json:"manufacturer"`
+	OSVersion           string `json:"os_version"`
+	Owner               string `json:"owner"`
+	RegistrationTime    string `json:"registration_time"`
+	Rooted              int    `json:"rooted"`
+	State               string `json:"state"`
+	TunnelVersion       string `json:"tunnelVersion"`
+	Type                string `json:"type"`
+	UniqueID            string `json:"unique_id"`
+	UpmVersion          string `json:"upmVersion"`
+	UserName            string `json:"user_name"`
+	ZadVersion          string `json:"zadVersion"`
+	ZappArch            string `json:"zappArch"`
+}
+
+func GetAll(ctx context.Context, service *zscaler.Service, username, osType string) ([]GetDevices, error) {
+	params := common.QueryParams{
+		Username: username,
+		OsType:   osType,
+	}
+	return common.ReadAllPages[GetDevices](ctx, service.Client, getDevicesEndpoint, params, 1000)
+}
+
+func GetDeviceCleanupInfo(ctx context.Context, service *zscaler.Service) (*DeviceCleanupInfo, error) {
+	// Make the GET request
+	resp, err := service.Client.NewZccRequestDo(ctx, "GET", getDeviceCleanupEndpoint, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve device cleanup info: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Handle non-200 HTTP response codes
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to retrieve device cleanup info: received status code %d", resp.StatusCode)
+	}
+
+	// Parse the response body into DeviceCleanupInfo struct
+	var cleanupInfo DeviceCleanupInfo
+	err = json.NewDecoder(resp.Body).Decode(&cleanupInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode device cleanup info response: %w", err)
+	}
+
+	return &cleanupInfo, nil
+}
+
+func GetDeviceDetails(ctx context.Context, service *zscaler.Service, username, udid string) ([]DeviceDetails, error) {
+	// Construct query parameters with optional username and udid
+	queryParams := url.Values{}
+	if username != "" {
+		queryParams.Set("username", username)
+	}
+	if udid != "" {
+		queryParams.Set("udid", udid)
+	}
+
+	// Construct the full endpoint with query parameters
+	fullEndpoint := getDeviceDetailsEndpoint
+	if len(queryParams) > 0 {
+		fullEndpoint = fmt.Sprintf("%s?%s", fullEndpoint, queryParams.Encode())
+	}
+
+	// Fetch device details
+	var deviceDetails []DeviceDetails
+	err := service.Client.Read(ctx, fullEndpoint, &deviceDetails)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch device details: %w", err)
+	}
+
+	return deviceDetails, nil
+}
+
+func SetDeviceCleanupInfo(ctx context.Context, service *zscaler.Service, cleanupInfo *DeviceCleanupInfo) (*DeviceCleanupInfo, error) {
+	if cleanupInfo == nil {
+		return nil, errors.New("cleanupInfo is required")
+	}
+
+	_, err := service.Client.NewZccRequestDo(ctx, "PUT", setDeviceCleanupEndpoint, nil, cleanupInfo, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set device cleanup info: %w", err)
+	}
+
+	return GetDeviceCleanupInfo(ctx, service)
+}

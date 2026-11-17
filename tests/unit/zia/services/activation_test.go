@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/activation"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/activation"
 )
 
 // =====================================================
@@ -194,5 +194,50 @@ func TestActivation_ResponseParsing(t *testing.T) {
 			assert.Equal(t, status, act.Status)
 		}
 	})
+}
+
+func TestActivation_GetActivationStatus_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/status"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.GetActivationStatus(context.Background(), service)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestActivation_CreateActivation_Error_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/status/activate"
+	server.On("POST", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.CreateActivation(context.Background(), service, activation.Activation{Status: "ACTIVE"})
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestActivation_GetEusaStatus_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/eusaStatus/latest"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := activation.GetEusaStatus(context.Background(), service)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 

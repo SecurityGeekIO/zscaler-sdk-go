@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -189,7 +189,7 @@ func CreateCloudApplicationsExportCSV(ctx context.Context, service *zscaler.Serv
 	// Create the endpoint with the entity
 	endpoint := fmt.Sprintf(appExportCsvEndpointTemplate, entity)
 
-	resp, err := service.Client.Create(ctx, endpoint, appExport)
+	resp, err := service.Client.Create(ctx, endpoint, *appExport)
 	if err != nil {
 		return nil, nil, err
 	}

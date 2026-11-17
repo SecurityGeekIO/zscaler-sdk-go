@@ -8,21 +8,18 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
 
 const (
 	mgmtConfig = "/zpa/mgmtconfig/v1/admin/customers/"
 )
-
-var ruleMutex sync.Mutex
 
 type PolicySet struct {
 	CreationTime    string       `json:"creationTime,omitempty"`
@@ -50,6 +47,7 @@ type PolicyRule struct {
 	BypassDefaultRule                       bool                                  `json:"bypassDefaultRule"`
 	CreationTime                            string                                `json:"creationTime,omitempty"`
 	CustomMsg                               string                                `json:"customMsg,omitempty"`
+	AuditMessage                            string                                `json:"auditMessage,omitempty"`
 	DefaultRule                             bool                                  `json:"defaultRule,omitempty"`
 	DefaultRuleName                         string                                `json:"defaultRuleName,omitempty"`
 	ExtranetEnabled                         bool                                  `json:"extranetEnabled,omitempty"`
@@ -59,6 +57,8 @@ type PolicyRule struct {
 	PolicySetID                             string                                `json:"policySetId"`
 	PolicyType                              string                                `json:"policyType,omitempty"`
 	Priority                                string                                `json:"priority,omitempty"`
+	Version                                 string                                `json:"version,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
 	ReauthDefaultRule                       bool                                  `json:"reauthDefaultRule"`
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
@@ -72,8 +72,10 @@ type PolicyRule struct {
 	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
 	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
 	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	BrowserPostureName                      string                                `json:"browserPostureName,omitempty"`
+	BrowserPostureProfileID                 string                                `json:"browserPostureProfileId,omitempty"`
 	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
-	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
+	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled"`
 	Conditions                              []Conditions                          `json:"conditions"`
 	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
@@ -155,7 +157,7 @@ func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType s
 
 func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*PolicyRule, *http.Response, error) {
 	// GET operations don't need locking - they're safe to run concurrently
-	// Only CREATE/UPDATE/DELETE need the ruleMutex due to API restrictions
+	// Only CREATE/UPDATE/DELETE need common.PolicyRuleMutex due to API restrictions
 	v := new(PolicyRule)
 	url := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
@@ -167,8 +169,8 @@ func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, r
 
 // POST --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
 func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule) (*PolicyRule, *http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule", rule.PolicySetID)
@@ -181,8 +183,8 @@ func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule)
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
 		policySetRule.Conditions = []Conditions{}
@@ -209,8 +211,8 @@ func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, rule
 
 // DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func Delete(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
@@ -247,8 +249,8 @@ func GetByNameAndTypes(ctx context.Context, service *zscaler.Service, policyType
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}
 func Reorder(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, order int) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfig+service.Client.GetCustomerID()+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)

@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,16 +25,22 @@ const (
 	jSessionTimeoutOffset     = 1 * time.Minute // reduced to 1 minute for 5-minute timeout
 	contentTypeJSON           = "application/json"
 	cookieName                = "JSESSIONID"
-	MaxNumOfRetries           = 100
-	RetryWaitMaxSeconds       = 20
-	RetryWaitMinSeconds       = 5
-	ziaAPIVersion             = "api/v1"
-	ziaAPIAuthURL             = "/authenticatedSession"
-	loggerPrefix              = "zia-logger: "
+	// MaxNumOfRetries caps the retryablehttp inner retry loop. Lowered from 100
+	// to match the OneAPI client (see zscaler/oneapiconfig.go): ten attempts
+	// across the exponential backoff window cover every observed real-world
+	// recovery, while 100 let a single stuck call stall for minutes. Override via
+	// cfg.ZIA.Client.RateLimit.MaxRetries, WithRateLimitMaxRetries, or the
+	// ZIA_CLIENT_RATE_LIMIT_MAX_RETRIES environment variable.
+	MaxNumOfRetries     = 10
+	RetryWaitMaxSeconds = 20
+	RetryWaitMinSeconds = 5
+	ziaAPIVersion       = "api/v1"
+	ziaAPIAuthURL       = "/authenticatedSession"
+	loggerPrefix        = "zia-logger: "
 )
 
 const (
-	VERSION      = "3.7.5"
+	VERSION      = "3.8.43"
 	ZIA_USERNAME = "ZIA_USERNAME"
 	ZIA_PASSWORD = "ZIA_PASSWORD"
 	ZIA_API_KEY  = "ZIA_API_KEY"
@@ -72,6 +78,9 @@ type Client struct {
 	freshCache       bool
 	cacheEnabled     bool
 	cache            cache.Cache
+	// cacheWrites keeps a GET that overlaps a write from caching the data
+	// the write replaces (see cache.WriteTracker).
+	cacheWrites      cache.WriteTracker
 	cacheTtl         time.Duration
 	cacheCleanwindow time.Duration
 	cacheMaxSizeMB   int

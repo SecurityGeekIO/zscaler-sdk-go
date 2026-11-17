@@ -8,22 +8,19 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/applicationsegment"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/appconnectorgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/policycommon"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/serviceedgegroup"
 )
 
 const (
 	mgmtConfigV1 = "/zpa/mgmtconfig/v1/admin/customers/"
 	mgmtConfigV2 = "/zpa/mgmtconfig/v2/admin/customers/"
 )
-
-var ruleMutex sync.Mutex
 
 type PolicySet struct {
 	CreationTime    string       `json:"creationTime,omitempty"`
@@ -64,6 +61,10 @@ type PolicyRuleResource struct {
 	PolicySetID                             string                                `json:"policySetId,omitempty"`
 	PolicyType                              string                                `json:"policyType,omitempty"`
 	Priority                                string                                `json:"priority,omitempty"`
+	Version                                 string                                `json:"version,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
+	LinkText                                string                                `json:"linkText,omitempty"`
+	URL                                     string                                `json:"url,omitempty"`
 	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
 	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
 	RuleOrder                               string                                `json:"ruleOrder,omitempty"`
@@ -74,13 +75,15 @@ type PolicyRuleResource struct {
 	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
 	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
 	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	BrowserPostureName                      string                                `json:"browserPostureName,omitempty"`
+	BrowserPostureProfileID                 string                                `json:"browserPostureProfileId,omitempty"`
 	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
 	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled,omitempty"`
 	Conditions                              []PolicyRuleResourceConditions        `json:"conditions"`
 	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
 	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
 	ServiceEdgeGroups                       []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
-	DesktopPolicyMappings                   []DesktopPolicyMappings               `json:"desktopPolicyMappings,omitempty"`
+	DesktopPolicyMappings                   []policycommon.DesktopPolicyMappings  `json:"desktopPolicyMappings,omitempty"`
 	Credential                              *Credential                           `json:"credential,omitempty"`
 	CredentialPool                          *Credential                           `json:"credentialPool"`
 	PrivilegedCapabilities                  PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
@@ -116,42 +119,47 @@ type Operands struct {
 // ######################################################################################################
 
 type PolicyRule struct {
-	ID                           string                                `json:"id,omitempty"`
-	Name                         string                                `json:"name,omitempty"`
-	Action                       string                                `json:"action,omitempty"`
-	ActionID                     string                                `json:"actionId,omitempty"`
-	PostActions                  map[string]interface{}                `json:"postActions,omitempty"`
-	CustomMsg                    string                                `json:"customMsg,omitempty"`
-	Description                  string                                `json:"description,omitempty"`
-	Disabled                     string                                `json:"disabled,omitempty"`
-	ExtranetEnabled              bool                                  `json:"extranetEnabled,omitempty"`
-	CreationTime                 string                                `json:"creationTime,omitempty"`
-	ModifiedBy                   string                                `json:"modifiedBy,omitempty"`
-	ModifiedTime                 string                                `json:"modifiedTime,omitempty"`
-	Operator                     string                                `json:"operator,omitempty"`
-	PolicySetID                  string                                `json:"policySetId,omitempty"`
-	PolicyType                   string                                `json:"policyType,omitempty"`
-	Priority                     string                                `json:"priority,omitempty"`
-	ReauthIdleTimeout            string                                `json:"reauthIdleTimeout,omitempty"`
-	ReauthTimeout                string                                `json:"reauthTimeout,omitempty"`
-	RuleOrder                    string                                `json:"ruleOrder,omitempty"`
-	ZpnIsolationProfileID        string                                `json:"zpnIsolationProfileId,omitempty"`
-	ZpnInspectionProfileID       string                                `json:"zpnInspectionProfileId,omitempty"`
-	ZpnInspectionProfileName     string                                `json:"zpnInspectionProfileName,omitempty"`
-	MicroTenantID                string                                `json:"microtenantId"`
-	MicroTenantName              string                                `json:"microtenantName,omitempty"`
-	ReadOnly                     bool                                  `json:"readOnly,omitempty"`
-	RestrictionType              string                                `json:"restrictionType,omitempty"`
-	ZscalerManaged               bool                                  `json:"zscalerManaged,omitempty"`
-	AppServerGroups              []servergroup.ServerGroup             `json:"appServerGroups"`
-	AppConnectorGroups           []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
-	ServiceEdgeGroups            []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
-	Conditions                   []PolicyRuleResourceConditions        `json:"conditions,omitempty"`
-	Credential                   *Credential                           `json:"credential,omitempty"`
-	CredentialPool               *Credential                           `json:"credentialPool,omitempty"`
-	PrivilegedCapabilities       PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
-	ExtranetDTO                  common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
-	PrivilegedPortalCapabilities PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
+	ID                                      string                                `json:"id,omitempty"`
+	Name                                    string                                `json:"name,omitempty"`
+	Action                                  string                                `json:"action,omitempty"`
+	ActionID                                string                                `json:"actionId,omitempty"`
+	PostActions                             map[string]interface{}                `json:"postActions,omitempty"`
+	CustomMsg                               string                                `json:"customMsg,omitempty"`
+	Description                             string                                `json:"description,omitempty"`
+	Disabled                                string                                `json:"disabled,omitempty"`
+	ExtranetEnabled                         bool                                  `json:"extranetEnabled,omitempty"`
+	DevicePostureFailureNotificationEnabled bool                                  `json:"devicePostureFailureNotificationEnabled"`
+	CreationTime                            string                                `json:"creationTime,omitempty"`
+	ModifiedBy                              string                                `json:"modifiedBy,omitempty"`
+	ModifiedTime                            string                                `json:"modifiedTime,omitempty"`
+	Operator                                string                                `json:"operator,omitempty"`
+	PolicySetID                             string                                `json:"policySetId,omitempty"`
+	PolicyType                              string                                `json:"policyType,omitempty"`
+	Priority                                string                                `json:"priority,omitempty"`
+	ReauthIdleTimeout                       string                                `json:"reauthIdleTimeout,omitempty"`
+	ReauthTimeout                           string                                `json:"reauthTimeout,omitempty"`
+	RuleOrder                               string                                `json:"ruleOrder,omitempty"`
+	GroupID                                 string                                `json:"groupId,omitempty"`
+	LinkText                                string                                `json:"linkText,omitempty"`
+	URL                                     string                                `json:"url,omitempty"`
+	ZpnIsolationProfileID                   string                                `json:"zpnIsolationProfileId,omitempty"`
+	ZpnInspectionProfileID                  string                                `json:"zpnInspectionProfileId,omitempty"`
+	ZpnInspectionProfileName                string                                `json:"zpnInspectionProfileName,omitempty"`
+	MicroTenantID                           string                                `json:"microtenantId"`
+	MicroTenantName                         string                                `json:"microtenantName,omitempty"`
+	ReadOnly                                bool                                  `json:"readOnly,omitempty"`
+	RestrictionType                         string                                `json:"restrictionType,omitempty"`
+	ZscalerManaged                          bool                                  `json:"zscalerManaged,omitempty"`
+	AppServerGroups                         []servergroup.ServerGroup             `json:"appServerGroups"`
+	AppConnectorGroups                      []appconnectorgroup.AppConnectorGroup `json:"appConnectorGroups"`
+	ServiceEdgeGroups                       []serviceedgegroup.ServiceEdgeGroup   `json:"serviceEdgeGroups"`
+	Conditions                              []PolicyRuleResourceConditions        `json:"conditions,omitempty"`
+	Credential                              *Credential                           `json:"credential,omitempty"`
+	CredentialPool                          *Credential                           `json:"credentialPool,omitempty"`
+	PrivilegedCapabilities                  PrivilegedCapabilities                `json:"privilegedCapabilities,omitempty"`
+	ExtranetDTO                             common.ExtranetDTO                    `json:"extranetDTO,omitempty"`
+	PrivilegedPortalCapabilities            PrivilegedPortalCapabilities          `json:"privilegedPortalCapabilities,omitempty"`
+	DesktopPolicyMappings                   []policycommon.DesktopPolicyMappings  `json:"desktopPolicyMappings,omitempty"`
 }
 
 type PolicyRuleResourceConditions struct {
@@ -201,16 +209,6 @@ type PrivilegedPortalCapabilities struct {
 	MicroTenantID string   `json:"microtenantId,omitempty"`
 }
 
-type DesktopPolicyMappings struct {
-	AppSegments  []applicationsegment.ApplicationSegmentResource `json:"appSegments,omitempty"`
-	ID           string                                          `json:"id"`
-	CreationTime string                                          `json:"creationTime,omitempty"`
-	ModifiedBy   string                                          `json:"modifiedBy,omitempty"`
-	ModifiedTime string                                          `json:"modifiedTime,omitempty"`
-	ImageID      string                                          `json:"imageId,omitempty"`
-	ImageName    string                                          `json:"imageName,omitempty"`
-}
-
 func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType string) (*PolicySet, *http.Response, error) {
 	v := new(PolicySet)
 	// Removed fmt.Sprintf: no formatting directives used, direct concatenation avoids vet warning.
@@ -226,7 +224,7 @@ func GetByPolicyType(ctx context.Context, service *zscaler.Service, policyType s
 // GET --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule/{ruleId}
 func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*PolicyRuleResource, *http.Response, error) {
 	// GET operations don't need locking - they're safe to run concurrently
-	// Only CREATE/UPDATE/DELETE need the ruleMutex due to API restrictions
+	// Only CREATE/UPDATE/DELETE need common.PolicyRuleMutex due to API restrictions
 	v := new(PolicyRuleResource)
 	url := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "GET", url, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, v)
@@ -238,8 +236,8 @@ func GetPolicyRule(ctx context.Context, service *zscaler.Service, policySetID, r
 
 // POST --> mgmtconfig​/v2​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule
 func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule) (*PolicyRule, *http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	v := new(PolicyRule)
 	path := fmt.Sprintf(mgmtConfigV2+service.Client.GetCustomerID()+"/policySet/%s/rule", rule.PolicySetID)
@@ -252,8 +250,8 @@ func CreateRule(ctx context.Context, service *zscaler.Service, rule *PolicyRule)
 
 // PUT --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, policySetRule *PolicyRule) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	// Correct the initialization of Conditions slice with the correct type
 	if policySetRule != nil && len(policySetRule.Conditions) == 0 {
@@ -284,8 +282,8 @@ func UpdateRule(ctx context.Context, service *zscaler.Service, policySetID, rule
 
 // DELETE --> mgmtconfig​/v1​/admin​/customers​/{customerId}​/policySet​/{policySetId}​/rule​/{ruleId}
 func Delete(ctx context.Context, service *zscaler.Service, policySetID, ruleId string) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/%s/rule/%s", policySetID, ruleId)
 	resp, err := service.Client.NewRequestDo(ctx, "DELETE", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
@@ -322,8 +320,8 @@ func GetByNameAndTypes(ctx context.Context, service *zscaler.Service, policyType
 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySetId}/rule/{ruleId}/reorder/{newOrder}
 func Reorder(ctx context.Context, service *zscaler.Service, policySetID, ruleId string, order int) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	path := fmt.Sprintf(mgmtConfigV1+service.Client.GetCustomerID()+"/policySet/%s/rule/%s/reorder/%d", policySetID, ruleId, order)
 	resp, err := service.Client.NewRequestDo(ctx, "PUT", path, common.Filter{MicroTenantID: service.MicroTenantID()}, nil, nil)
@@ -336,8 +334,8 @@ func Reorder(ctx context.Context, service *zscaler.Service, policySetID, ruleId 
 // PUT --> /mgmtconfig/v1/admin/customers/{customerId}/policySet/{policySet}/reorder
 // ruleIdOrders is a map[ruleID]Order
 func BulkReorder(ctx context.Context, service *zscaler.Service, policySetType string, ruleIdToOrder map[string]int) (*http.Response, error) {
-	ruleMutex.Lock()
-	defer ruleMutex.Unlock()
+	common.PolicyRuleMutex.Lock()
+	defer common.PolicyRuleMutex.Unlock()
 
 	policySet, resp, err := GetByPolicyType(context.Background(), service, policySetType)
 	if err != nil {

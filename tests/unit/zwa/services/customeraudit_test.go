@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/customeraudit"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/customeraudit"
 )
 
 func TestCustomerAudit_Structure(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
 )
 
 func TestScimGroup_Get_SDK(t *testing.T) {
@@ -52,4 +52,207 @@ func TestScimGroup_GetAllByIdpId_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
+}
+
+func TestScimGroup_GetByName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-777"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	wantName := "Engineering SCIM"
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Other"},
+		{ID: 2, Name: wantName},
+	})))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, wantName, idpID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(2), got.ID)
+	assert.Equal(t, wantName, got.Name)
+}
+
+func TestScimGroup_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-888"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Only Group"},
+	})))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, "missing-group", idpID)
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "missing-group")
+}
+
+func TestScimGroup_GetByNameAndIamIdp_ByIamIdpID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-901"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering", IamIdpID: "iam-a", IamIdpName: "Okta"},
+		{ID: 2, Name: "Engineering", IamIdpID: "iam-b", IamIdpName: "Entra"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "Engineering", idpID,
+		scimgroup.IamIdpCriteria{IamIdpID: "iam-b"})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(2), got.ID)
+	assert.Equal(t, "Entra", got.IamIdpName)
+}
+
+func TestScimGroup_GetByNameAndIamIdp_ByIamIdpName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-902"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering", IamIdpID: "iam-a", IamIdpName: "Okta"},
+		{ID: 2, Name: "Engineering", IamIdpID: "iam-b", IamIdpName: "Entra"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "engineering", idpID,
+		scimgroup.IamIdpCriteria{IamIdpName: "okta"})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(1), got.ID)
+}
+
+func TestScimGroup_GetByNameAndIamIdp_DecoratedName_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-903"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering(Okta)"},
+		{ID: 2, Name: "Engineering(Entra)"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "Engineering", idpID,
+		scimgroup.IamIdpCriteria{IamIdpName: "Entra"})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(2), got.ID)
+}
+
+func TestScimGroup_GetByNameAndIamIdp_Ambiguous_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-904"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering", IamIdpID: "iam-a", IamIdpName: "Okta"},
+		{ID: 2, Name: "Engineering", IamIdpID: "iam-a", IamIdpName: "Okta"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "Engineering", idpID,
+		scimgroup.IamIdpCriteria{IamIdpName: "Okta"})
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "multiple SCIM groups")
+	assert.Contains(t, err.Error(), "id=1")
+	assert.Contains(t, err.Error(), "id=2")
+}
+
+func TestScimGroup_GetByNameAndIamIdp_NoIamIdpMatch_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-905"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering", IamIdpID: "iam-a", IamIdpName: "Okta"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "Engineering", idpID,
+		scimgroup.IamIdpCriteria{IamIdpID: "iam-z"})
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "IAM IdP ID 'iam-z'")
+	assert.Contains(t, err.Error(), `iamIdpName="Okta"`)
+}
+
+func TestScimGroup_GetByNameAndIamIdp_EmptyCriteria_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "idp-906"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]scimgroup.ScimGroup{
+		{ID: 1, Name: "Engineering", IamIdpID: "iam-a"},
+		{ID: 2, Name: "Engineering", IamIdpID: "iam-b"},
+	})))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "Engineering", idpID,
+		scimgroup.IamIdpCriteria{})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(1), got.ID, "empty criteria must keep GetByName's first-match behavior")
+}
+
+// Some ZPA clouds return the SCIM group id as a string; the other numeric
+// fields can be numbers or strings too.
+func TestScimGroup_GetByName_StringID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "72060623063613444"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(`{"totalPages":1,"totalCount":2,"list":[
+		{"id":"799580","name":"A000","idpGroupId":"428lik90rms4ih","idpId":72060623063613444,"creationTime":1794849806,"modifiedTime":1794849806},
+		{"id":799581,"name":"A001","idpId":"72060623063613444","creationTime":"1794849807","modifiedTime":null}
+	]}`))
+
+	got, _, err := scimgroup.GetByName(context.Background(), api.Service, "A000", idpID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(799580), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+	assert.Equal(t, int64(1794849806), got.CreationTime)
+	assert.Equal(t, "428lik90rms4ih", got.IdpGroupID)
+
+	got, _, err = scimgroup.GetByName(context.Background(), api.Service, "A001", idpID)
+	require.NoError(t, err)
+	assert.Equal(t, int64(799581), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+	assert.Equal(t, int64(1794849807), got.CreationTime)
+	assert.Equal(t, int64(0), got.ModifiedTime)
+}
+
+func TestScimGroup_Get_StringID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "799580")
+	api.On("GET", path, common.SuccessResponse(`{"id":"799580","name":"A000","idpId":72060623063613444}`))
+
+	got, _, err := scimgroup.Get(context.Background(), api.Service, "799580")
+	require.NoError(t, err)
+	assert.Equal(t, int64(799580), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+}
+
+// A value that is not a number is still an error.
+func TestScimGroup_Get_InvalidID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "1")
+	api.On("GET", path, common.SuccessResponse(`{"id":"abc","name":"A000"}`))
+
+	_, _, err := scimgroup.Get(context.Background(), api.Service, "1")
+	require.Error(t, err)
+}
+
+// Issue #705 payload: string ids and two groups named A000 from different IAM
+// IdPs. Selecting by IAM IdP ID returns the right group.
+func TestScimGroup_GetByNameAndIamIdp_StringID_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	idpID := "72060623063613444"
+	path := common.ZPAUserConfigPath(api.CustomerID, "scimgroup", "idpId", idpID)
+	api.On("GET", path, common.SuccessResponse(`{"totalPages":1,"totalCount":2,"list":[
+		{"id":"799580","name":"A000","idpGroupId":"428lik90rms4ih","idpId":72060623063613444,"iamIdpId":"410lik57tas4db","iamIdpName":"BD_Okta_Users"},
+		{"id":"799581","name":"A000","idpGroupId":"429lik90rms4ij","idpId":72060623063613444,"iamIdpId":"411lik57tas4dc","iamIdpName":"BD_Entra_Users"}
+	]}`))
+
+	got, _, err := scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "A000", idpID,
+		scimgroup.IamIdpCriteria{IamIdpID: "410lik57tas4db"})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(799580), got.ID)
+	assert.Equal(t, int64(72060623063613444), got.IdpID)
+
+	got, _, err = scimgroup.GetByNameAndIamIdp(context.Background(), api.Service, "A000", idpID,
+		scimgroup.IamIdpCriteria{IamIdpName: "BD_Entra_Users"})
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, int64(799581), got.ID)
 }

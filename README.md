@@ -1,8 +1,8 @@
-[![release](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/SecurityGeekIO/zscaler-sdk-go/actions/workflows/release.yml)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/.go-version)
-[![Go Report Card](https://goreportcard.com/badge/github.com/SecurityGeekIO/zscaler-sdk-go)](https://goreportcard.com/report/github.com/SecurityGeekIO/zscaler-sdk-go)
+[![release](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml/badge.svg)](https://github.com/zscaler/zscaler-sdk-go/actions/workflows/release.yml)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zscaler/zscaler-sdk-go)](https://github.com/zscaler/zscaler-sdk-go/v3/blob/master/.go-version)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zscaler/zscaler-sdk-go)](https://goreportcard.com/report/github.com/zscaler/zscaler-sdk-go)
 [![codecov](https://codecov.io/gh/zscaler/zscaler-sdk-go/graph/badge.svg?token=0VX3UWIWSK)](https://codecov.io/gh/zscaler/zscaler-sdk-go)
-[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/SecurityGeekIO/zscaler-sdk-go/v3/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/zscaler/zscaler-sdk-go?color=blue)](https://github.com/zscaler/zscaler-sdk-go/v3/blob/master/LICENSE)
 [![Zscaler Support](https://img.shields.io/badge/zscaler-support-blue)](https://zscaler.my.site.com/customers/s/)
 [![Zscaler Community](https://img.shields.io/badge/zscaler-community-blue)](https://community.zscaler.com/)
 
@@ -47,7 +47,7 @@ The latest release can always be found on the ([releases page](github-releases))
 
 ## Need help?
 
-If you run into problems, please refer to our [General Support Statement](docs/guides/support.md) before proceeding with the use of this SDK. You can also refer to our [troubleshooting guide](docs/guides/troubleshooting.md) for guidance on typical problems. You can also raise an issue via ([github issues page](https://github.com/SecurityGeekIO/zscaler-sdk-go/issues))
+If you run into problems, please refer to our [General Support Statement](docs/guides/support.md) before proceeding with the use of this SDK. You can also refer to our [troubleshooting guide](docs/guides/troubleshooting.md) for guidance on typical problems. You can also raise an issue via ([github issues page](https://github.com/zscaler/zscaler-sdk-go/issues))
 
 ## Getting started
 
@@ -59,9 +59,9 @@ To install the Zscaler GO SDK in your project:
 
 * Create a module file by running `go mod init`
 * You can skip this step if you already use `go mod`
-* Run `go get github.com/SecurityGeekIO/zscaler-sdk-go/v3@latest`. This will add
+* Run `go get github.com/zscaler/zscaler-sdk-go/v3@latest`. This will add
     the SDK to your `go.mod` file.
-* Import the package in your project with `import "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"`.
+* Import the package in your project with `import "github.com/zscaler/zscaler-sdk-go/v3/zscaler"`.
 
 ### You'll also need
 
@@ -138,6 +138,47 @@ export ZSCALER_CLOUD="beta"
 
 **Note**: By default this SDK will send the authentication request and subsequent API calls to the default base URL.
 
+### OneAPI Government (FedRAMP) Cloud Environments
+
+OneAPI supports the Zscaler government (FedRAMP) clouds. These are FedRAMP-isolated environments served by a dedicated Zidentity identity provider and API gateway. To authenticate, set the `cloud` attribute (or `ZSCALER_CLOUD` environment variable) to one of the supported government values:
+
+| `cloud` value | OAuth token endpoint | API base URL |
+|---------------|----------------------|--------------|
+| `gov`         | `https://<vanity_domain>.zidentitygov.net/oauth2/v1/token`   | `https://api.zscalergov.net` |
+| `govus`       | `https://<vanity_domain>.zidentitygov.us/oauth2/v1/token`    | `https://api.zscalergov.us`  |
+
+For example, authenticating to the GOV environment:
+
+```sh
+export ZSCALER_VANITY_DOMAIN="acme"
+export ZSCALER_CLOUD="gov"
+```
+
+Or inline in the client configuration:
+
+```go
+import (
+ "fmt"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+)
+
+func main() {
+  config, err := zscaler.NewConfiguration(
+    zscaler.WithClientID(""),
+    zscaler.WithClientSecret(""),
+    zscaler.WithVanityDomain("acme"),
+    zscaler.WithZscalerCloud("gov"), // or "govus"
+  )
+  if err != nil {
+    fmt.Printf("Error: %v\n", err)
+  }
+  service, err := zscaler.NewOneAPIClient(config)
+  _ = service
+}
+```
+
+**Note**: The `cloud` value is case-insensitive (`gov`, `GOV`, `govus`, `GOVUS` are all accepted). The `vanityDomain` is still required and is used as the host prefix for the government identity provider.
+
 ### Authenticating to Zscaler Private Access (ZPA)
 
 The authentication to Zscaler Private Access (ZPA) via the OneAPI framework, requires the extra attribute called `customerId` and optionally the attribute `microtenantId`.
@@ -160,7 +201,7 @@ Construct a client instance by passing it your Zidentity ClientID, ClientSecret 
 import (
  "fmt"
  "context"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 func main() {
@@ -182,7 +223,7 @@ Construct a client instance by passing it your Zidentity ClientID, PrivateKey an
 import (
  "fmt"
  "context"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 func main() {
@@ -258,7 +299,7 @@ any other configuration.
 import (
  "fmt"
  "context"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 func main() {
@@ -290,8 +331,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
 )
 
 func main() {
@@ -332,8 +373,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
 )
 
 func main() {
@@ -371,8 +412,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
  "github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -455,8 +496,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
  "github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -497,8 +538,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
  "github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
@@ -547,8 +588,8 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
 )
 
 func main() {
@@ -746,9 +787,9 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/rule_labels"
 )
 
 func main() {
@@ -821,9 +862,9 @@ import (
  "fmt"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/segmentgroup"
 )
 
 func main() {
@@ -900,9 +941,9 @@ import (
  "fmt"
  "log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/scim_api"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/scim_api"
 )
 
 func main() {
@@ -963,9 +1004,9 @@ import (
  "fmt"
  "log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/scim_api"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scim_api"
 )
 
 func main() {
@@ -1028,9 +1069,9 @@ import (
  "context"
  "log"
 
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/devices"
 )
 
 func main() {
@@ -1104,9 +1145,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/location"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/locationmanagement/location"
 )
 
 func main() {
@@ -1166,10 +1207,10 @@ You can provide credentials via the `ZDX_API_KEY_ID`, `ZDX_API_SECRET` environme
 ```go
 import (
  "log"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/applications"
 )
 
 func main() {
@@ -1224,7 +1265,7 @@ You can provide credentials via the `ZWA_API_KEY_ID`, `ZWA_API_SECRET` environme
 
 | Argument     | Description | Environment variable |
 |--------------|-------------|-------------------|
-| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |
+| `key_id`       | _(String)_ The ZWA string that contains the API key ID.| `ZWA_API_KEY_ID` |    
 | `key_secret`       | _(String)_ The ZWA string that contains the key secret.| `ZWA_API_SECRET` |
 | `cloud`       | _(String)_ The ZWA string containing cloud provisioned for your organization.| `ZWA_CLOUD` |
 
@@ -1235,9 +1276,9 @@ You can provide credentials via the `ZWA_API_KEY_ID`, `ZWA_API_SECRET` environme
 ```go
 import (
  "log"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services"
- "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services"
+ "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
 )
 
 func main() {
@@ -1368,9 +1409,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/scimgroup"
 )
 
 func main() {
@@ -1452,16 +1493,29 @@ for _, user := range allUsers {
 
 ## Contributing
 
-We're happy to accept contributions and PRs! Please see the [contribution
-guide](https://github.com/SecurityGeekIO/zscaler-sdk-go/blob/master/CONTRIBUTING.md) to understand how to
-structure a contribution.
+**This repository does not accept pull requests.** The SDK is developed and
+maintained internally by Zscaler against internal API specifications and release
+processes, so externally merged changes would be overwritten by the next
+generated release. Pull requests are closed without review.
 
-[sdkapiref]: https://pkg.go.dev/github.com/SecurityGeekIO/zscaler-sdk-go/v3
+To request a fix or a change, open a GitHub issue — the only supported channel:
+
+* [🐛 Report a bug](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=bug.yml) — something is broken or behaves contrary to the documentation
+* [🚀 Request a feature](https://github.com/zscaler/zscaler-sdk-go/issues/new?template=feature_request.yml) — a new service, endpoint, field or capability
+
+Accepted issues are implemented by the maintainers and shipped in a subsequent
+release. See the [contribution
+policy](https://github.com/zscaler/zscaler-sdk-go/blob/master/CONTRIBUTING.md)
+for what to include in an issue, and
+[SUPPORT.md](https://github.com/zscaler/zscaler-sdk-go/blob/master/SUPPORT.md)
+for the support scope.
+
+[sdkapiref]: https://pkg.go.dev/github.com/zscaler/zscaler-sdk-go/v3
 
 MIT License
 =======
 
-Copyright (c) 2022 [Zscaler](https://github.com/SecurityGeekIO)
+Copyright (c) 2022 [Zscaler](https://github.com/zscaler)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

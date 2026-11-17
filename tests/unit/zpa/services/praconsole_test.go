@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praconsole"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/praconsole"
 )
 
 func TestPRAConsole_Get_SDK(t *testing.T) {
@@ -165,4 +165,22 @@ func TestPRAConsole_GetPraPortal_SDK(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	assert.Equal(t, "console-001", result.ID)
+}
+
+func TestPRAConsole_CreatePraBulk_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "praConsole", "bulk")
+
+	api.On("POST", path, common.SuccessResponse([]praconsole.PRAConsole{
+		{ID: "bulk-1", Name: "Console One"},
+		{ID: "bulk-2", Name: "Console Two"},
+	}))
+
+	got, _, err := praconsole.CreatePraBulk(context.Background(), api.Service, []praconsole.PRAConsole{
+		{Name: "Console One", Enabled: true},
+		{Name: "Console Two", Enabled: true},
+	})
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	assert.Equal(t, "bulk-2", got[1].ID)
 }

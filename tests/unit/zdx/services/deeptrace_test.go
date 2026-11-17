@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/troubleshooting/deeptrace"
 )
 
 // =====================================================
@@ -289,17 +289,17 @@ func TestDeepTrace_ResponseParsing(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Len(t, sessions, 3)
-
+		
 		// Check first session
 		assert.Equal(t, "trace-001", sessions[0].TraceID)
 		assert.Equal(t, "completed", sessions[0].Status)
 		assert.Equal(t, "Session 1", sessions[0].TraceDetails.SessionName)
-
+		
 		// Check second session
 		assert.Equal(t, "trace-002", sessions[1].TraceID)
 		assert.Equal(t, "running", sessions[1].Status)
 		assert.Equal(t, 30, sessions[1].ExpectedTimeMinutes)
-
+		
 		// Check third session
 		assert.Equal(t, "trace-003", sessions[2].TraceID)
 		assert.Equal(t, "pending", sessions[2].Status)
@@ -346,14 +346,14 @@ func TestDeepTrace_ResponseParsing(t *testing.T) {
 
 	t.Run("Parse deep trace with different statuses", func(t *testing.T) {
 		statuses := []string{"pending", "running", "completed", "failed", "cancelled"}
-
+		
 		for _, status := range statuses {
 			jsonData := `{"trace_id": "trace-1", "status": "` + status + `"}`
-
+			
 			var session deeptrace.DeepTraceSession
 			err := json.Unmarshal([]byte(jsonData), &session)
 			require.NoError(t, err)
-
+			
 			assert.Equal(t, status, session.Status)
 		}
 	})

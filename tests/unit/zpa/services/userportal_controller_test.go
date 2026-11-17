@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_controller"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_controller"
 )
 
 func TestUserPortalController_Get_SDK(t *testing.T) {
@@ -143,4 +143,18 @@ func TestUserPortalController_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestUserPortalController_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "userPortal")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]portal_controller.UserPortalController{
+		{ID: "p-1", Name: "Alpha"},
+	})))
+
+	result, _, err := portal_controller.GetByName(context.Background(), api.Service, "Beta")
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no user portal named 'Beta' was found")
 }

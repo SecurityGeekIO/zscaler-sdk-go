@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/aup"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/aup"
 )
 
 func TestUserPortalAUP_Get_SDK(t *testing.T) {
@@ -143,4 +143,18 @@ func TestUserPortalAUP_Delete_SDK(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestUserPortalAUP_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAPath(api.CustomerID, "userportal", "aup")
+
+	api.On("GET", path, common.SuccessResponse(common.ZPAList([]aup.UserPortalAup{
+		{ID: "a-1", Name: "Compliance"},
+	})))
+
+	result, _, err := aup.GetByName(context.Background(), api.Service, "Training")
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "no application named 'Training' was found")
 }

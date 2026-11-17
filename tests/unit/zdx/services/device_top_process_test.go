@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	zdxcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	zdxcommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx/services/reports/devices"
 )
 
 // =====================================================
@@ -180,13 +180,13 @@ func TestDeviceTopProcess_ResponseParsing(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Len(t, topProcs, 2)
-
+		
 		// First timestamp
 		assert.Equal(t, 1699900000, topProcs[0].TimeStamp)
 		assert.Len(t, topProcs[0].TopProcesses, 2)
 		assert.Equal(t, "CPU", topProcs[0].TopProcesses[0].Category)
 		assert.Len(t, topProcs[0].TopProcesses[0].Processes, 2)
-
+		
 		// Second timestamp
 		assert.Equal(t, 1699903600, topProcs[1].TimeStamp)
 		assert.Len(t, topProcs[1].TopProcesses, 1)
@@ -239,7 +239,7 @@ func TestDeviceTopProcess_ResponseParsing(t *testing.T) {
 
 		assert.Len(t, topProcs, 1)
 		assert.Len(t, topProcs[0].TopProcesses, 4)
-
+		
 		// Verify categories
 		categories := make([]string, len(topProcs[0].TopProcesses))
 		for i, tp := range topProcs[0].TopProcesses {

@@ -8,10 +8,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	ziacommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/vzen_clusters"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/vzen_nodes"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	ziacommon "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/vzen_clusters"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/vzen_nodes"
 )
 
 // =====================================================
@@ -340,6 +340,36 @@ func TestVZENNodes_Delete_SDK(t *testing.T) {
 	_, err = vzen_nodes.Delete(context.Background(), service, nodeID)
 
 	require.NoError(t, err)
+}
+
+func TestVZENClusters_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenClusters/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_clusters.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestVZENNodes_Get_NotFound_SDK(t *testing.T) {
+	server := common.NewTestServer()
+	defer server.Close()
+
+	path := "/zia/api/v1/virtualZenNodes/99999"
+	server.On("GET", path, common.NotFoundResponse())
+
+	service, err := common.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := vzen_nodes.Get(context.Background(), service, 99999)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =====================================================

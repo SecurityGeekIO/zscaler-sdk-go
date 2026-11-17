@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/common"
 )
 
 const (
@@ -131,86 +131,128 @@ type URLFilteringRule struct {
 	// Name-ID pairs of time interval during which rule must be enforced.
 	TimeWindows []common.IDNameExtensions `json:"timeWindows,omitempty"`
 
+	// Name-ID pairs HTTP header profile to which the rule applies
+	HTTPHeaderProfiles []common.IDNameExtensions `json:"httpHeaderProfiles,omitempty"`
+
+	// Name-ID pairs HTTP header insertion profile to apply to this rule.
+	HTTPHeaderActionProfiles []common.IDNameExtensions `json:"httpHeaderActionProfiles,omitempty"`
+
 	// The list of preconfigured workload groups to which the policy must be applied.
 	WorkloadGroups []common.IDName `json:"workloadGroups,omitempty"`
 
 	// The cloud browser isolation profile to which the ISOLATE action is applied in the URL Filtering Policy rules.
 	// Note: This parameter is required for the ISOLATE action and is not applicable to other actions.
-	CBIProfile   *CBIProfile `json:"cbiProfile"`
-	CBIProfileID int         `json:"cbiProfileId"`
+	CBIProfile   *common.CBIProfile `json:"cbiProfile,omitempty"`
+	CBIProfileID int                `json:"cbiProfileId,omitempty"`
 }
 
-type CBIProfile struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	URL        string `json:"url"`
-	ProfileSeq int    `json:"profileSeq"`
-}
-
+// URLAdvancedPolicySettings is the full set of advanced URL filtering and cloud
+// app settings.
+//
+// The booleans deliberately omit omitempty: a caller disabling a setting sends
+// false, and dropping that false from the body would leave the setting enabled.
+// The two exceptions are BlockSkype and SafeSearchApps, which the service
+// rejects when present in the states noted on those fields.
 type URLAdvancedPolicySettings struct {
 	// A Boolean value that indicates if dynamic categorization of URLs by analyzing content of uncategorized websites using AI/ML tools is enabled or not.
-	EnableDynamicContentCat bool `json:"enableDynamicContentCat,omitempty"`
+	EnableDynamicContentCat bool `json:"enableDynamicContentCat"`
 
 	// A Boolean value that indicates if URL filtering rules must be applied to sites that are translated using translation services or not.
-	ConsiderEmbeddedSites bool `json:"considerEmbeddedSites,omitempty"`
+	ConsiderEmbeddedSites bool `json:"considerEmbeddedSites"`
 
 	// A Boolean value that indicates whether only safe content must be returned for web, image, and video search.
-	EnforceSafeSearch bool `json:"enforceSafeSearch,omitempty"`
+	EnforceSafeSearch bool `json:"enforceSafeSearch"`
 
 	// Enable/Disable Microsoft Office 365 configuration
-	EnableOffice365 bool `json:"enableOffice365,omitempty"`
+	EnableOffice365 bool `json:"enableOffice365"`
 
 	// Enable/Disable Microsoft-recommended Office 365 one click configuration
-	EnableMsftO365 bool `json:"enableMsftO365,omitempty"`
+	EnableMsftO365 bool `json:"enableMsftO365"`
 
 	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Zoom traffic, without any manual configuration needed.
-	EnableUcaasZoom bool `json:"enableUcaasZoom,omitempty"`
+	EnableUcaasZoom bool `json:"enableUcaasZoom"`
 
 	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for GoTo traffic, without any manual configuration needed.
-	EnableUcaasLogMeIn bool `json:"enableUcaasLogMeIn,omitempty"`
+	EnableUcaasLogMeIn bool `json:"enableUcaasLogMeIn"`
 
 	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for RingCentral traffic, without any manual configuration needed.
-	EnableUcaasRingCentral bool `json:"enableUcaasRingCentral,omitempty"`
+	EnableUcaasRingCentral bool `json:"enableUcaasRingCentral"`
 
 	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Webex traffic, without any manual configuration needed.
-	EnableUcaasWebex bool `json:"enableUcaasWebex,omitempty"`
+	EnableUcaasWebex bool `json:"enableUcaasWebex"`
 
 	// A Boolean value indicating if the Zscaler service is allowed to automatically permit secure local breakout for Talkdesk traffic, with minimal or no manual configuration needed.
-	EnableUcaasTalkdesk bool `json:"enableUcaasTalkdesk,omitempty"`
+	EnableUcaasTalkdesk bool `json:"enableUcaasTalkdesk"`
 
 	// A Boolean value indicating if the use of generative AI prompts with ChatGPT by users should be categorized and logged
-	EnableChatGptPrompt bool `json:"enableChatGptPrompt,omitempty"`
+	EnableChatGptPrompt bool `json:"enableChatGptPrompt"`
 
 	// A Boolean value indicating if the use of generative AI prompts with Microsoft Copilot by users should be categorized and logged
-	EnableMicrosoftCoPilotPrompt bool `json:"enableMicrosoftCoPilotPrompt,omitempty"`
+	EnableMicrosoftCoPilotPrompt bool `json:"enableMicrosoftCoPilotPrompt"`
 
 	// A Boolean value indicating if the use of generative AI prompts with Google Gemini by users should be categorized and logged
-	EnableGeminiPrompt bool `json:"enableGeminiPrompt,omitempty"`
+	EnableGeminiPrompt bool `json:"enableGeminiPrompt"`
 
 	// A Boolean value indicating if the use of generative AI prompts with Poe by users should be categorized and logged
-	EnablePOEPrompt bool `json:"enablePOEPrompt,omitempty"`
+	EnablePOEPrompt bool `json:"enablePOEPrompt"`
 
 	// A Boolean value indicating if the use of generative AI prompts with Meta AI by users should be categorized and logged
-	EnableMetaPrompt bool `json:"enableMetaPrompt,omitempty"`
+	EnableMetaPrompt bool `json:"enableMetaPrompt"`
 
 	// A Boolean value indicating if the use of generative AI prompts with Perplexity by users should be categorized and logged
-	EnablePerPlexityPrompt bool `json:"enablePerPlexityPrompt,omitempty"`
+	EnablePerPlexityPrompt bool `json:"enablePerPlexityPrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with DeepSeek by users should be categorized and logged
+	EnableDeepSeekPrompt bool `json:"enableDeepSeekPrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Writer by users should be categorized and logged
+	EnableWriterPrompt bool `json:"enableWriterPrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Grok by users should be categorized and logged
+	EnableGrokPrompt bool `json:"enableGrokPrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Mistral AI by users should be categorized and logged
+	EnableMistralAIPrompt bool `json:"enableMistralAIPrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Claude by users should be categorized and logged
+	EnableClaudePrompt bool `json:"enableClaudePrompt"`
+
+	// A Boolean value indicating if the use of generative AI prompts with Grammarly by users should be categorized and logged
+	EnableGrammarlyPrompt bool `json:"enableGrammarlyPrompt"`
 
 	// A Boolean value indicating whether access to Skype is blocked or not.
+	//
+	// Deprecated: the service no longer returns this field and rejects a request
+	// body that carries it, so it keeps omitempty and is never sent as false.
 	BlockSkype bool `json:"blockSkype,omitempty"`
 
 	// A Boolean value indicating whether newly registered and observed domains that are identified within hours of going live are allowed or blocked
-	EnableNewlyRegisteredDomains bool `json:"enableNewlyRegisteredDomains,omitempty"`
+	EnableNewlyRegisteredDomains bool `json:"enableNewlyRegisteredDomains"`
 
 	// A Boolean value indicating if authorized users can temporarily override block action on websites by providing their authentication information
-	EnableBlockOverrideForNonAuthUser bool `json:"enableBlockOverrideForNonAuthUser,omitempty"`
+	EnableBlockOverrideForNonAuthUser bool `json:"enableBlockOverrideForNonAuthUser"`
 
 	// A Boolean value indicating if the predefined CIPA Compliance Rule is enabled or not.
-	EnableCIPACompliance bool `json:"enableCIPACompliance,omitempty"`
+	EnableCIPACompliance bool `json:"enableCIPACompliance"`
 
 	//  list of applications for which the SafeSearch enforcement applies. You cannot modify this field when the enforceSafeSearch field is disabled.
 	// Supported Values: "ANY", "DAILYMOTION", "BING", "GOOGLE", "YAHOO", "AOL", "FLICKR", "YOUTUBE","DUCKDUCKGO"
+	//
+	// Keeps omitempty: sending an empty list while EnforceSafeSearch is false is
+	// an attempt to modify a field the service locks in that state.
 	SafeSearchApps []string `json:"safeSearchApps,omitempty"`
+
+	// A Boolean value indicating if Zvelo database lookup is disabled.
+	ZveloDbLookupDisabled bool `json:"zveloDbLookupDisabled"`
+
+	// A Boolean value indicating if Creative Commons search results are enabled.
+	EnableCreativeCommonsSearchResults bool `json:"enableCreativeCommonsSearchResults"`
+
+	// A Boolean value indicating whether the use of generative AI prompts with Google AI by users should be categorized and logged
+	EnableGoogleAIPrompt bool `json:"enableGoogleAIPrompt"`
+
+	// A Boolean value indicating whether the use of generative AI prompts with QuillBot by users should be categorized and logged
+	EnableQuillbotAIPrompt bool `json:"enableQuillbotAIPrompt"`
 }
 
 func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteringRule, error) {
@@ -218,6 +260,22 @@ func Get(ctx context.Context, service *zscaler.Service, ruleID int) (*URLFilteri
 	err := service.Client.Read(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), &rule)
 	if err != nil {
 		return nil, err
+	}
+
+	// API bug workaround: GET by ID does not return the cbiProfile object for ISOLATE rules,
+	// but GetAll does. Fall back to GetAll to populate the missing field.
+	if rule.Action == "ISOLATE" && rule.CBIProfile == nil && rule.CBIProfileID != 0 {
+		service.Client.GetLogger().Printf("[DEBUG] GET by ID did not return cbiProfile for ISOLATE rule %d (cbiProfileId=%d), falling back to GetAll", ruleID, rule.CBIProfileID)
+		allRules, getAllErr := GetAll(ctx, service)
+		if getAllErr == nil {
+			for i := range allRules {
+				if allRules[i].ID == ruleID && allRules[i].CBIProfile != nil {
+					rule.CBIProfile = allRules[i].CBIProfile
+					service.Client.GetLogger().Printf("[DEBUG] Populated cbiProfile from GetAll for rule %d: %+v", ruleID, rule.CBIProfile)
+					break
+				}
+			}
+		}
 	}
 
 	service.Client.GetLogger().Printf("[DEBUG]Returning url filtering rules from Get: %d", rule.ID)
@@ -253,27 +311,14 @@ func Create(ctx context.Context, service *zscaler.Service, ruleID *URLFilteringR
 	return createdURLFilteringRule, nil
 }
 
-func Update(ctx context.Context, service *zscaler.Service, ruleID int, rule *URLFilteringRule) (*URLFilteringRule, *http.Response, error) {
-	// Add debug log to print the rule object
-	service.Client.GetLogger().Printf("[DEBUG] Updating URL Filtering Rule with ID %d: %+v", ruleID, rule)
-
-	// Check if CBIProfile is nil or has empty ID, or if CBIProfileID is 0
-	if rule.CBIProfile == nil || rule.CBIProfile.ID == "" || rule.CBIProfileID == 0 {
-		// If CBIProfile object is empty, fetch it using Get by ID
-		existingRule, err := Get(ctx, service, ruleID)
-		if err == nil && existingRule != nil {
-			rule.CBIProfile = existingRule.CBIProfile
-			rule.CBIProfileID = existingRule.CBIProfileID
-		}
-	}
-	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rule)
+func Update(ctx context.Context, service *zscaler.Service, ruleID int, rules *URLFilteringRule) (*URLFilteringRule, error) {
+	resp, err := service.Client.UpdateWithPut(ctx, fmt.Sprintf("%s/%d", urlFilteringPoliciesEndpoint, ruleID), *rules)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	updatedURLFilteringRule, _ := resp.(*URLFilteringRule)
-
-	service.Client.GetLogger().Printf("[DEBUG] returning URL filtering rule from update: %d", updatedURLFilteringRule.ID)
-	return updatedURLFilteringRule, nil, nil
+	updatedRules, _ := resp.(*URLFilteringRule)
+	service.Client.GetLogger().Printf("[DEBUG]returning firewall rule from update: %d", updatedRules.ID)
+	return updatedRules, nil
 }
 
 func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Response, error) {
@@ -289,9 +334,7 @@ func Delete(ctx context.Context, service *zscaler.Service, ruleID int) (*http.Re
 func GetAll(ctx context.Context, service *zscaler.Service) ([]URLFilteringRule, error) {
 	var rules []URLFilteringRule
 
-	// Use service.Client.Read directly since the API doesn't support pagination
-	// The API returns all results in a single response
-	err := service.Client.Read(ctx, urlFilteringPoliciesEndpoint, &rules)
+	err := common.ReadAllPages(ctx, service.Client, urlFilteringPoliciesEndpoint, &rules)
 	return rules, err
 }
 

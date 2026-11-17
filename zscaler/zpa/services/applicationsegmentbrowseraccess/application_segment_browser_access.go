@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/servergroup"
 )
 
 const (
@@ -24,7 +24,7 @@ type BrowserAccess struct {
 	SegmentGroupID            string                    `json:"segmentGroupId,omitempty"`
 	SegmentGroupName          string                    `json:"segmentGroupName,omitempty"`
 	BypassType                string                    `json:"bypassType,omitempty"`
-	BypassOnReauth            bool                      `json:"bypassOnReauth,omitempty"`
+	BypassOnReauth            bool                      `json:"bypassOnReauth"`
 	ExtranetEnabled           bool                      `json:"extranetEnabled"`
 	AppRecommendationId       string                    `json:"appRecommendationId,omitempty"`
 	MatchStyle                string                    `json:"matchStyle,omitempty"`
@@ -54,8 +54,12 @@ type BrowserAccess struct {
 	RestrictionType           string                    `json:"restrictionType,omitempty"`
 	ZscalerManaged            bool                      `json:"zscalerManaged,omitempty"`
 	WeightedLoadBalancing     bool                      `json:"weightedLoadBalancing,omitempty"`
+	HBREnabled                bool                      `json:"hbrEnabled,omitempty"`
+	StickyEntity              string                    `json:"stickyEntity,omitempty"`
+	StickyGroup               string                    `json:"stickyGroup,omitempty"`
 	TCPPortRanges             []string                  `json:"tcpPortRanges,omitempty"`
 	UDPPortRanges             []string                  `json:"udpPortRanges,omitempty"`
+	GuestDetails              []common.GuestDetails     `json:"guestDetails,omitempty"`
 	TCPAppPortRange           []common.NetworkPorts     `json:"tcpPortRange,omitempty"`
 	UDPAppPortRange           []common.NetworkPorts     `json:"udpPortRange,omitempty"`
 	ClientlessApps            []ClientlessApps          `json:"clientlessApps,omitempty"`

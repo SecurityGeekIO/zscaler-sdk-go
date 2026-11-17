@@ -3,12 +3,13 @@ package unit
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredential"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/privilegedremoteaccess/pracredential"
 )
 
 func TestPRACredential_Get_SDK(t *testing.T) {
@@ -141,6 +142,22 @@ func TestPRACredential_Delete_SDK(t *testing.T) {
 
 	resp, err := pracredential.Delete(context.Background(), service, credID)
 
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
+func TestPRACredential_CredentialMove_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	credID := "cred-move-1"
+	targetMT := "mt-target-999"
+	path := common.ZPAPath(api.CustomerID, "credential", credID, "move")
+
+	api.OnFunc("POST", path, func(r *http.Request, _ []byte) common.MockResponse {
+		assert.Equal(t, targetMT, r.URL.Query().Get("targetMicrotenantId"))
+		return common.NoContentResponse()
+	})
+
+	resp, err := pracredential.CredentialMove(context.Background(), api.Service, credID, targetMT)
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 }

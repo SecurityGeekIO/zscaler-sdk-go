@@ -3,11 +3,11 @@ package zscaler
 import (
 	"log"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zdx"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zdx"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
 type (

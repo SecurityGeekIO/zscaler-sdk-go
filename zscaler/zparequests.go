@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/go-querystring/query"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/common"
 )
 
 func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string, options, body, v interface{}) (*http.Response, error) {
@@ -51,16 +51,16 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	if len(parts) > 1 {
 		query = parts[1]
 	}
-
+	
 	// Parse query string to work with parameters
 	q, err := url.ParseQuery(query)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	// Inject microtenant ID if needed
 	q = common.InjectMicrotentantID(body, q, client.oauth2Credentials.Zscaler.Client.MicrotenantID)
-
+	
 	// For ZPA endpoints, use custom encoding that preserves %20 for spaces
 	// Standard url.Values.Encode() uses + for spaces, but ZPA API requires %20
 	isZPAEndpoint := strings.Contains(endpoint, "/zpa/") || strings.Contains(endpoint, "/mgmtconfig/")
@@ -69,7 +69,7 @@ func (client *Client) NewRequestDo(ctx context.Context, method, endpoint string,
 	} else {
 		query = q.Encode()
 	}
-
+	
 	endpoint = path
 	if query != "" {
 		endpoint += "?" + query

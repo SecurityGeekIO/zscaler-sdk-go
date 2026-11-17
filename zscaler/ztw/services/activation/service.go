@@ -1,7 +1,7 @@
 package activation
 
 import (
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
 )
 
 type Service struct {

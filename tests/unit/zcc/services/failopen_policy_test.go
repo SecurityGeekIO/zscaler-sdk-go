@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/failopen_policy"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/failopen_policy"
 )
 
 // =====================================================
@@ -20,7 +20,10 @@ func TestFailOpenPolicy_Get_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/webFailOpenPolicy"
+	// The SDK calls GET on /zcc/papi/public/v1/webFailOpenPolicy/listByCompany
+	// (see zscaler/zcc/services/failopen_policy/failopen_policy.go), not the
+	// bare base path.
+	path := "/zcc/papi/public/v1/webFailOpenPolicy/listByCompany"
 
 	server.On("GET", path, common.SuccessResponse([]failopen_policy.WebFailOpenPolicy{
 		{ID: "policy-001", Active: "true", CompanyID: "company-123", EnableFailOpen: 1},
@@ -42,13 +45,19 @@ func TestFailOpenPolicy_Update_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zcc/papi/public/v1/webFailOpenPolicy"
+	basePath := "/zcc/papi/public/v1/webFailOpenPolicy"
 
-	server.On("PUT", path, common.SuccessResponse(failopen_policy.WebFailOpenPolicy{
-		ID:             "policy-001",
-		Active:         "false",
-		CompanyID:      "company-123",
-		EnableFailOpen: 0,
+	server.On("PUT", basePath+"/edit", common.SuccessResponse(struct {
+		Success string `json:"success"`
+	}{Success: "true"}))
+
+	server.On("GET", basePath+"/listByCompany", common.SuccessResponse([]failopen_policy.WebFailOpenPolicy{
+		{
+			ID:             "policy-001",
+			Active:         "false",
+			CompanyID:      "company-123",
+			EnableFailOpen: 0,
+		},
 	}))
 
 	service, err := common.CreateTestService(context.Background(), server, "123456")

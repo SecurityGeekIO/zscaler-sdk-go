@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/activation"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/activation"
 )
 
 func main() {

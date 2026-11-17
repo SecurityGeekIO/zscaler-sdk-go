@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testcommon "github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zwa/services/dlp_incidents"
 )
 
 func TestDLPIncidents_Structure(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/custom_config_controller"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/custom_config_controller"
 )
 
 func TestCustomConfigController_CheckZiaCloudConfig_SDK(t *testing.T) {
@@ -32,7 +32,8 @@ func TestCustomConfigController_GetZIACloudConfig_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/config/ziaCloud"
+	// SDK hits /config/ziaCloudConfig (see custom_config_controller.go line 40).
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/config/ziaCloudConfig"
 
 	server.On("GET", path, common.SuccessResponse(custom_config_controller.ZIACloudConfig{
 		ZIACloudDomain: "zscaler.net",
@@ -53,7 +54,7 @@ func TestCustomConfigController_AddZIACloudConfig_SDK(t *testing.T) {
 	server := common.NewTestServer()
 	defer server.Close()
 
-	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/config/ziaCloud"
+	path := "/zpa/mgmtconfig/v1/admin/customers/" + testCustomerID + "/config/ziaCloudConfig"
 
 	server.On("POST", path, common.SuccessResponse(custom_config_controller.ZIACloudConfig{
 		ZIACloudDomain: "zscaler.net",

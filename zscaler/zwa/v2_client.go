@@ -21,9 +21,9 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 type Client struct {
@@ -103,6 +103,31 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 	}
 
 	retryableClient.CheckRetry = checkRetry
+
+	// When the retry budget is exhausted, retryablehttp's default behaviour is to
+	// drain the body and return a bare "giving up after N attempt(s)" error with a
+	// nil response, which destroys the API's own error payload. Hand the final
+	// response back instead so the request layer can build a structured
+	// errorx.ErrorResponse carrying the API code and message. A nil response means
+	// the request never produced one (e.g. connection refused), in which case the
+	// transport error is the only signal left to report. See issue #449.
+	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
+			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
+			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		return nil, err
+	}
+
 	retryableClient.Logger = l
 
 	// Set request timeout
@@ -138,7 +163,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
-	retryableClient.HTTPClient.Transport = transport
+	// Record every attempt of a DELETE, so a 404 after an attempt the API may
+	// have applied is reported as deleted (see errorx.DeleteAlreadyApplied).
+	retryableClient.HTTPClient.Transport = errorx.TrackAttempts(transport)
 	return retryableClient.StandardClient()
 }
 
@@ -201,6 +228,14 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	if resp != nil && containsInt(getRetryOnStatusCodes(), resp.StatusCode) {
 		return true, nil
 	}
+
+	// Only retry a 5xx when the body does not carry a deterministic API verdict.
+	// The upstream policy retries every 5xx except 501, which burns the entire
+	// retry budget on permanent server-side rejections. See issue #449.
+	if err == nil && resp != nil && resp.StatusCode >= 500 {
+		return errorx.IsRetryableServerError(resp), nil
+	}
+
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
@@ -399,24 +434,44 @@ func (client *Client) newRequest(method, urlPath string, options, body interface
 		}
 	}
 
-	// Join the path to the base-url
+	// Join the path to the base-url.
+	//
+	// Callers (e.g. zwa/services/common.ReadAllPages) sometimes pass a
+	// urlPath that already contains a query string (e.g.
+	// "/dlp/v1/customer/audit?page=1&pageSize=1000"). The earlier
+	// implementation stuffed the entire urlPath into u.Path, which made
+	// url.URL.String() percent-encode the literal "?" as "%3F" and break
+	// server-side routing. Split the urlPath up-front so the path and
+	// query land in the right fields of the URL.
 	u := *client.Config.BaseURL
-	unescaped, err := url.PathUnescape(urlPath)
+	pathPart := urlPath
+	queryPart := ""
+	if idx := strings.Index(urlPath, "?"); idx >= 0 {
+		pathPart = urlPath[:idx]
+		queryPart = urlPath[idx+1:]
+	}
+
+	unescaped, err := url.PathUnescape(pathPart)
 	if err != nil {
 		return nil, err
 	}
 
 	// Set the encoded path data
-	u.RawPath = u.Path + urlPath
+	u.RawPath = u.Path + pathPart
 	u.Path = u.Path + unescaped
 
-	// Set the query parameters
+	// Set the query parameters. `options` (a struct decoded with
+	// go-querystring) takes precedence over an inline query string
+	// embedded in urlPath, matching the historical behavior. If neither
+	// is supplied, RawQuery stays empty.
 	if options != nil {
 		q, err := query.Values(options)
 		if err != nil {
 			return nil, err
 		}
 		u.RawQuery = q.Encode()
+	} else if queryPart != "" {
+		u.RawQuery = queryPart
 	}
 
 	req, err := http.NewRequest(method, u.String(), buf)
@@ -443,6 +498,9 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 	// Initialize the HTTP client using the configuration's method
 	httpClient := getHTTPClient(client.Config.Logger, nil, client.Config)
 
+	// Record the attempts of a DELETE (see errorx.DeleteAlreadyApplied)
+	req = errorx.TrackDeleteRequestAttempts(req)
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -456,6 +514,13 @@ func (client *Client) do(req *http.Request, v interface{}, start time.Time, reqI
 
 	logger.LogResponse(client.Config.Logger, resp, start, reqID)
 	logger.WriteLog(client.Config.Logger, "Response Body: %s", string(respBody)) // Log the response body separately
+
+	// A DELETE that an earlier attempt may have applied is done: the object
+	// is gone, which is what the caller asked for.
+	if errorx.DeleteAlreadyApplied(req.Context(), req.Method, resp) {
+		client.Config.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", req.Method)
+		return resp, nil
+	}
 
 	if err := errorx.CheckErrorInResponse(resp, err); err != nil {
 		return resp, err
@@ -484,8 +549,12 @@ func unescapeHTML(entity interface{}) {
 	if err != nil {
 		return
 	}
+	// UseNumber keeps numbers exact: as float64, integers above 2^53 (such as
+	// 18-digit IDs) would be rounded when the entity is decoded again below.
 	var mapData map[string]interface{}
-	err = json.Unmarshal(data, &mapData)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	err = dec.Decode(&mapData)
 	if err != nil {
 		return
 	}

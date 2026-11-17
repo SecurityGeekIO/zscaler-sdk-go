@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zia/services/dlp/dlp_engines"
 )
 
 // =====================================================
@@ -101,8 +101,10 @@ func TestDLPEngines_Create_SDK(t *testing.T) {
 	require.NoError(t, err)
 
 	newEngine := &dlp_engines.DLPEngines{
-		Name:            "New DLP Engine",
-		CustomDlpEngine: true,
+		Name:             "tests-dlp-engine",
+		Description:      "tests-dlp-engine",
+		EngineExpression: "((D63.S > 1))",
+		CustomDlpEngine:  true,
 	}
 
 	result, _, err := dlp_engines.Create(context.Background(), service, newEngine)

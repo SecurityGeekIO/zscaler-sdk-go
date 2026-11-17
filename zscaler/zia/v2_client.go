@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/cache"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
-	rl "github.com/SecurityGeekIO/zscaler-sdk-go/v3/ratelimiter"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/errorx"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/zscaler/zscaler-sdk-go/v3/cache"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
+	rl "github.com/zscaler/zscaler-sdk-go/v3/ratelimiter"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/errorx"
 )
 
 func NewClient(config *Configuration) (*Client, error) {
@@ -394,6 +394,31 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		return sleep
 	}
 	retryableClient.CheckRetry = checkRetry
+
+	// When the retry budget is exhausted, retryablehttp's default behaviour is to
+	// drain the body and return a bare "giving up after N attempt(s)" error with a
+	// nil response, which destroys the API's own error payload. Hand the final
+	// response back instead so the request layer can build a structured
+	// errorx.ErrorResponse carrying the API code and message. A nil response means
+	// the request never produced one (e.g. connection refused), in which case the
+	// transport error is the only signal left to report. See issue #449.
+	retryableClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// err is nil only when the retry budget ran out while CheckRetry still
+		// wanted to retry. That is the case worth rescuing, and the body is
+		// intact because retryablehttp breaks out of its loop before draining it.
+		// Any non-nil err is a genuine failure (transport error, cancelled or
+		// timed-out context surfaced by CheckRetry) and must not be masked by
+		// handing back a response with a nil error.
+		if err == nil && resp != nil {
+			l.Printf("[WARN] giving up after %d attempt(s); surfacing API response status %d", numTries, resp.StatusCode)
+			return resp, nil
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		return nil, err
+	}
+
 	retryableClient.Logger = l
 
 	// Set the request timeout, allowing user-defined override.
@@ -436,7 +461,9 @@ func getHTTPClient(l logger.Logger, rateLimiter *rl.RateLimiter, cfg *Configurat
 		l.Printf("[INFO] HTTPS certificate validation is disabled (testing mode).")
 	}
 
-	retryableClient.HTTPClient.Transport = transport
+	// Record every attempt of a DELETE, so a 404 after an attempt the API may
+	// have applied is reported as deleted (see errorx.DeleteAlreadyApplied).
+	retryableClient.HTTPClient.Transport = errorx.TrackAttempts(transport)
 	return retryableClient.StandardClient()
 }
 
@@ -523,6 +550,15 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 		}
 	}
+
+	// Only retry a 5xx when the body does not carry a deterministic API verdict.
+	// The upstream policy retries every 5xx except 501, which makes a permanent
+	// 500 UNEXPECTED_ERROR (e.g. an unknown URL category) burn the entire retry
+	// budget before failing anyway. See issue #449.
+	if err == nil && resp != nil && resp.StatusCode >= 500 {
+		return errorx.IsRetryableServerError(resp), nil
+	}
+
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
 
@@ -618,17 +654,23 @@ func (c *Client) Close() {
 
 func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Response, error) {
 	key := cache.CreateCacheKey(req)
+	var cacheRead *cache.TrackedRead
 	if c.cacheEnabled {
 		if req.Method != http.MethodGet {
-			c.cache.Delete(key)
 			baseKey := strings.Split(key, "?")[0]
-			c.cache.ClearAllKeysWithPrefix(baseKey)
+			prefixes := []string{baseKey}
 			// Also invalidate the parent collection endpoint so that
 			// list responses (e.g. /ipSourceGroups) are cleared when a
 			// child resource (e.g. /ipSourceGroups/123) is mutated.
 			if idx := strings.LastIndex(baseKey, "/"); idx > 0 {
-				parentKey := baseKey[:idx]
-				c.cache.ClearAllKeysWithPrefix(parentKey)
+				prefixes = append(prefixes, baseKey[:idx])
+			}
+			// Register the write before invalidating, so a GET of an
+			// invalidated key that overlaps the write is not cached.
+			defer c.cacheWrites.BeginWrite(prefixes...)()
+			c.cache.Delete(key)
+			for _, prefix := range prefixes {
+				c.cache.ClearAllKeysWithPrefix(prefix)
 			}
 		}
 		resp := c.cache.Get(key)
@@ -641,6 +683,10 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 		if inCache {
 			c.Logger.Printf("[INFO] served from cache, key:%s\n", key)
 			return resp, nil
+		}
+		if req.Method == http.MethodGet {
+			cacheRead = c.cacheWrites.BeginRead(key)
+			defer cacheRead.Done()
 		}
 	}
 
@@ -682,8 +728,12 @@ func (c *Client) do(req *http.Request, start time.Time, reqID string) (*http.Res
 	}
 
 	if c.cacheEnabled && resp.StatusCode >= 200 && resp.StatusCode <= 299 && req.Method == http.MethodGet {
-		c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
-		c.cache.Set(key, cache.CopyResponse(resp))
+		if cacheRead.Done() {
+			c.Logger.Printf("[INFO] saving to cache, key:%s\n", key)
+			c.cache.Set(key, cache.CopyResponse(resp))
+		} else {
+			c.Logger.Printf("[INFO] not caching response that overlapped a write, key:%s\n", key)
+		}
 	}
 
 	return resp, nil
@@ -708,6 +758,10 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 		endpoint += "?" + params
 	}
 	fullURL := fmt.Sprintf("%s%s", baseUrl, endpoint)
+	// Every attempt of a DELETE shares this context, so a 404 after an attempt
+	// the API may have applied can be recognised (see
+	// errorx.DeleteAlreadyApplied).
+	ctx = errorx.TrackDeleteAttempts(ctx, method)
 	req, err = http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return nil, err
@@ -748,12 +802,29 @@ func (c *Client) GenericRequest(ctx context.Context, baseUrl, endpoint, method s
 			break
 		}
 
+		// A DELETE that an earlier attempt may have applied is done: the
+		// object is gone, which is what the caller asked for.
+		if errorx.DeleteAlreadyApplied(ctx, method, resp) {
+			c.Logger.Printf("[INFO] %s request returned 404 after an earlier attempt that may have deleted the object; treating it as deleted", method)
+			resp.Body.Close()
+			return nil, nil
+		}
+
 		if resp.StatusCode > 299 && resp.StatusCode != http.StatusUnauthorized {
 			errResp := errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
 			resp.Body.Close()
 			return nil, errResp
 		}
 
+	}
+
+	// A 401 that survived every attempt above exits the loop without being
+	// classified. Without this guard the error body would be handed back to the
+	// caller as if the call had succeeded.
+	if resp.StatusCode > 299 {
+		errResp := errorx.CheckErrorInResponse(resp, fmt.Errorf("api responded with code: %d", resp.StatusCode))
+		resp.Body.Close()
+		return nil, errResp
 	}
 
 	// Read response body

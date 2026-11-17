@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
 )
 
 const pageSize = 1000
@@ -203,6 +203,13 @@ func ReadAllPages[T any](ctx context.Context, client *zscaler.Client, endpoint s
 		}
 		page++
 	}
+
+	filtered, err := zscaler.ApplyJMESPathFromContext(ctx, *list)
+	if err != nil {
+		return err
+	}
+	*list = filtered
+
 	return nil
 }
 

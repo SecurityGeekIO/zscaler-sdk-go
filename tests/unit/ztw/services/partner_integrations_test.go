@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/account_groups"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/public_cloud_info"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/account_groups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ztw/services/partner_integrations/public_cloud_info"
 )
 
 func TestPartnerIntegrations_Structure(t *testing.T) {

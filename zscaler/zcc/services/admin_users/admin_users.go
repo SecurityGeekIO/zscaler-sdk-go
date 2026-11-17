@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zcc/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zcc/services/common"
 )
 
 const (
@@ -27,8 +27,14 @@ type AdminUser struct {
 	EditEnabled    string `json:"editEnabled"`
 	ID             int    `json:"id"`
 	IsDefaultAdmin string `json:"isDefaultAdmin"`
-	ServiceType    string `json:"serviceType"`
-	UserName       string `json:"userName"`
+	// ServiceType is the numeric service identifier returned by
+	// /getAdminUsers: 1=ZIA, 2=ZPA, 3=ZID, 4=ZDX. The upstream API
+	// emits this field as a JSON number (e.g. `"serviceType": 1`),
+	// not as a quoted string. An earlier `string` type here caused
+	// `json: cannot unmarshal number into Go struct field` decode
+	// failures.
+	ServiceType int    `json:"serviceType"`
+	UserName    string `json:"userName"`
 }
 
 type Role struct {
@@ -82,21 +88,15 @@ type SyncZiaZdxZpaAdminUsers struct {
 }
 
 func GetAdminUsers(ctx context.Context, service *zscaler.Service, userType string, pageSize ...int) ([]AdminUser, error) {
-	// Determine the pageSize to use (default if not provided)
-	effectivePageSize := 0 // Default to let `NewPagination` handle it
+	effectivePageSize := 0
 	if len(pageSize) > 0 && pageSize[0] > 0 {
 		effectivePageSize = pageSize[0]
 	}
 
-	// Construct query parameters with optional userType
-	queryParams := struct {
-		UserType string `url:"userType,omitempty"`
-	}{
+	params := common.QueryParams{
 		UserType: userType,
 	}
-
-	// Leverage ReadAllPages to handle pagination
-	return common.ReadAllPages[AdminUser](ctx, service.Client, getAdminUserEndpoint, queryParams, effectivePageSize)
+	return common.ReadAllPages[AdminUser](ctx, service.Client, getAdminUserEndpoint, params, effectivePageSize)
 }
 
 func UpdateAdminUser(ctx context.Context, service *zscaler.Service, adminUser *AdminUser) (*AdminUser, error) {

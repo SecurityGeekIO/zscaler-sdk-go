@@ -1,0 +1,805 @@
+// Package services provides unit tests for ZIdentity services
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	testcommon "github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/groups"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/ziam/services/users"
+)
+
+func TestUsers_Structure(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Users JSON marshaling", func(t *testing.T) {
+		enabled := true
+		user := users.Users{
+			ID:             "user-123",
+			Source:         "OKTA",
+			LoginName:      "john.doe@example.com",
+			DisplayName:    "John Doe",
+			FirstName:      "John",
+			LastName:       "Doe",
+			PrimaryEmail:   "john.doe@example.com",
+			SecondaryEmail: "jdoe@personal.com",
+			Status:         &enabled,
+			Department: &common.IDNameDisplayName{
+				ID:          "dept-001",
+				Name:        "Engineering",
+				DisplayName: "Engineering Department",
+			},
+			IDP: &common.IDNameDisplayName{
+				ID:          "idp-001",
+				Name:        "Okta",
+				DisplayName: "Okta Identity Provider",
+			},
+		}
+
+		data, err := json.Marshal(user)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":"user-123"`)
+		assert.Contains(t, string(data), `"loginName":"john.doe@example.com"`)
+		assert.Contains(t, string(data), `"displayName":"John Doe"`)
+		assert.Contains(t, string(data), `"firstName":"John"`)
+		assert.Contains(t, string(data), `"status":true`)
+	})
+
+	t.Run("Users JSON unmarshaling", func(t *testing.T) {
+		jsonData := `{
+			"id": "user-456",
+			"source": "AZURE_AD",
+			"loginName": "jane.smith@example.com",
+			"displayName": "Jane Smith",
+			"firstName": "Jane",
+			"lastName": "Smith",
+			"primaryEmail": "jane.smith@example.com",
+			"status": true,
+			"department": {
+				"id": "dept-002",
+				"name": "Sales",
+				"displayName": "Sales Department"
+			},
+			"idp": {
+				"id": "idp-002",
+				"name": "Azure AD",
+				"displayName": "Azure Active Directory"
+			},
+			"customAttrsInfo": {
+				"employeeId": "12345",
+				"costCenter": "CC-100"
+			}
+		}`
+
+		var user users.Users
+		err := json.Unmarshal([]byte(jsonData), &user)
+		require.NoError(t, err)
+
+		assert.Equal(t, "user-456", user.ID)
+		assert.Equal(t, "AZURE_AD", user.Source)
+		assert.Equal(t, "jane.smith@example.com", user.LoginName)
+		assert.Equal(t, "Jane Smith", user.DisplayName)
+		require.NotNil(t, user.Status)
+		assert.True(t, *user.Status)
+		assert.NotNil(t, user.Department)
+		assert.Equal(t, "Sales", user.Department.Name)
+		assert.NotNil(t, user.IDP)
+		assert.Equal(t, "Azure AD", user.IDP.Name)
+		assert.NotNil(t, user.CustomAttrsInfo)
+		assert.Equal(t, "12345", user.CustomAttrsInfo["employeeId"])
+	})
+
+	t.Run("Users without optional fields", func(t *testing.T) {
+		enabled := true
+		user := users.Users{
+			ID:           "user-minimal",
+			LoginName:    "minimal@example.com",
+			DisplayName:  "Minimal User",
+			PrimaryEmail: "minimal@example.com",
+			Status:       &enabled,
+		}
+
+		data, err := json.Marshal(user)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"id":"user-minimal"`)
+		assert.NotContains(t, string(data), `"department"`)
+		assert.NotContains(t, string(data), `"idp"`)
+		assert.NotContains(t, string(data), `"secondaryEmail"`)
+	})
+
+	// Status is a pointer precisely so that these three states are distinct. As
+	// a plain bool with `omitempty`, the first two marshalled identically and a
+	// user could be enabled but never disabled.
+	t.Run("Status distinguishes disabled from unset", func(t *testing.T) {
+		disabled := false
+		data, err := json.Marshal(users.Users{ID: "user-1", Status: &disabled})
+		require.NoError(t, err)
+		assert.Contains(t, string(data), `"status":false`)
+
+		data, err = json.Marshal(users.Users{ID: "user-1"})
+		require.NoError(t, err)
+		assert.NotContains(t, string(data), `"status"`)
+
+		enabled := true
+		data, err = json.Marshal(users.Users{ID: "user-1", Status: &enabled})
+		require.NoError(t, err)
+		assert.Contains(t, string(data), `"status":true`)
+	})
+}
+
+// TestUsers_FullPayload pins the complete user representation against a
+// response captured from a tenant. Every field the API reports has to survive
+// the unmarshal: the ZIdentity PUT is a full replace, so a field the struct
+// drops on read is a field silently erased by the next update.
+func TestUsers_FullPayload(t *testing.T) {
+	t.Parallel()
+
+	const payload = `{
+		"loginName": "adam1.ashcroft@securitygeek.io",
+		"displayName": "Adam Ashcroft",
+		"firstName": "Adam",
+		"lastName": "Ashcroft",
+		"primaryEmail": "adam1.ashcroft@securitygeek.io",
+		"secondaryEmail": "adam2.ashcroft@securitygeek.io",
+		"customAttrsInfo": {},
+		"department": { "id": "tpln05jqhg7bi", "name": "Engineering", "idp": {} },
+		"status": true,
+		"skipMfaUntil": 0,
+		"mobilePhone": "6047539635",
+		"primaryPhone": "6047539635",
+		"language": "English (US)",
+		"timeZone": "(UTC+00:00) GMT",
+		"manager": { "id": "ihln05lt307ed" },
+		"addresses": [
+			{
+				"type": "work",
+				"streetAddress": "13-8089 209 St",
+				"locality": "Langley",
+				"region": "British Columbia",
+				"postalCode": "785542",
+				"country": "Canada"
+			}
+		],
+		"id": "igkq8fvc7c3cb",
+		"groups": [
+			{ "id": "i9lm44rd207qa", "name": "Dynamic Group Registered Domains", "dynamicGroup": true },
+			{
+				"id": "i9ln0296eg642",
+				"name": "A000",
+				"status": false,
+				"associatedUsers": [],
+				"source": "SCIM",
+				"emergencyGroup": false,
+				"serviceEntitlementDisabled": false,
+				"adminEntitlementDisabled": false,
+				"dynamicGroup": false,
+				"entityType": "GROUP_PROFILE",
+				"objectName": "A000",
+				"readOnly": false
+			}
+		],
+		"idp": {},
+		"source": "API",
+		"guest": false,
+		"belongInternalDomain": false,
+		"hostedIdp": false,
+		"entityType": "USER_PROFILE",
+		"objectName": "adam1.ashcroft@securitygeek.io",
+		"name": "adam1.ashcroft@securitygeek.io",
+		"division": "A000",
+		"costCenter": "45226",
+		"title": "Engineer",
+		"organization": "BD"
+	}`
+
+	t.Run("every reported field is captured", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		assert.Equal(t, "igkq8fvc7c3cb", user.ID)
+		assert.Equal(t, "API", user.Source)
+		assert.Equal(t, "6047539635", user.MobilePhone)
+		assert.Equal(t, "6047539635", user.PrimaryPhone)
+		assert.Equal(t, "English (US)", user.Language)
+		assert.Equal(t, "(UTC+00:00) GMT", user.TimeZone)
+		assert.Equal(t, "Engineer", user.Title)
+		assert.Equal(t, "A000", user.Division)
+		assert.Equal(t, "45226", user.CostCenter)
+		assert.Equal(t, "BD", user.Organization)
+		assert.Equal(t, "USER_PROFILE", user.EntityType)
+		assert.Equal(t, "adam1.ashcroft@securitygeek.io", user.ObjectName)
+		assert.Equal(t, "adam1.ashcroft@securitygeek.io", user.Name)
+
+		require.NotNil(t, user.Manager)
+		assert.Equal(t, "ihln05lt307ed", user.Manager.ID)
+
+		require.NotNil(t, user.Department)
+		assert.Equal(t, "Engineering", user.Department.Name)
+
+		require.Len(t, user.Addresses, 1)
+		assert.Equal(t, "work", user.Addresses[0].Type)
+		assert.Equal(t, "13-8089 209 St", user.Addresses[0].StreetAddress)
+		assert.Equal(t, "Langley", user.Addresses[0].Locality)
+		assert.Equal(t, "British Columbia", user.Addresses[0].Region)
+		assert.Equal(t, "785542", user.Addresses[0].PostalCode)
+		assert.Equal(t, "Canada", user.Addresses[0].Country)
+	})
+
+	// These four are pointers so that a reported false is distinguishable from
+	// a field the API did not send. A plain bool with `omitempty` would read
+	// both as false and then drop the field from the next update body.
+	t.Run("reported false flags are captured, not lost to omitempty", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		require.NotNil(t, user.SkipMfaUntil)
+		assert.Equal(t, int64(0), *user.SkipMfaUntil)
+
+		for name, got := range map[string]*bool{
+			"guest":                user.Guest,
+			"belongInternalDomain": user.BelongInternalDomain,
+			"hostedIdp":            user.HostedIdp,
+		} {
+			require.NotNil(t, got, "%s should be non-nil when the API reports it", name)
+			assert.False(t, *got, "%s should be false", name)
+		}
+	})
+
+	// The nested group payload inverts the entitlement flags relative to the
+	// groups endpoint — disabled here, enabled there — which is why it has its
+	// own type rather than reusing groups.Groups.
+	t.Run("nested groups keep the inverted entitlement flags", func(t *testing.T) {
+		var user users.Users
+		require.NoError(t, json.Unmarshal([]byte(payload), &user))
+
+		require.Len(t, user.Groups, 2)
+
+		dynamic := user.Groups[0]
+		assert.Equal(t, "Dynamic Group Registered Domains", dynamic.Name)
+		require.NotNil(t, dynamic.DynamicGroup)
+		assert.True(t, *dynamic.DynamicGroup)
+		assert.Nil(t, dynamic.Status, "a field the API omits must stay nil")
+
+		static := user.Groups[1]
+		assert.Equal(t, "SCIM", static.Source)
+		assert.Equal(t, "GROUP_PROFILE", static.EntityType)
+		require.NotNil(t, static.ServiceEntitlementDisabled)
+		assert.False(t, *static.ServiceEntitlementDisabled)
+		require.NotNil(t, static.AdminEntitlementDisabled)
+		assert.False(t, *static.AdminEntitlementDisabled)
+		require.NotNil(t, static.ReadOnly)
+		assert.False(t, *static.ReadOnly)
+	})
+
+	// A user built for a create carries none of the read-only metadata, and
+	// omitempty has to keep all of it out of the body.
+	t.Run("unset fields stay out of the request body", func(t *testing.T) {
+		data, err := json.Marshal(users.Users{
+			LoginName:  "minimal@example.com",
+			CostCenter: "45226",
+		})
+		require.NoError(t, err)
+
+		assert.Contains(t, string(data), `"costCenter":"45226"`)
+		for _, absent := range []string{
+			"mobilePhone", "primaryPhone", "language", "timeZone",
+			"title", "division", "organization", "manager",
+			"addresses", "groups", "skipMfaUntil",
+			"guest", "belongInternalDomain", "hostedIdp",
+			"entityType", "objectName",
+		} {
+			assert.NotContains(t, string(data), `"`+absent+`"`)
+		}
+	})
+}
+
+func TestUsers_ResponseParsing(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Parse users list response", func(t *testing.T) {
+		jsonResponse := `{
+			"results_total": 3,
+			"pageOffset": 0,
+			"pageSize": 100,
+			"next_link": "",
+			"records": [
+				{
+					"id": "user-001",
+					"loginName": "admin@example.com",
+					"displayName": "Admin User",
+					"status": true
+				},
+				{
+					"id": "user-002",
+					"loginName": "john.doe@example.com",
+					"displayName": "John Doe",
+					"status": true
+				},
+				{
+					"id": "user-003",
+					"loginName": "jane.smith@example.com",
+					"displayName": "Jane Smith",
+					"status": false
+				}
+			]
+		}`
+
+		var response common.PaginationResponse[users.Users]
+		err := json.Unmarshal([]byte(jsonResponse), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, 3, response.ResultsTotal)
+		assert.Len(t, response.Records, 3)
+		assert.Equal(t, "Admin User", response.Records[0].DisplayName)
+		require.NotNil(t, response.Records[0].Status)
+		assert.True(t, *response.Records[0].Status)
+		require.NotNil(t, response.Records[2].Status)
+		assert.False(t, *response.Records[2].Status)
+	})
+
+	t.Run("Parse single user with full details", func(t *testing.T) {
+		jsonResponse := `{
+			"id": "user-full",
+			"source": "OKTA",
+			"loginName": "full.user@example.com",
+			"displayName": "Full User",
+			"firstName": "Full",
+			"lastName": "User",
+			"primaryEmail": "full.user@example.com",
+			"secondaryEmail": "fulluser@personal.com",
+			"status": true,
+			"department": {
+				"id": "dept-eng",
+				"name": "Engineering",
+				"displayName": "Engineering Department"
+			},
+			"idp": {
+				"id": "idp-okta",
+				"name": "Okta",
+				"displayName": "Corporate Okta"
+			},
+			"customAttrsInfo": {
+				"manager": "manager@example.com",
+				"location": "San Jose",
+				"team": "Platform"
+			}
+		}`
+
+		var user users.Users
+		err := json.Unmarshal([]byte(jsonResponse), &user)
+		require.NoError(t, err)
+
+		assert.Equal(t, "user-full", user.ID)
+		assert.Equal(t, "Full User", user.DisplayName)
+		assert.Equal(t, "fulluser@personal.com", user.SecondaryEmail)
+		assert.NotNil(t, user.Department)
+		assert.Equal(t, "Engineering", user.Department.Name)
+		assert.NotNil(t, user.CustomAttrsInfo)
+		assert.Equal(t, "San Jose", user.CustomAttrsInfo["location"])
+	})
+
+	t.Run("Parse paginated users response", func(t *testing.T) {
+		jsonResponse := `{
+			"results_total": 500,
+			"pageOffset": 200,
+			"pageSize": 100,
+			"next_link": "/ziam/admin/api/v1/users?offset=300&limit=100",
+			"prev_link": "/ziam/admin/api/v1/users?offset=100&limit=100",
+			"records": [
+				{"id": "user-201", "displayName": "User 201"},
+				{"id": "user-202", "displayName": "User 202"}
+			]
+		}`
+
+		var response common.PaginationResponse[users.Users]
+		err := json.Unmarshal([]byte(jsonResponse), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, 500, response.ResultsTotal)
+		assert.Equal(t, 200, response.PageOffset)
+		assert.NotEmpty(t, response.NextLink)
+		assert.NotEmpty(t, response.PrevLink)
+		assert.Len(t, response.Records, 2)
+	})
+}
+
+// =====================================================
+// SDK Function Tests - Exercise actual SDK code paths
+// =====================================================
+
+func TestUsers_GetUser_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID
+
+	enabled := true
+	server.On("GET", path, testcommon.SuccessResponse(users.Users{
+		ID:           userID,
+		LoginName:    "john.doe@example.com",
+		DisplayName:  "John Doe",
+		FirstName:    "John",
+		LastName:     "Doe",
+		PrimaryEmail: "john.doe@example.com",
+		Status:       &enabled,
+		Source:       "OKTA",
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetUser(context.Background(), service, userID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, userID, result.ID)
+	assert.Equal(t, "john.doe@example.com", result.LoginName)
+	assert.Equal(t, "John Doe", result.DisplayName)
+}
+
+func TestUsers_GetAll_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/ziam/admin/api/v1/users"
+
+	enabled := true
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []users.Users{
+			{ID: "user-1", DisplayName: "User One", Status: &enabled},
+			{ID: "user-2", DisplayName: "User Two", Status: &enabled},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetAll(context.Background(), service, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "User One", results[0].DisplayName)
+}
+
+func TestUsers_Create_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/ziam/admin/api/v1/users"
+
+	enabled := true
+	newUser := &users.Users{
+		LoginName:    "new.user@example.com",
+		DisplayName:  "New User",
+		FirstName:    "New",
+		LastName:     "User",
+		PrimaryEmail: "new.user@example.com",
+		Status:       &enabled,
+	}
+
+	server.On("POST", path, testcommon.SuccessResponseWithStatus(http.StatusCreated, &users.Users{
+		ID:           "user-new",
+		LoginName:    "new.user@example.com",
+		DisplayName:  "New User",
+		FirstName:    "New",
+		LastName:     "User",
+		PrimaryEmail: "new.user@example.com",
+		Status:       &enabled,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Create(context.Background(), service, newUser)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "user-new", result.ID)
+	assert.Equal(t, "new.user@example.com", result.LoginName)
+}
+
+func TestUsers_Update_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID
+
+	updateUser := &users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+		FirstName:   "Updated",
+		LastName:    "User",
+	}
+
+	enabled := true
+	server.On("PUT", path, testcommon.SuccessResponse(&users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+		FirstName:   "Updated",
+		LastName:    "User",
+		Status:      &enabled,
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Update(context.Background(), service, userID, updateUser)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "Updated User", result.DisplayName)
+}
+
+// A PUT that answers 204 No Content used to dereference a nil response and
+// panic the calling process. Update now reports (nil, nil, nil) instead, and
+// the caller re-reads if it needs the current representation.
+func TestUsers_Update_NoContentResponse_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID
+
+	server.On("PUT", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, _, err := users.Update(context.Background(), service, userID, &users.Users{
+		ID:          userID,
+		DisplayName: "Updated User",
+	})
+	require.NoError(t, err)
+	assert.Nil(t, result)
+}
+
+// =====================================================
+// User operations: setskipmfa, resetpassword, updatepassword
+// =====================================================
+//
+// These endpoints have no GET, so the request the SDK sends is the only thing
+// worth asserting — there is no way to read back what they did. Each test
+// therefore checks the method, the path, and the exact request body.
+//
+// All three document their 200 body as a bare JSON string. That is why they use
+// ExecuteRequest rather than Client.Create / Client.UpdateWithPut: those two
+// unmarshal the response into the request struct's type, so `"Success"` would
+// come back as an error from a call that succeeded. The string responses below
+// are what pins that.
+
+func TestUsers_SetSkipMFA_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/setskipmfa"
+
+	server.On("POST", path, testcommon.SuccessResponse("MFA skip has been set"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.SetSkipMFA(context.Background(), service, userID, 1767225600)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Equal(t, "POST", req.Method)
+	assert.Equal(t, path, req.Path)
+	assert.JSONEq(t, `{"timestamp":1767225600}`, string(req.Body))
+}
+
+// A zero timestamp must still be transmitted: `timestamp` is required, and
+// `omitempty` would have dropped it and produced a body the endpoint rejects.
+func TestUsers_SetSkipMFA_ZeroTimestamp_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/setskipmfa"
+
+	server.On("POST", path, testcommon.SuccessResponse("MFA skip has been set"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.SetSkipMFA(context.Background(), service, userID, 0)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.JSONEq(t, `{"timestamp":0}`, string(req.Body))
+}
+
+func TestUsers_ResetPassword_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/resetpassword"
+
+	server.On("POST", path, testcommon.SuccessResponse("Password reset initiated"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.ResetPassword(context.Background(), service, userID)
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Equal(t, "POST", req.Method)
+	assert.Equal(t, path, req.Path)
+	// The endpoint documents no request body, so none is sent.
+	assert.Empty(t, req.Body)
+}
+
+func TestUsers_UpdatePassword_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/updatepassword"
+
+	server.On("PUT", path, testcommon.SuccessResponse("Password has been reset"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, userID, &users.UpdatePasswordRequest{
+		Password:        "s3cret-value",
+		ResetPwdOnLogin: true,
+	})
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	// Note this one is a PUT, unlike the two actions above.
+	assert.Equal(t, "PUT", req.Method)
+	assert.Equal(t, path, req.Path)
+	assert.JSONEq(t, `{"password":"s3cret-value","resetPwdOnLogin":true}`, string(req.Body))
+}
+
+// resetPwdOnLogin carries no `omitempty`, so switching it off is expressible.
+// This is the same trap that made Users.Status a pointer: with `omitempty` a
+// caller could require a reset on next login but never stop requiring one.
+func TestUsers_UpdatePassword_ResetOnLoginFalse_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/updatepassword"
+
+	server.On("PUT", path, testcommon.SuccessResponse("Password has been reset"))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, userID, &users.UpdatePasswordRequest{
+		Password:        "s3cret-value",
+		ResetPwdOnLogin: false,
+	})
+	require.NoError(t, err)
+
+	req := server.LastRequest()
+	require.NotNil(t, req)
+	assert.Contains(t, string(req.Body), `"resetPwdOnLogin":false`)
+}
+
+func TestUsers_UpdatePassword_NilPayload_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.UpdatePassword(context.Background(), service, "user-12345", nil)
+	require.Error(t, err)
+}
+
+func TestUsers_Delete_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID
+
+	server.On("DELETE", path, testcommon.SuccessResponseWithStatus(http.StatusNoContent, nil))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	_, err = users.Delete(context.Background(), service, userID)
+	require.NoError(t, err)
+}
+
+func TestUsers_GetByName_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	path := "/ziam/admin/api/v1/users"
+
+	// Mock first page with matching results
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[users.Users]{
+		ResultsTotal: 3,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []users.Users{
+			{ID: "user-1", DisplayName: "John Doe", LoginName: "john.doe@example.com"},
+			{ID: "user-2", DisplayName: "Jane Doe", LoginName: "jane.doe@example.com"},
+			{ID: "user-3", DisplayName: "Bob Smith", LoginName: "bob.smith@example.com"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetByName(context.Background(), service, "Doe")
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2) // Should match "John Doe" and "Jane Doe"
+}
+
+func TestUsers_GetGroupsByUser_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering"},
+			{ID: "group-2", Name: "Developers"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	results, err := users.GetGroupsByUser(context.Background(), service, userID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, results)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "Engineering", results[0].Name)
+}
+
+func TestUsers_GetGroupsByUserPage_SDK(t *testing.T) {
+	server := testcommon.NewTestServer()
+	defer server.Close()
+
+	userID := "user-12345"
+	path := "/ziam/admin/api/v1/users/" + userID + "/groups"
+
+	server.On("GET", path, testcommon.SuccessResponse(common.PaginationResponse[groups.Groups]{
+		ResultsTotal: 2,
+		PageOffset:   0,
+		PageSize:     100,
+		Records: []groups.Groups{
+			{ID: "group-1", Name: "Engineering"},
+			{ID: "group-2", Name: "Developers"},
+		},
+	}))
+
+	service, err := testcommon.CreateTestService(context.Background(), server, "123456")
+	require.NoError(t, err)
+
+	result, err := users.GetGroupsByUserPage(context.Background(), service, userID, nil)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Len(t, result.Records, 2)
+	assert.Equal(t, 2, result.ResultsTotal)
+}

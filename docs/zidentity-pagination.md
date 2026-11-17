@@ -58,8 +58,8 @@ The system supports these common query parameters:
 
 ```go
 import (
-    "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/service/common"
-    "github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zidentity/service/groups"
+    "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/service/common"
+    "github.com/zscaler/zscaler-sdk-go/v3/zscaler/zidentity/service/groups"
 )
 
 // Get all groups with default pagination
@@ -108,7 +108,7 @@ pageParams.WithOffset(0)
 pageResponse, err := groups.GetPage(ctx, service, &pageParams)
 
 // Access pagination metadata
-fmt.Printf("Total: %d, Offset: %d, PageSize: %d\n",
+fmt.Printf("Total: %d, Offset: %d, PageSize: %d\n", 
     pageResponse.ResultsTotal, pageResponse.PageOffset, pageResponse.PageSize)
 fmt.Printf("Records: %d\n", len(pageResponse.Records))
 if pageResponse.NextLink != "" {
@@ -231,4 +231,4 @@ The pagination system includes comprehensive error handling:
 - Default page size of 100 provides good balance between performance and memory usage
 - Cursor-based pagination can be more efficient for large datasets
 - Filtering reduces data transfer and processing time
-- Consider using goroutines for parallel page fetching in some scenarios
+- Consider using goroutines for parallel page fetching in some scenarios 

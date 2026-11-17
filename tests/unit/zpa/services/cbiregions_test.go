@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbiregions"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/cloudbrowserisolation/cbiregions"
 )
 
 func TestCBIRegions_GetAll_SDK(t *testing.T) {
@@ -49,4 +49,17 @@ func TestCBIRegions_GetByName_SDK(t *testing.T) {
 	require.NotNil(t, result)
 	assert.Equal(t, "region-001", result.ID)
 	assert.Equal(t, regionName, result.Name)
+}
+
+func TestCBIRegions_GetByName_NotFound_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := "/zpa/cbiconfig/cbi/api/customers/" + api.CustomerID + "/regions"
+	api.On("GET", path, common.SuccessResponse([]cbiregions.CBIRegions{
+		{ID: "r1", Name: "EU-West"},
+	}))
+
+	got, _, err := cbiregions.GetByName(context.Background(), api.Service, "Antarctica-1")
+	require.Error(t, err)
+	require.Nil(t, got)
+	assert.Contains(t, err.Error(), "Antarctica-1")
 }

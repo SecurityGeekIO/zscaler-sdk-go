@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/tests/unit/common"
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_link"
+	"github.com/zscaler/zscaler-sdk-go/v3/tests/unit/common"
+	"github.com/zscaler/zscaler-sdk-go/v3/zscaler/zpa/services/userportal/portal_link"
 )
 
 func TestUserPortalLink_Get_SDK(t *testing.T) {
@@ -167,4 +167,23 @@ func TestUserPortalLink_GetUserPortalLinks_SDK(t *testing.T) {
 	assert.Equal(t, "link-001", result.ID)
 }
 
-// Note: CreatePortalLinkBulk test omitted due to complex request structure
+func TestUserPortalLink_CreatePortalLinkBulk_SDK(t *testing.T) {
+	api := common.NewZPATest(t)
+	path := common.ZPAv2Path(api.CustomerID, "userPortalLink", "bulk")
+
+	api.On("POST", path, common.SuccessResponse(portal_link.PortalLinkBulkRequest{
+		UserPortalLinks: []portal_link.UserPortalLink{
+			{ID: "bulk-link-1", Name: "Link One"},
+			{ID: "bulk-link-2", Name: "Link Two"},
+		},
+	}))
+
+	got, _, err := portal_link.CreatePortalLinkBulk(context.Background(), api.Service, []portal_link.UserPortalLink{
+		{Name: "Link One", UserPortalID: "up-1"},
+		{Name: "Link Two", UserPortalID: "up-1"},
+	})
+	require.NoError(t, err)
+	require.Len(t, got, 2)
+	assert.Equal(t, "bulk-link-1", got[0].ID)
+	assert.Equal(t, "Link Two", got[1].Name)
+}

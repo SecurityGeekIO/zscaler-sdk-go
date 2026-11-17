@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SecurityGeekIO/zscaler-sdk-go/v3/logger"
 	"github.com/stretchr/testify/require"
+	"github.com/zscaler/zscaler-sdk-go/v3/logger"
 )
 
 func TestUserAgent(t *testing.T) {
@@ -35,17 +35,53 @@ func TestDetectServiceTypeUnknown(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestGetAPIBaseURL(t *testing.T) {
+	// Production / empty -> default commercial gateway
+	require.Equal(t, "https://api.zsapi.net", GetAPIBaseURL(""))
+	require.Equal(t, "https://api.zsapi.net", GetAPIBaseURL("PRODUCTION"))
+
+	// Non-production commercial cloud keeps the api.{cloud}.zsapi.net pattern
+	require.Equal(t, "https://api.beta.zsapi.net", GetAPIBaseURL("beta"))
+
+	// Government (FedRAMP) clouds resolve to dedicated gateways, case-insensitive
+	require.Equal(t, "https://api.zscalergov.net", GetAPIBaseURL("gov"))
+	require.Equal(t, "https://api.zscalergov.net", GetAPIBaseURL("GOV"))
+	require.Equal(t, "https://api.zscalergov.us", GetAPIBaseURL("govus"))
+	require.Equal(t, "https://api.zscalergov.us", GetAPIBaseURL("GOVUS"))
+}
+
+func TestGetAuthURL(t *testing.T) {
+	// Production / empty -> commercial identity provider
+	require.Equal(t, "https://testcompany.zslogin.net/oauth2/v1/token", getAuthURL("testcompany", ""))
+	require.Equal(t, "https://testcompany.zslogin.net/oauth2/v1/token", getAuthURL("testcompany", "PRODUCTION"))
+
+	// Government (FedRAMP) clouds use the dedicated Zidentity identity providers
+	require.Equal(t, "https://zsgovlab-net.zidentitygov.net/oauth2/v1/token", getAuthURL("zsgovlab-net", "gov"))
+	require.Equal(t, "https://zsgovlab-net.zidentitygov.net/oauth2/v1/token", getAuthURL("zsgovlab-net", "GOV"))
+	require.Equal(t, "https://zsgovlab-us.zidentitygov.us/oauth2/v1/token", getAuthURL("zsgovlab-us", "govus"))
+	require.Equal(t, "https://zsgovlab-us.zidentitygov.us/oauth2/v1/token", getAuthURL("zsgovlab-us", "GOVUS"))
+
+	// Other non-production commercial clouds keep the legacy zslogin{cloud} pattern
+	require.Equal(t, "https://testcompany.zsloginbeta.net/oauth2/v1/token", getAuthURL("testcompany", "beta"))
+}
+
 func TestGetServiceHTTPClientUnknown(t *testing.T) {
 	cfg, err := NewConfiguration()
 	require.NoError(t, err)
 
-	svc, err := NewOneAPIClient(cfg)
-	require.NoError(t, err)
+	// getServiceHTTPClient is a pure lookup over the configuration, so the client
+	// is built directly instead of through NewOneAPIClient, which authenticates
+	// eagerly and therefore needs live credentials.
+	client := &Client{oauth2Credentials: cfg, stopTicker: make(chan bool)}
 
-	generic := cfg.HTTPClient
+	// An endpoint that matches no known service falls back to the generic client.
+	require.Equal(t, cfg.HTTPClient, client.getServiceHTTPClient("/foo"))
 
-	httpClient := svc.Client.getServiceHTTPClient("/foo")
-	require.Equal(t, generic, httpClient)
+	// A recognised service prefix resolves to that service's own client, which
+	// confirms the fallback above is a real branch rather than a default for
+	// everything.
+	cfg.ZIAHTTPClient = &http.Client{}
+	require.Equal(t, cfg.ZIAHTTPClient, client.getServiceHTTPClient("/zia/api/v1/urlCategories"))
 }
 
 // TestExecuteRequestExponentialBackoff tests the OneAPI ExecuteRequest retry logic with exponential backoff
